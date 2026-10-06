@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: competitive-quiz
+  profiles:
+    default: mysql
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
+  flyway:
+    enabled: true
+    clean-disabled: true
+    validate-on-migrate: true
+
+server:
+  address: ${SERVER_ADDRESS:127.0.0.1}
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+quiz:
+  images:
+    directory: ${QUIZ_IMAGE_DIRECTORY:./data/quiz-images}
+  sample:
+    password: ${QUIZ_DEMO_PASSWORD:}
+  web:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8080,http://127.0.0.1:8080}

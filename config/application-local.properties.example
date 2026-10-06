@@ -1,0 +1,14 @@
+# Copy to config/application-local.properties (ignored by Git).
+# Supply only local credentials. Never commit the filled file.
+DB_USER=quiz_app
+DB_PASSWORD=
+
+# Defaults: DB_HOST=127.0.0.1, DB_PORT=3306, DB_NAME=quizz.
+# LAN example (replace the example address with your actual server address):
+# SERVER_ADDRESS=0.0.0.0
+# ALLOWED_ORIGINS=http://192.168.1.10:8080
+
+# Optional immutable image storage; keep the same directory when restarting.
+# QUIZ_IMAGE_DIRECTORY=./data/quiz-images
+# Only used with --spring.profiles.active=mysql,sample-data; supply a demo password.
+# QUIZ_DEMO_PASSWORD=

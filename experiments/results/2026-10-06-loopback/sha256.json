@@ -1,0 +1,23 @@
+{
+  "baseline-client.csv": "7d6b087c26f2b7d4e800f10fa54058cae73290f3bf98fc4b682dfeb9d6a1e142",
+  "baseline-client.log": "9d7c08553f79e0d59d2c652b50d7390b4500b91a5f0000a47df4031df9336c6a",
+  "baseline-fixtures.json": "2f8c7b3b1c0287c2f43d35da35ebe3e540d9517c2ae9c2e6cec45ed310b3e2e0",
+  "baseline-server-error.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "baseline-server.csv": "f8ced8ef3723b436dbea5cd3421f693a276060de219a7cf299200dc5a5d31b7e",
+  "baseline-server.log": "807f65ed7b707dcdf67c811c7c6e1a429f04a85312dfec2ac91b11a6c422baf1",
+  "baseline-wire.jsonl": "577732881e83524becd71be3a022d06f0eda9af9ae20a2117a57661f4a522df0",
+  "environment.json": "6918946948ca8786bff5ebbf48c448dbe0a1727a8c83b319ecc8616756e15a08",
+  "proposed-client.csv": "db0d912908a8997a0a30cae25724352a3dd87a19e22d26c0011ad00858182ae3",
+  "proposed-client.log": "9e378b74c7c83e6c44f27ec58143e11d8658829881100593eff99bf9632fa121",
+  "proposed-fixtures.json": "3e87ce1542b788f1d61f2125ad923cc3db08e4cdd38132779092d809178176a2",
+  "proposed-server-error.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "proposed-server.csv": "90ad8d35e2fc37b13062fee03029802409890869556578c9b2cb5803067422d8",
+  "proposed-server.log": "601e06847eccff4d16736aa947d2c2b1ba4bb7b1d48df2df66690f7f6ab2389e",
+  "proposed-wire.jsonl": "bbf0d0fbfb83708b1e0362e2edfd92247272ef37dd39976044cdbb17a03844ba",
+  "reliability.png": "e81a07a7b17efc4ef9716184e7af260cc5cab79a23cc547c1a9656e988f735fc",
+  "reliability.svg": "370aaa9e2ef789d444b80efce2b9ba97bbf1652dd6501a4b9cc1314eac16f40e",
+  "results.md": "e548ca5e225916e1bddc3c9d0a118b8fcaeea5953cc7f700edbd10de9ff9e62a",
+  "server-latency.png": "0f5a46340c7c3ad3fa9acb32b22e3465c12554ddb075fc2bc6acf9cc5c0c5244",
+  "server-latency.svg": "6ad48ec7306fbcb13fe0ef514fab18f102a087d98083adac893e4c3880bb3df9",
+  "summary.json": "4ea9a92904d01b9c6de387805612624b6a1c1ec446ac9573de93e2bda1d6f81d"
+}

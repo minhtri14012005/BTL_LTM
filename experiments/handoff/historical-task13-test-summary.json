@@ -1,0 +1,326 @@
+{
+  "status": "PASS",
+  "build": "SUCCESS",
+  "date": "2026-10-06",
+  "mysql": "8.0.45",
+  "java": {
+    "unit": {
+      "totals": {
+        "tests": 224,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "vn.edu.quiz.auth.security.PermissionPolicyTest",
+          "tests": "27",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.152"
+        },
+        {
+          "name": "vn.edu.quiz.common.config.CodebaseStructureTest",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.087"
+        },
+        {
+          "name": "vn.edu.quiz.common.config.WebAccessPropertiesTest",
+          "tests": "10",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.014"
+        },
+        {
+          "name": "vn.edu.quiz.game.dto.GameplayRulesSnapshotTest",
+          "tests": "16",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.057"
+        },
+        {
+          "name": "vn.edu.quiz.game.engine.RankingEngineTest",
+          "tests": "6",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.009"
+        },
+        {
+          "name": "vn.edu.quiz.game.engine.ScoreEngineTest",
+          "tests": "113",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.117"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.SpinSelectorTest",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.003"
+        },
+        {
+          "name": "vn.edu.quiz.quiz.service.QuizAccessPolicyTest",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.149"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.connection.AuthenticatedSocketRegistryTest",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.94"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.idempotency.GameReplayCacheTest",
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.058"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.session.RoomBoundaryTest",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.059"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.session.SessionQueueTest",
+          "tests": "21",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.112"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.timer.ScheduledTimerSchedulerTest",
+          "tests": "1",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.005"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.websocket.GameCommandParserTest",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.034"
+        },
+        {
+          "name": "vn.edu.quiz.system.controller.SystemWebTest",
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "3.041"
+        }
+      ]
+    },
+    "integration": {
+      "totals": {
+        "tests": 92,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "vn.edu.quiz.auth.controller.AuthNetworkIT",
+          "tests": "6",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "13.566"
+        },
+        {
+          "name": "vn.edu.quiz.auth.service.AuthorizationRepositoryIT",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "1.052"
+        },
+        {
+          "name": "vn.edu.quiz.game.repository.MySqlSchemaIT",
+          "tests": "12",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.648"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameCommandNetworkIT",
+          "tests": "11",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "9.753"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameHistoryCancelIT",
+          "tests": "12",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "7.489"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameIsolationIT",
+          "tests": "2",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "1.216"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameLifecycleIT",
+          "tests": "18",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "6.045"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameReconnectNetworkIT",
+          "tests": "11",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "5.655"
+        },
+        {
+          "name": "vn.edu.quiz.quiz.controller.QuizNetworkIT",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "2.138"
+        },
+        {
+          "name": "vn.edu.quiz.quiz.service.SampleDataIT",
+          "tests": "1",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.608"
+        },
+        {
+          "name": "vn.edu.quiz.room.controller.RoomNetworkIT",
+          "tests": "9",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "5.23"
+        },
+        {
+          "name": "vn.edu.quiz.system.controller.MySqlSmokeIT",
+          "tests": "2",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.446"
+        }
+      ]
+    }
+  },
+  "frontend": {
+    "status": "PASS",
+    "unit": [
+      "uuid works with getRandomValues alone",
+      "canonical room envelope",
+      "revision prevents stale ACK rollback",
+      "equal revision is still consumable",
+      "owner question guard",
+      "account validation and password UTF8 bytes",
+      "register displayName",
+      "quiz 4 options and single answer",
+      "quiz question count and visibility",
+      "room validation and duration ms",
+      "Start Spectator not counted",
+      "Start count and status guard",
+      "text rendering escapes HTML",
+      "busy preserves disabled validation",
+      "offline preserves explicit retry; replaced cannot reconnect automatically",
+      "canonical Game envelope and captured UUID",
+      "Spin then optional Star",
+      "Star alone locks Spin",
+      "HARDSHIP forbids Star",
+      "Host eliminated retains Cancel, no actions",
+      "Host Spectator null player renders and can Cancel",
+      "member no Cancel and offline no actions",
+      "alreadyAnswered and pending block actions",
+      "finished and unavailable forbid new actions",
+      "old snapshot cannot roll back newer revision",
+      "equal revision event remains consumable",
+      "receipt from older phase cannot restore resources",
+      "receipt updates own resource without inventing score",
+      "countdown uses Server anchor and does not change state",
+      "CANCELLED/SERVER_INTERRUPTED no official winner",
+      "official co-winners rendered from Server ids",
+      "RESULT snapshot renders effects and result"
+    ],
+    "smoke": [],
+    "browser": "Chrome/154.0.8037.95"
+  },
+  "evidence": {
+    "backendFilesUnchanged": 162,
+    "packagedAssetsMatched": 13,
+    "frontendUnit": 32,
+    "reusedRealBrowserFlows": [
+      "Four real accounts in isolated Chrome contexts, cookie authentication",
+      "Spin consumes once, optional Star follows; Star alone locks Spin; actual effect BONUS",
+      "Lost real Answer ACK, disconnect/reconnect and same UUID/frame replay after scoring",
+      "Offline Player counted through deadline; NO_ANSWER and phase advance while disconnected",
+      "Three clients completed ten questions; image/private OPEN, expected score112, official Final/History/Room WAITING",
+      "Host Spectator + three Players; Spin reconnect preserves resources; Cancel keeps Accepted-Unscored, no Winner",
+      "Host eliminated score frozen; replacement disables old socket; new socket can Cancel; mobile History renders",
+      "Outsider History denied; FINISHED reconnect/reload; logout invalidates History access",
+      "Server session revoked outside App: WS expires and Game returns to Login"
+    ],
+    "reusedBrowserEvidence": "target/task12-client-tests.json",
+    "assetsSha256": {
+      "src\\main\\resources\\static\\app.js": "26539258f532855eafd9302926c475b94664731283fc830effec1aa7e0011721",
+      "src\\main\\resources\\static\\index.html": "1011cffdb65243970c7e4c40c471fe5e25196197a5cc3bc5bb4186bfb4197c9e",
+      "src\\main\\resources\\static\\styles.css": "220ef4100dce4bc0b20fe80541d136c8d5474870b837660a9ac93ae70b9ed956",
+      "src\\main\\resources\\static\\client\\account.js": "f0745e3bcafdd69b9fd54b14a51e787d1d4526f1a8ff935bd3b7268f99d4a7ca",
+      "src\\main\\resources\\static\\client\\api.js": "9fbc0cb703e23862d8340b651273139534ccab4bb60e9c197a7e6d8ea01b9f7f",
+      "src\\main\\resources\\static\\client\\core.js": "c7b64f545ccf94dd48d64a9314e6f2c565028f5743a52537339ed0293b0671ee",
+      "src\\main\\resources\\static\\client\\dom.js": "0df4ddc28bd133071b8dc50a181ba828b1efb17705bf20886a2764350c96999a",
+      "src\\main\\resources\\static\\client\\game-state.js": "0e1c0454bd0d3038fa753bf6a38bb4be838d24f63c6eedd64dae40921cfd8f36",
+      "src\\main\\resources\\static\\client\\game.js": "82348dd59a3bdc62c7dba43b70f22f572b661c8cbffe2522461632c68463a1aa",
+      "src\\main\\resources\\static\\client\\history.js": "868eacd30249e6fc2540e599fa4dae237b4ec6172db64df1c94c2600adf893ef",
+      "src\\main\\resources\\static\\client\\quizzes.js": "5f776dc29f4512770828cefb26500d33cabf2cb134d551685fb8e33da32223b0",
+      "src\\main\\resources\\static\\client\\rooms.js": "1724373412a1a468df7bb8b28da3544aa10b7d8aa42edcc25f4d48b31c7766a4",
+      "src\\main\\resources\\static\\client\\transport.js": "db183e3426df12992ddf9673a570a0ceab15c18c19a02553beea9eb53566afd1"
+    },
+    "readiness": {
+      "application": "competitive-quiz",
+      "server": "UP",
+      "database": {
+        "status": "UP",
+        "message": "Đã truy vấn MySQL thành công."
+      },
+      "serverTimeMs": 1791256322972,
+      "gameplay": "GAMEPLAY_WS"
+    }
+  },
+  "mysqlCleanupEvidence": "mysql_version\r\n8.0.45\r\ndb\tactive_games\r\nquizz_task2_test\t0\r\ndb\tactive_users\r\nquizz_task2_test\t0\r\ndb\tfixture_games_remaining\r\nquizz_task2_test\t0\r\ndb\tactive_games\r\nquizz\t0\r\ndb\tactive_users\r\nquizz\t0\r\n"
+}

@@ -1,0 +1,13 @@
+target/
+.cache/
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+!.env.example
+config/application-local.properties
+*.log
+!experiments/results/**/*.log
+!experiments/handoff/**/*.log
+data/quiz-images/

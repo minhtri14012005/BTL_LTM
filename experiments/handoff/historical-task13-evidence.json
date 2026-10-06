@@ -1,0 +1,42 @@
+{
+  "backendFilesUnchanged": 162,
+  "packagedAssetsMatched": 13,
+  "frontendUnit": 32,
+  "reusedRealBrowserFlows": [
+    "Four real accounts in isolated Chrome contexts, cookie authentication",
+    "Spin consumes once, optional Star follows; Star alone locks Spin; actual effect BONUS",
+    "Lost real Answer ACK, disconnect/reconnect and same UUID/frame replay after scoring",
+    "Offline Player counted through deadline; NO_ANSWER and phase advance while disconnected",
+    "Three clients completed ten questions; image/private OPEN, expected score112, official Final/History/Room WAITING",
+    "Host Spectator + three Players; Spin reconnect preserves resources; Cancel keeps Accepted-Unscored, no Winner",
+    "Host eliminated score frozen; replacement disables old socket; new socket can Cancel; mobile History renders",
+    "Outsider History denied; FINISHED reconnect/reload; logout invalidates History access",
+    "Server session revoked outside App: WS expires and Game returns to Login"
+  ],
+  "reusedBrowserEvidence": "target/task12-client-tests.json",
+  "assetsSha256": {
+    "src\\main\\resources\\static\\app.js": "26539258f532855eafd9302926c475b94664731283fc830effec1aa7e0011721",
+    "src\\main\\resources\\static\\index.html": "1011cffdb65243970c7e4c40c471fe5e25196197a5cc3bc5bb4186bfb4197c9e",
+    "src\\main\\resources\\static\\styles.css": "220ef4100dce4bc0b20fe80541d136c8d5474870b837660a9ac93ae70b9ed956",
+    "src\\main\\resources\\static\\client\\account.js": "f0745e3bcafdd69b9fd54b14a51e787d1d4526f1a8ff935bd3b7268f99d4a7ca",
+    "src\\main\\resources\\static\\client\\api.js": "9fbc0cb703e23862d8340b651273139534ccab4bb60e9c197a7e6d8ea01b9f7f",
+    "src\\main\\resources\\static\\client\\core.js": "c7b64f545ccf94dd48d64a9314e6f2c565028f5743a52537339ed0293b0671ee",
+    "src\\main\\resources\\static\\client\\dom.js": "0df4ddc28bd133071b8dc50a181ba828b1efb17705bf20886a2764350c96999a",
+    "src\\main\\resources\\static\\client\\game-state.js": "0e1c0454bd0d3038fa753bf6a38bb4be838d24f63c6eedd64dae40921cfd8f36",
+    "src\\main\\resources\\static\\client\\game.js": "82348dd59a3bdc62c7dba43b70f22f572b661c8cbffe2522461632c68463a1aa",
+    "src\\main\\resources\\static\\client\\history.js": "868eacd30249e6fc2540e599fa4dae237b4ec6172db64df1c94c2600adf893ef",
+    "src\\main\\resources\\static\\client\\quizzes.js": "5f776dc29f4512770828cefb26500d33cabf2cb134d551685fb8e33da32223b0",
+    "src\\main\\resources\\static\\client\\rooms.js": "1724373412a1a468df7bb8b28da3544aa10b7d8aa42edcc25f4d48b31c7766a4",
+    "src\\main\\resources\\static\\client\\transport.js": "db183e3426df12992ddf9673a570a0ceab15c18c19a02553beea9eb53566afd1"
+  },
+  "readiness": {
+    "application": "competitive-quiz",
+    "server": "UP",
+    "database": {
+      "status": "UP",
+      "message": "Đã truy vấn MySQL thành công."
+    },
+    "serverTimeMs": 1791256322972,
+    "gameplay": "GAMEPLAY_WS"
+  }
+}

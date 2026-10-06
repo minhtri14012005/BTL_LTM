@@ -1,0 +1,7 @@
+2026-10-06T16:29:22.618+07:00  INFO 88236 --- [competitive-quiz] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://127.0.0.1:3306/quizz_task15_experiment?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000 (MySQL 8.0)
+2026-10-06T16:29:22.816+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table `quizz_task15_experiment`.`flyway_schema_history` does not exist yet
+2026-10-06T16:29:22.940+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table `quizz_task15_experiment`.`flyway_schema_history` ...
+2026-10-06T16:29:23.175+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `quizz_task15_experiment`: << Empty Schema >>
+2026-10-06T16:29:23.257+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task15_experiment` to version "1 - quiz domain"
+2026-10-06T16:29:24.558+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task15_experiment` to version "2 - require answer effect snapshots"
+2026-10-06T16:29:24.863+07:00  INFO 88236 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 2 migrations to schema `quizz_task15_experiment`, now at version v2 (execution time 00:01.447s)

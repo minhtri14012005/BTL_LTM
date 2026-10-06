@@ -1,0 +1,172 @@
+{
+  "task": 14,
+  "status": "DONE",
+  "build": "SUCCESS",
+  "tests": {
+    "unit": {
+      "totals": {
+        "tests": 47,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "vn.edu.quiz.common.config.CodebaseStructureTest",
+          "tests": "3",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.connection.AuthenticatedSocketRegistryTest",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.idempotency.GameReplayCacheTest",
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.session.RoomBoundaryTest",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.session.SessionQueueTest",
+          "tests": "21",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.realtime.websocket.GameCommandParserTest",
+          "tests": "5",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.system.controller.SystemWebTest",
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        }
+      ]
+    },
+    "integration": {
+      "totals": {
+        "tests": 77,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "vn.edu.quiz.auth.controller.AuthNetworkIT",
+          "tests": "6",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameCommandNetworkIT",
+          "tests": "11",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameHistoryCancelIT",
+          "tests": "12",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameIsolationIT",
+          "tests": "2",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameLifecycleIT",
+          "tests": "18",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameReconnectNetworkIT",
+          "tests": "12",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.game.service.GameStartAuthorizationIT",
+          "tests": "1",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.room.controller.RoomNetworkIT",
+          "tests": "13",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "vn.edu.quiz.system.controller.MySqlSmokeIT",
+          "tests": "2",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        }
+      ]
+    }
+  },
+  "changedProductionFiles": [
+    "src\\main\\java\\vn\\edu\\quiz\\auth\\security\\AuthSessionRegistry.java",
+    "src\\main\\java\\vn\\edu\\quiz\\game\\controller\\GameController.java",
+    "src\\main\\java\\vn\\edu\\quiz\\realtime\\connection\\AuthenticatedSocketRegistry.java",
+    "src\\main\\java\\vn\\edu\\quiz\\realtime\\session\\RoomOperations.java",
+    "src\\main\\java\\vn\\edu\\quiz\\room\\controller\\RoomController.java"
+  ],
+  "unmodifiedBaselineFiles": 157,
+  "unchangedFrontendAssets": 13,
+  "reusedEvidence": [
+    "target/task13-test-summary.json",
+    "target/task13-evidence.json",
+    "target/task12-client-tests.json"
+  ],
+  "findings": [
+    {
+      "severity": "P1",
+      "issue": "Start REST admitted after Logout while waiting for Room boundary",
+      "fixed": true
+    },
+    {
+      "severity": "P2",
+      "issue": "Game auth rejection closed socket as infrastructure failure",
+      "fixed": true
+    },
+    {
+      "severity": "P2",
+      "issue": "Canonical close-code table still said Cancel unsupported",
+      "fixed": true
+    }
+  ],
+  "courseSources": "Overview only; Topics/Instruction/Submission original missing; experiment not performed",
+  "mysqlCleanup": "mysql_version\r\n8.0.45\r\ndb\tactive_games\r\nquizz_task2_test\t0\r\ndb\tactive_users\r\nquizz_task2_test\t0\r\ndb\tfixture_games_remaining\r\nquizz_task2_test\t0\r\ndb\tactive_games\r\nquizz\t0\r\ndb\tactive_users\r\nquizz\t0\r\n"
+}

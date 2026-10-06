@@ -1,0 +1,13 @@
+spring:
+  config:
+    import: optional:file:./config/application-local.properties
+  datasource:
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:quizz}?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000
+    username: ${DB_USER:quiz_app}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 5000
+      validation-timeout: 3000
+      initialization-fail-timeout: 5000
+      maximum-pool-size: 5

@@ -1,0 +1,10 @@
+﻿{
+    "application":  "competitive-quiz",
+    "server":  "UP",
+    "database":  {
+                     "status":  "UP",
+                     "message":  "ÄÃ£ truy váº¥n MySQL thÃ nh cÃ´ng."
+                 },
+    "serverTimeMs":  1791279787187,
+    "gameplay":  "GAMEPLAY_WS"
+}
