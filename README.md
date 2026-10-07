@@ -72,6 +72,21 @@ Seed tùy chọn: cấp QUIZ_DEMO_PASSWORD, chạy JAR `--spring.profiles.active
 
 Máy Server bind SERVER_ADDRESS=0.0.0.0, ALLOWED_ORIGINS=http://<IP-LAN-Server>:8080 (thêm localhost nếu dùng). Client mở đúng origin. Chỉ TCP8080 cần phục vụ Client LAN; Client không truy cập MySQL. Không tắt Origin check hoặc bật baseline trong demo. [Protocol LAN/máy mới](experiments/experiment-protocol.md#lan-và-máy-mới) có kịch bản và trường evidence. Hiện chưa chạy nhiều máy thật.
 
+### Chạy bằng nút Run trong IntelliJ và đổi mạng Wi-Fi
+
+Chọn main class `vn.edu.quiz.QuizApplication`, JDK21, working directory là thư mục project (ví dụ `D:\BTL_LTM`). Profile mặc định là `mysql`; profile này đọc `config/application-local.properties`. Không chọn `ExperimentServer` để chạy ứng dụng bình thường. Biến môi trường đã đặt ở một cửa sổ PowerShell khác không tự truyền vào IntelliJ.
+
+Có thể giữ cấu hình LAN trong file local, cùng credential DB hiện có:
+
+```properties
+SERVER_ADDRESS=0.0.0.0
+ALLOWED_ORIGINS=http://192.168.1.234:8080,http://localhost:8080,http://127.0.0.1:8080
+```
+
+IP trên chỉ là ví dụ máy Server; dùng IPv4 Wi-Fi thực tế từ `ipconfig`. Khi chuyển Wi-Fi và IP thay đổi, giữ `SERVER_ADDRESS=0.0.0.0`, thay origin IP cũ trong `ALLOWED_ORIGINS` bằng IP mới rồi Stop/Run Server. Client cùng mạng mở `http://<IP-mới>:8080/`; không dùng `0.0.0.0` làm URL. Các override Environment variables/VM options/Program arguments trong IntelliJ phải không mâu thuẫn với file local. Không cần đổi DB_HOST nếu MySQL vẫn chạy trên cùng máy Server.
+
+Kiểm tra theo thứ tự: console có `Started QuizApplication` và port8080; trên máy Server mở `http://localhost:8080/api/system/ready` để xác nhận MySQL UP; sau đó mở URL IP LAN có `:8080`. `ERR_CONNECTION_REFUSED` có thể do Server chưa chạy, sai IP/port hoặc bind localhost; origin sai thường gây lỗi HTTP/WS sau khi đã kết nối. Nếu máy Server truy cập IP LAN được nhưng thiết bị khác không vào được, kiểm tra Windows Firewall cho TCP8080 trên mạng Private và Wi-Fi có cô lập Client không. Không tắt firewall hoặc mở port MySQL cho Client.
+
 ## Feature ownership và entry points
 
 Base `vn.edu.quiz`; [QuizApplication](src/main/java/vn/edu/quiz/QuizApplication.java) ở root scan toàn feature. Entity/Repository/enum ở feature sở hữu; không global business layer hoặc Account Entity trùng User.
