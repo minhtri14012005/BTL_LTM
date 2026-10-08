@@ -75,6 +75,8 @@ public class GameTransactions {
             quizPolicy.requireParticipation(m.getUserId(),quiz.getOwnerUserId(),m.getParticipation());
         }
         Collections.shuffle(source,random); // Exactly one selection, stored permanently by this Start transaction.
+        // New games use the current fixed decision rule; existing game snapshots stay immutable.
+        room.setDecisionDurationMs(7000L);
         var config=GameplayRulesSnapshot.forGame(count,room.getQuestionDurationMs(),room.getDecisionDurationMs());
         GameSession game=new GameSession(); game.setRoomId(roomId); game.setQuizId(quiz.getId()); game.setQuizAuthorUserId(quiz.getOwnerUserId());
         game.setQuizTitleSnapshot(quiz.getTitle()); game.setStatus(GameStatus.ACTIVE); game.setPhase(Phase.DECISION);
@@ -250,7 +252,9 @@ public class GameTransactions {
         for(var rank:ranks) rows.stream().filter(p -> p.getUserId()==rank.player().userId()).findFirst().orElseThrow().setFinalRank(rank.rank());
         game.setStatus(GameStatus.FINISHED); game.setPhase(Phase.FINISHED); game.setEndReason(reason); game.setFinishedAtMs(at);
         game.setPhaseDeadlineAtMs(null);
-        rooms.findById(game.getRoomId()).orElseThrow().setStatus(RoomStatus.WAITING);
+        var room=rooms.findById(game.getRoomId()).orElseThrow();
+        room.setStatus(RoomStatus.WAITING);
+        room.setDecisionDurationMs(7000L);
     }
     private GameSession locked(long id) {
         var previous=games.findById(id).orElseThrow(() -> new GameFailure(HttpStatus.NOT_FOUND,"GAME_NOT_FOUND"));

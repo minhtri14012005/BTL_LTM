@@ -17,7 +17,7 @@ export function permissions(s,userId,connected,pending=false) {
 }
 /** Revision is scoped to one Game. Same-revision snapshots/events are consumable. */
 export function acceptSnapshot(previous,incoming) {
-  return !previous || (incoming.gameSessionId===previous.gameSessionId && incoming.revision>=previous.revision)?incoming:previous;
+  return !previous || (incoming.gameSessionId===previous.gameSessionId && (incoming.revision>previous.revision || (incoming.revision===previous.revision && !(incoming.serverTimeMs<previous.serverTimeMs))))?incoming:previous;
 }
 /** A receipt confirms its original action; never overwrite a newer phase or commit. */
 export function applyReceipt(s,ack) {

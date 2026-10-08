@@ -1,6 +1,45 @@
 # Project status
 
-Ngày cập nhật: **06/10/2026, Asia/Bangkok**. Task hiện tại: **TASK 15 — PARTIAL, dừng để review**. Kỹ thuật local/benchmark/docs đã hoàn thiện; hồ sơ môn, LAN/máy mới và contribution cá nhân còn thiếu. Không commit/push.
+Ngày cập nhật: **07/10/2026, Asia/Bangkok**. Đợt cập nhật gameplay: **DONE kỹ thuật local, dừng review**. Task15 bàn giao vẫn PARTIAL về hồ sơ môn/LAN/contribution; evidence lịch sử giữ bên dưới. Không commit/push.
+
+## Cập nhật sau triển khai — 07/10/2026 — DONE kỹ thuật local
+
+Nguồn: người dùng xác nhận project đã thực hiện các task và yêu cầu sửa code, kiểm thử, đồng bộ tài liệu; không chạy lại roadmap Task0–15. Phần bàn giao môn/LAN/contribution của Task15 phía dưới vẫn PARTIAL. Không commit/push.
+
+**Diff:** Room entity/service/create/edit/Start/terminal chuẩn hóa Decision7000ms; FlywayV3 đổi default và Room DRAFT/WAITING cũ, tăng revision. V1/V2 giữ checksum; không đổi config_snapshot Game ACTIVE/FINISHED, Answer duration theo Room. GameLifecycle dùng PhaseWindow RESULT1500ms sau scoring proxy commit, timer sẵn có/session/question/phase/token/deadline guard, không sleep worker. Cancel/UNAVAILABLE bỏ window/timer. Terminal scoring lưu FINISHED/rank/Room WAITING/UAG ngay; QUESTION_RESULT→elimination→leaderboard→GAME_END→RoomUpdated cùng cửa sổ trình bày câu cuối. Actor retire ngay; contextual snapshot hết hạn trả deadline null, không mở Decision terminal. Reconnect nhận thời gian còn lại chung.
+
+**UI:** Waiting ẩn Revision, giữ revision đồng bộ; Quyết định lấy Server7giây. Gameplay câu hỏi/4 lựa chọn, leaderboard bên phải bật/tắt (giữ cùng Game/reconnect),4 cột/đánh dấu bạn/giây. ACK hợp lệ mới khóa Answer/ẩn Gửi; lỗi giữ chọn/retry UUID. Spin/Star toast3giây sau ACK; nhãn effect giữ lại, dedup request/result theo Game. RESULT xanh đúng/đỏ sai đã chọn, nhãn và reduced motion; delta thực tế riêng, Spectator/eliminated không delta giả. Snapshot không phát lại toast/pulse; giữ clock ước lượng giữa event trễ/lặp. Bỏ resultPanel mọi người khỏi gameplay, giữ backend/History. ScoreEngine/RankingEngine không đổi.
+
+| Kiểm tra thật | Kết quả/evidence |
+|---|---|
+| Focused lifecycle/WS/reconnect/Cancel |119 unit,55 integration;2 failure ban đầu do fixture advance1500ms chạy luôn retry100ms. Sửa thứ tự advance test isolation, không đổi policy production |
+| New presentation+isolation |119 unit+8 integration PASS, gồm6 GamePresentationIT cases: Answer2300/4100ms, legacy Room, migration idle/default vs ACTIVE/FINISHED snapshot, RESULT còn1ms/stale timer, Cancel RESULT, early terminal cleanup; target/update-presentation.log |
+| Full suite/build |**226 unit+104 MySQL/network integration PASS**,0fail/error/skip; target/update-full-regression.log |
+| MySQL smoke isolation fix sau full |Test cũ dùng DB ứng dụng; startup cleanup gián đoạn1 trận smoke chạy song song. Chuyển MySqlSmokeIT sang quizz_task2_test; **3 unit+2 integration PASS**, target/update-isolated-smoke.log. Không cộng test chạy trùng |
+| Frontend build |**11 modules/13 assets**, target/client-build.json |
+| Chrome154 HTTP/rawWS/MySQL smoke |**10 flow groups PASS**,4 cookie contexts/3 Player;10 câu COMPLETED, Spectator+3 Player Cancel, eliminated/replacement Host Cancel, lost ACK replay, offline NO_ANSWER, History/auth, đỏ/xanh/delta−4/ẩn bảng/mobile; target/update-client-tests.json và update-browser.log |
+| DOM unit cuối |**39 PASS**, pending/rejected/accepted Answer, leaderboard/delta và duplicate RESULT không reset countdown; target/update-client-unit-tests.json. Component/pure tests không thay smoke thật |
+| MySQL8.0.45/migration |V3 migrate thành công quizz_task2_test/quizz; logs update-integration.log/update-server-startup.log. SQL sau smoke:0 ACTIVE Game/0 UAG/0 duplicate Answer, idle Room7000ms và snapshot cũ5000ms còn nguyên; target/update-mysql-evidence.txt |
+| Diff |git diff --check PASS; dependency/enums/engine/V1/V2 và CSV/log thực nghiệm gốc không đổi |
+
+Lệnh chạy chính:
+
+```powershell
+$env:MAVEN_USER_HOME = Join-Path $PWD '.cache/maven-home'
+.\mvnw.cmd -B --no-transfer-progress verify -Pmysql-smoke -Ddebug=false
+.\mvnw.cmd -B --no-transfer-progress verify -Pmysql-smoke '-Dtest=CodebaseStructureTest' '-Dit.test=MySqlSmokeIT' -Ddebug=false
+python scripts/build-client.py
+python scripts/test-game-client.py --origin http://127.0.0.1:8080 --port 9223 --smoke --close-browser --report-name update-client-tests.json
+python scripts/test-game-client.py --origin http://127.0.0.1:8080 --port 9223 --close-browser --report-name update-client-unit-tests.json
+```
+
+Smoke dùng JAR copy target/update-smoke-server.jar và static-locations=file:./src/main/resources/static/ để kiểm tra asset diff cuối; JAR chính build lại với asset mới. Chrome headless riêng/unique profile trong target, --disable-gpu --no-sandbox cho môi trường restricted hiện tại, CDP chỉ127.0.0.1:9223. Đóng Browser.close/dừng đúng Java helper; không ngắt MySQL/process người dùng. Các lỗi smoke trước PASS đã được xử lý, không dùng làm evidence thành công.
+
+**Tài liệu/ảnh:** TASKS trạng thái và task2/5/7/8/9/10/11A/12/13/14/15, Overview8/9/demo, gameplay/hash, canonical REST/WS (không thêm field/command), decisions25, schema/README/report/codebase guide/course checklist và ghi chú evidence cũ đã đồng bộ. Ảnh UI thật: [Decision](assets/gameplay-2026-10-07/decision.png), [RESULT](assets/gameplay-2026-10-07/result.png), [mobile](assets/gameplay-2026-10-07/game-mobile.png), [Final](assets/gameplay-2026-10-07/final.png), [History mobile](assets/gameplay-2026-10-07/history-mobile.png); đã xem trực quan RESULT/mobile.
+
+**Giới hạn:** chưa đo lại benchmark/LAN nhiều máy/máy mới. CSV/log/hash06/10/2026 giữ nguyên thuộc Decision5000ms/RESULT cũ; loopback mới không nâng evidence LAN/môn/contribution. Nhóm4 người/thông tin/evidence cá nhân giữ trống. Không claim crash recovery.
+
+Flow học: Room7000→Start snapshot→ingress/FIFO→ACK không correctness→GameTransactions.score/ScoreEngine→DB commit→RESULT PhaseWindow1500→WS revision/snapshot→game.js màu/delta/leaderboard→timer→Decision7000. Terminal cleanup ngay; UI theo deadline còn lại rồi Final. Đợt cập nhật kỹ thuật local DONE; dừng review.
 
 ## Task 15 — Tài liệu, thực nghiệm và bàn giao
 

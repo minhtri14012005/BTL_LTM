@@ -35,7 +35,7 @@ public class Room extends IdentityEntity {
     private Long questionDurationMs;
 
     @Column(name = "decision_duration_ms", nullable = false)
-    private Long decisionDurationMs = 5000L;
+    private Long decisionDurationMs = 7000L;
 
     @Column(name = "created_at_ms", nullable = false)
     private Long createdAtMs;

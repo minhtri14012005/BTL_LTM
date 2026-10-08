@@ -50,3 +50,7 @@ Nguồn đã đọc: Overview/TASKS (đặc biệt§14–19), gameplay/decisions
 - [ ] Kiểm tra bundle không credential/.cache/browser profile/data cá nhân; hashes hiện tại có sẵn, format bundle chờ môn.
 
 Thiếu hồ sơ/thiết bị không chặn kỹ thuật độc lập nhưng chặn tuyên bố DONE toànTask15/bàn giao môn đầy đủ. Lệnh/kịch bản chạy lại ở README/protocol/handoff. Dừng review, không commit/push.
+
+## Cập nhật yêu cầu người dùng — 07/10/2026
+
+Decision7000ms/RESULT1500ms và gameplay UI mới là cập nhật từ người dùng, không tự coi là yêu cầu môn gốc. Room migration/snapshot cũ, timer/reconnect/terminal được kiểm tra trên MySQL/rawWS bằng GamePresentationIT; UI nhiều Account/ảnh mới và kết quả chính xác xem project-status. Các giới hạn hồ sơ môn/LAN/contribution phía trên giữ nguyên; evidence06/10/2026 vẫn thuộc bản cũ.

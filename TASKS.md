@@ -1,37 +1,10 @@
-# TASKS — Quiz Client/Server: tiếp tục từ Task 8
+# TASKS — Quiz Client/Server: cập nhật sau triển khai
 
 ## Trạng thái và cách chạy
 
-**Theo xác nhận mới nhất của người dùng:** đã hoàn thành đến TASK 7; bước tiếp theo là TASK 8. Task 0–7, gồm Task 2.5, giữ để tham chiếu, không yêu cầu chạy lại. Trạng thái này do người dùng cung cấp; bản sửa tài liệu không thay thế việc kiểm tra source/log thực tế trong project.
+Người dùng xác nhận đã thực hiện các task của project và yêu cầu cập nhật sau triển khai ngày 07/10/2026. Đây là một đợt sửa liên quan nhiều task, không chạy lại tuần tự Task 0–15. Mức hoàn thành theo người dùng khác evidence đã kiểm chứng: xem [project-status](docs/project-status.md); Task 15 trước cập nhật vẫn PARTIAL về LAN/hồ sơ môn/contribution. Giữ lịch sử kiểm thử và yêu cầu các task bên dưới để tham chiếu; không scaffold lại. Không tự commit/push.
 
-Thay TASKS.md trong project hiện tại bằng bản này. **Chạy TASK 8 tiếp theo**, không xóa source, không scaffold lại hoặc refactor lại module đã đạt. Việc tinh gọn prompt không yêu cầu làm lại Task 0–7. Nếu phát hiện regression thật, sửa đúng blocker trong phạm vi rồi tiếp tục, không khởi động lại roadmap.
-
-Mỗi lần chỉ copy prompt của một task. Chọn model/reasoning ở giao diện; prompt không tự đổi cấu hình model. Gợi ý model kế thừa bộ task, không phải kết quả benchmark. Nếu task có lỗi, dùng prompt sửa task hiện tại; không chuyển tiếp khi còn blocker. Không tự commit/push khi chưa được yêu cầu.
-
-| Task | Công việc | Trạng thái ban đầu | Model / reasoning gợi ý |
-|---|---|---|---|
-| 0 | Khảo sát repository | DONE theo người dùng; chỉ tham chiếu | Astra / High |
-| 1 | Cấu hình chạy | DONE theo người dùng; chỉ tham chiếu | Sol / Medium |
-| 2 | Database/entity/constraints | DONE theo người dùng; chỉ tham chiếu | Sol / High |
-| 2.5 | Refactor package trước Authentication | DONE theo người dùng; chỉ tham chiếu | Sol / High |
-| 3 | Authentication và permission | DONE theo người dùng; chỉ tham chiếu | Sol / High |
-| 4 | Quiz CRUD và dữ liệu mẫu | DONE theo người dùng; chỉ tham chiếu | Sol / Medium |
-| 5 | Room, membership và Host | DONE theo người dùng; chỉ tham chiếu | Sol / High |
-| 6 | Score Engine độc lập | DONE theo người dùng; chỉ tham chiếu | Sol / High |
-| 7 | Queue, ingress và timer | DONE theo người dùng; chỉ tham chiếu | Astra / High |
-| 8 | Start, snapshot và game lifecycle | **Chạy tiếp theo** | Sol / High |
-| 9 | Gameplay WebSocket và idempotency | Chưa thực hiện | Sol / High |
-| 10 | Reconnect và socket replacement | Chưa thực hiện | Sol / High |
-| 11A | Web Client Account/Quiz/Room/Waiting | Chưa thực hiện | Sol / High |
-| 11B | Backend History/Cancel/DB failure/startup cleanup | Chưa thực hiện | Sol / High |
-| 12 | Web Client Gameplay/Final/History, tích hợp hoàn chỉnh | Chưa thực hiện | Sol / High |
-| 13 | Test hệ thống | Chưa thực hiện | Sol / High |
-| 14 | Review kỹ thuật cuối | Chưa thực hiện | Astra / High |
-| 15 | Experiment, README và bàn giao | Chưa thực hiện | Sol / High |
-
-**Thứ tự còn lại:** 8 → 9 → 10 → 11A → 11B → 12 → 13 → 14 → 15.
-
-Đổi nhãn để tháo dependency: Task 11 cũ được chia thành 11A và 12 mới; Task 12 cũ chuyển thành 11B. Task 13–15 giữ số và được cập nhật điều kiện đầu vào. Không còn Task 11 đơn lẻ. Các prompt Task 0–7 là tham chiếu phần đã làm; không dùng chúng để tạo lại project hoặc ghi đè roadmap hiện tại.
+Phạm vi cập nhật: Task 2/5/7/8/9/10/11A/12/13/14/15; Task 6 giữ công thức. Gợi ý model lịch sử không tự đổi cấu hình. Cho phép sửa phần liên quan nhiều task để nghiệm thu yêu cầu này; quy tắc chỉ chạy task được giao áp dụng cho lần giao task riêng.
 
 ## Phạm vi bản sửa
 
@@ -197,6 +170,8 @@ Docs: project-status thêm kết quả task ngắn; decisions chỉ ghi quyết 
 Nghiệm thu: build được; Server chạy với MySQL khi có DB; README có hướng dẫn tái lập.
 
 ## TASK 2 Database và constraints
+
+Cập nhật sau triển khai 07/10/2026: Flyway V3 đổi default Decision thành7000ms và Room DRAFT/WAITING cũ; không sửa V1/V2 hoặc snapshot Game ACTIVE/FINISHED. Không thêm bảng cho UI.
 
 **Trạng thái: DONE theo người dùng — chỉ tham chiếu, không chạy lại.**
 
@@ -385,6 +360,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 5 Room, thành viên và Host
 
+Cập nhật sau triển khai 07/10/2026: Decision cố định7000ms khi create/edit/Start và Room quay về WAITING; Answer vẫn theo Room config.
+
 **Trạng thái: DONE theo người dùng — chỉ tham chiếu, không chạy lại.**
 
 Model gợi ý: Sol / High
@@ -455,6 +432,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 7 Session Queue, ingress và timer
 
+Cập nhật sau triển khai 07/10/2026: Tái sử dụng PhaseWindow/SessionQueue timer cho RESULT1500ms; session/question/phase/token guard và deadline monotonic. Không sleep worker; timer Cancel/stale/duplicate không mở câu mới.
+
 **Trạng thái: DONE theo người dùng — chỉ tham chiếu, không chạy lại.**
 
 Model gợi ý: Astra / High
@@ -493,7 +472,9 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 8 Start Game, snapshot và vòng đời
 
-**Trạng thái: bước chạy tiếp theo.**
+Cập nhật sau triển khai 07/10/2026: DECISION7000ms→OPEN theo Room→CLOSED/SCORING→RESULT1500ms sau commit→DECISION. Terminal persist/cleanup ngay sau scoring; deadline trình bày câu cuối dùng chung, không mở Decision terminal; Cancel trong RESULT hủy chuyển tiếp.
+
+**Trạng thái: đã triển khai theo người dùng; tham chiếu cập nhật.**
 
 Model gợi ý: Sol / High
 
@@ -532,6 +513,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 9 Gameplay WebSocket và idempotency
 
+Cập nhật sau triển khai 07/10/2026: Tái sử dụng deadlineEpochMs/remainingMs cho RESULT và cửa sổ trình bày FINISHED bình thường; không command next. QUESTION_RESULT→elimination→leaderboard→GAME_END→RoomUpdated; action ACK không correctness.
+
 Model gợi ý: Sol / High
 
 ```text
@@ -569,6 +552,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 10 Reconnect và multiple connection
 
+Cập nhật sau triển khai 07/10/2026: Reconnect RESULT nhận câu đã chấm và thời gian còn lại; FINISHED có thể còn cửa sổ trình bày, hết hạn lấy Final. Snapshot phục hồi nhãn, không phát lại toast/delta; state cũ cùng revision/serverTime thấp không ghi đè.
+
 Model gợi ý: Sol / High
 
 ```text
@@ -602,6 +587,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 
 ## TASK 11A Web Client Account, Quiz, Room và Waiting
+
+Cập nhật sau triển khai 07/10/2026: Waiting ẩn Revision trên UI nhưng giữ revision đồng bộ; Quyết định lấy decisionDurationMs từ Server (7 giây). Nhãn/vai trò/quyền còn lại giữ nguyên.
 
 Model gợi ý: Sol / High
 
@@ -678,6 +665,8 @@ Nghiệm thu kiến trúc: history thuộc game; hai canonical contract đủ đ
 
 ## TASK 12 Web Client Gameplay, Reconnect, Final và History hoàn chỉnh
 
+Cập nhật sau triển khai 07/10/2026: Câu hỏi+4 đáp án, leaderboard bên phải có bật/tắt và giữ trong cùng trận/reconnect; thời gian hiển thị giây. Toast3s sau ACK Spin/Star, không lặp replay/snapshot; Chơi thường không hoàn tài nguyên. ACK khóa Answer/ẩn Gửi; RESULT chung1500ms xanh đúng/đỏ sai đã chọn, reduced motion và nhãn; delta riêng, Spectator/eliminated quan sát. Bỏ bảng kết quả mọi người khỏi gameplay; giữ History.
+
 Model gợi ý: Sol / High
 
 ```text
@@ -726,6 +715,8 @@ Nghiệm thu: nhiều Player chơi qua UI và xem History/Cancel bằng API th�
 
 ## TASK 13 Bộ test hệ thống
 
+Cập nhật sau triển khai 07/10/2026: Test Decision7000 câu đầu/sau, Room cũ/migration và snapshot bất biến, hai Answer duration, RESULT1500 và reconnect còn lại, Cancel/terminal/stale timer. Giữ deadline/rollback/replay; browser màu/delta/ẩn bảng/no-repeat toast/Host spectator.
+
 Model gợi ý: Sol / High
 
 ```text
@@ -758,6 +749,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 ## TASK 14 Review kỹ thuật cuối
 
+Cập nhật sau triển khai 07/10/2026: Review config/migration/lifecycle/RESULT timer, ACK, terminal ordering, reconnect và UI; giữ Score Engine/ranking, regression theo diff.
+
 Model gợi ý: Astra / High
 
 ```text
@@ -787,6 +780,8 @@ Nghiệm thu kiến trúc: class đúng feature, không tạo global-layer nghi�
 
 
 ## TASK 15 Experiment, README và gói bàn giao
+
+Cập nhật sau triển khai 07/10/2026: Đồng bộ luật/contract/hướng dẫn/demo/báo cáo/ảnh mới và evidence. Giữ CSV/log/hash/thực nghiệm06/10/2026 là Decision5000ms, chưa đo lại benchmark; không suy ra LAN từ loopback.
 
 Model gợi ý: Sol / High
 
@@ -1027,7 +1022,7 @@ Các message sử dụng JSON. JOIN_ROOM/SUBMIT_ANSWER là hành động Client 
 | Điểm ban đầu | 20/người |
 | Hope Star | 1/người/trận, có ngay từ đầu |
 | Spin | floor(questionCount / 10), có ngay từ đầu |
-| Decision Phase | Baseline 5 giây trước mỗi câu, gồm câu đầu |
+| Decision Phase | Cố định 7 giây trước mỗi câu, gồm câu đầu |
 | Thời gian câu | Host cấu hình trước trận, do Server quản lý |
 
 | Số câu | Spin/người |
@@ -1187,13 +1182,13 @@ Server chấm toàn bộ Player của câu trước khi kiểm tra kết thúc; 
 | QUESTION_OPEN | Chọn và gửi một đáp án hợp lệ | Gửi câu/lựa chọn, quản lý deadline, nhận đáp án và ACK | Tất cả Player của câu đã Answer hoặc hết giờ |
 | QUESTION_CLOSED | Không gửi đáp án mới hợp lệ | Khóa nhận đáp án, xác định NO_ANSWER | Chuyển sang chấm câu |
 | SCORING | Chờ kết quả | Chọn bảng điểm, dùng effect đã có, cập nhật Score, Elimination và streak | Chấm toàn bộ câu xong |
-| RESULT | Xem kết quả/leaderboard | Công bố đáp án và kết quả, kiểm tra kết thúc trận | Trận kết thúc hoặc DECISION câu tiếp |
+| RESULT | Xem câu hỏi, đáp án đúng xanh/sai đã chọn đỏ và delta riêng; leaderboard có bật/tắt | Công bố sau scoring commit, nhịp chung1500ms; terminal đã lưu ranking/cleanup | Hết cửa sổ: DECISION câu tiếp hoặc Final |
 
 Trong OPEN: receivedAt < deadline là điều kiện thời gian để có thể chấp nhận; receivedAt >= deadline thì hết giờ. Request vẫn cần đúng danh tính, state và chưa Answer. Client không tự khai báo thời gian để kéo dài hạn.
 
 Scoring theo thứ tự: xác định kết quả → chọn scoring mode → áp dụng Momentum/Recovery đã có → cập nhật điểm → nếu dưới 0 thì loại và dừng streak → nếu còn sống thì cập nhật streak/cấp effect cho câu sau.
 
-**Ví dụ một câu:** A có 20 điểm và dùng Spin, Server chọn Bứt phá. A không dùng Star. Câu mở, A gửi đáp án B. Server gửi ANSWER_ACCEPTED, chưa tiết lộ đúng/sai. Khi tất cả đã trả lời hoặc hết hạn, câu đóng. Nếu A đúng, không có Momentum thì +18, đạt 38 điểm; nếu sai thì −7, còn 13. Server công bố kết quả sau khi chấm cả câu.
+**Ví dụ một câu:** A có 20 điểm và dùng Spin, Server chọn Bứt phá. A không dùng Star. Câu mở, A gửi đáp án B. Server gửi ANSWER_ACCEPTED, chưa tiết lộ đúng/sai. Khi tất cả đã trả lời hoặc hết hạn, câu đóng. Nếu A đúng, không có Momentum thì +18, đạt 38 điểm; nếu sai thì −7, còn 13. Server công bố sau khi chấm cả câu và commit; hiển thị chung1500ms rồi tự chuyển tiếp. Decision7000ms; thời gian xếp hạng không cộng Decision/RESULT.
 
 ```mermaid
 sequenceDiagram
@@ -1437,7 +1432,8 @@ Technical Design V2 đã mô tả nhiều nội dung trong bảng này. Tài li�
 
 ### 8. Question/Game Flow — 1 phút 30 giây
 
-- Trình bày DECISION → OPEN → CLOSED → SCORING → RESULT.
+- Trình bày DECISION7giây → OPEN theo cấu hình → CLOSED → SCORING → RESULT1,5giây chung → câu sau/Final.
+- Demo toast Spin/Star, đúng xanh/sai đã chọn đỏ, delta riêng và bảng xếp hạng bên phải bật/tắt.
 - Gửi Answer chỉ nhận ACK, chưa biết đúng/sai.
 - Chấm cả câu trước khi xét hết trận.
 - Dùng scenario A/B/C: B reconnect, C bị loại, hai người tiếp tục.

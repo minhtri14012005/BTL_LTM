@@ -153,7 +153,7 @@ public class RoomService {
     }
     private void apply(Room room, RoomConfigRequest config) {
         room.setQuizId(config.quizId()); room.setName(config.name().strip()); room.setMaxPlayers(config.maxPlayers());
-        room.setQuestionDurationMs(config.questionDurationMs()); room.setDecisionDurationMs(5000L);
+        room.setQuestionDurationMs(config.questionDurationMs()); room.setDecisionDurationMs(7000L);
     }
     private RoomMutation changed(Room room, long previousRevision) {
         members.flush(); rooms.flush();

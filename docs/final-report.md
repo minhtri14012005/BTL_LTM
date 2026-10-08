@@ -143,8 +143,8 @@ stateDiagram-v2
     QUESTION_OPEN --> QUESTION_CLOSED: all eligible answered / deadline
     QUESTION_CLOSED --> SCORING: one close operation
     SCORING --> RESULT: whole-question DB commit
-    RESULT --> DECISION: still active / next index
-    RESULT --> FINISHED: ALL_ELIMINATED / ONE_SURVIVOR / COMPLETED
+    RESULT --> DECISION: shared1500ms expired / still active / next index
+    RESULT --> FINISHED: terminal scoring committed / UI shared window then Final
     DECISION --> FINISHED: Host Cancel commit
     QUESTION_OPEN --> FINISHED: Host Cancel before Close
     SCORING --> UNAVAILABLE: finite failure exhausted
@@ -152,7 +152,7 @@ stateDiagram-v2
     FINISHED --> [*]: retention cleanup after10min
 ```
 
-Cancel sau scoring operation đi FINISHED/CANCELLED theo queue, không chen vào partial scoring. Failure có thể xảy ra ở phase/action khác ngoài SCORING; diagram không giới hạn error policy vào một phase. RESULT publish rồi enqueue phase tiếp, không thêm thời lượng RESULT. Ranking score giảm dần/time tăng dần, bằng cả hai thì competition rank1,1,3. End kiểm tra sau chấm tất cả; rank1 Winners kể cả ALL_ELIMINATED, ưu tiên ONE_SURVIVOR/ALL_ELIMINATED trước COMPLETED. CANCELLED/SERVER_INTERRUPTED có standings nhưng hasOfficialWinner=false/winners[].
+Cancel sau scoring operation đi FINISHED/CANCELLED theo queue, không chen vào partial scoring. Failure có thể xảy ra ở phase/action khác ngoài SCORING; diagram không giới hạn error policy vào một phase. RESULT mở cửa sổ chung1500ms sau scoring commit bằng PhaseWindow/monotonic clock và timer SessionQueue. Hết hạn mới mở DECISION kế tiếp với đủ7000ms. Không cộng RESULT vào answer time. Terminal scoring lưu FINISHED/ranking/Room WAITING/UAG release ngay; QUESTION_RESULT và GAME_END cùng deadline trình bày câu cuối. Actor retire ngay, UI dùng deadline còn lại để chuyển Final; sau hết hạn/retention deadline null. Cancel/UNAVAILABLE xóa window và vô hiệu hóa timer. Ranking score giảm dần/time tăng dần, bằng cả hai thì competition rank1,1,3. End kiểm tra sau chấm tất cả; rank1 Winners kể cả ALL_ELIMINATED, ưu tiên ONE_SURVIVOR/ALL_ELIMINATED trước COMPLETED. CANCELLED/SERVER_INTERRUPTED có standings nhưng hasOfficialWinner=false/winners[].
 
 ## 6. Failure policy và bảo mật dữ liệu
 
@@ -258,3 +258,9 @@ Instruction/Submission chưa có nên filenames Markdown hiện tại phục v�
 5. [WHATWG WebSockets Standard](https://websockets.spec.whatwg.org/), truy cập06/10/2026; không thay policy auth/origin/business contract project.
 
 Yêu cầu môn gốc/nhóm/contribution còn chờ xác minh. Báo cáo không tự xác nhận hồ sơ đã đủ điều kiện nộp.
+
+## Cập nhật sau triển khai 07/10/2026
+
+Decision trận mới7000ms; RESULT1500ms và UI câu hỏi/đáp án màu, toast cá nhân, leaderboard bật/tắt. FlywayV3 chuẩn hóa Room idle/default; snapshot lịch sử giữ nguyên. Số liệu ở phần thực nghiệm và các CSV/log ngày06/10/2026 thuộc Decision5000ms và luồng RESULT cũ; chưa đo lại benchmark, không dùng chúng để khẳng định latency/nhịp phiên bản mới. Kết quả regression/smoke mới xem project-status; hồ sơ môn/LAN/contribution vẫn giữ giới hạn cũ.
+
+Ảnh UI thật của đợt cập nhật: [Decision và leaderboard](assets/gameplay-2026-10-07/decision.png), [đáp án sai/đúng và delta](assets/gameplay-2026-10-07/result.png), [gameplay mobile](assets/gameplay-2026-10-07/game-mobile.png), [Final](assets/gameplay-2026-10-07/final.png), [History mobile](assets/gameplay-2026-10-07/history-mobile.png). Đây là Chrome loopback, không phải evidence LAN.

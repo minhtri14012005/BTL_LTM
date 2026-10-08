@@ -132,7 +132,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         for (int i = 1; i <= 2; i++) {
             var opened = open(id, i);
             expire(opened);
-            observer.next("DECISION_STARTED", id, i + 1);
+            decision(id,i + 1);
         }
         var fresh = new Wire(f.roster().getFirst());
         var state = reconnect(fresh, id).path("payload");
@@ -317,7 +317,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
             var opened = open(id, index);
             accepted(wire.response(command("ANSWER", id, index, Map.of("option", "D"))));
             expire(opened);
-            observer.next("DECISION_STARTED", id, index + 1);
+            decision(id,index + 1);
         }
         wire.close();
         wire = new Wire(roster.getFirst());
@@ -330,7 +330,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
             var opened = open(id, index);
             accepted(wire.response(command("ANSWER", id, index, Map.of("option", index == 6 ? "D" : "A"))));
             expire(opened);
-            observer.next("DECISION_STARTED", id, index + 1);
+            decision(id,index + 1);
         }
         wire.close();
         wire = new Wire(roster.getFirst());
@@ -343,7 +343,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         var opened = open(id, 12);
         accepted(wire.response(command("ANSWER", id, 12, Map.of("option", "A"))));
         expire(opened);
-        observer.next("DECISION_STARTED", id, 13);
+        decision(id,13);
         wire.close();
         wire = new Wire(roster.getFirst());
         var consumed = reconnect(wire, id).path("payload").path("player");
@@ -395,6 +395,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
             for (String field : List.of("winStreak", "loseStreak", "hasMomentumBefore", "hasRecoveryAfter",
                     "momentumConsumed", "recoveryGranted", "playerState"))
                 assertThat(result.has(field)).isTrue();
+            decision(id,2);
             var next = wire.event("DECISION_STARTED", 2);
             assertThat(next.path("revision").asLong()).isGreaterThan(ack.path("revision").asLong());
             assertThat(wire.messages.indexOf(ack)).isLessThan(wire.messages.indexOf(next));
@@ -443,7 +444,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
             assertThat(scoringSnapshot.path("question").path("correctAnswer").isNull()).isTrue();
             assertThat(scoringSnapshot.path("results")).isEmpty();
             releaseScoring.countDown();
-            observer.next("DECISION_STARTED", id, 2);
+            decision(id,2);
             assertThat(reconnect(wire, id).path("payload").path("questionIndex").asInt()).isEqualTo(2);
         } finally {
             releaseClosed.countDown();
@@ -464,7 +465,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         var ack = old.response(answer);
         accepted(ack);
         expire(first);
-        observer.next("DECISION_STARTED", id, 2);
+        decision(id,2);
         old.close();
         var fresh = new Wire(f.roster().getFirst());
         var eliminated = reconnect(fresh, id).path("payload").path("player");
@@ -475,7 +476,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         rejected(fresh.response(command("USE_SPIN", id, 2, Map.of())), "FORBIDDEN");
         for (int i = 2; i <= 10; i++) {
             expire(open(id, i));
-            observer.next(i == 10 ? "GAME_END" : "DECISION_STARTED", id, i == 10 ? 10 : i + 1);
+            if(i==10) observer.next("GAME_END",id,10); else decision(id,i+1);
         }
         fresh.close();
         var ended = new Wire(f.roster().getFirst());
@@ -487,7 +488,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         assertThat(terminal.path("question").path("id").asLong())
                 .isEqualTo(observer.next("QUESTION_START", id, 10).question().id());
         assertThat(terminal.path("results")).hasSize(2);
-        assertThat(terminal.path("deadlineEpochMs").isNull()).isTrue();
+        assertThat(terminal.path("remainingMs").asLong()).isEqualTo(1500L);
         assertThat(ended.response(answer)).isEqualTo(ack);
         scheduler.advance(clock.mono.get() + SessionQueue.RETENTION_MS);
         var persisted = reconnect(ended, id).path("payload");

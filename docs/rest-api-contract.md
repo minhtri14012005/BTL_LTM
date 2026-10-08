@@ -244,7 +244,7 @@ Join/Leave/Remove/Subscribe dùng `/ws`, không có REST alias. Không endpoint 
 | config.questionDurationMs | integer int64 / có / không | >0; thời gian ms, chưa timer ở Task5 |
 | config.hostParticipation | string enum / có / không | PLAYER/SPECTATOR; tác giả Quiz chỉ SPECTATOR |
 
-decisionDurationMs cố định5000 theo baseline Overview, không nhận field để sửa; min3 Player và Quiz10–50 là điều kiện **Start Task8**, không điều kiện Join/Open. maxPlayers<=100 và tổng100 JOINED (kể cả Spectator) là giới hạn kỹ thuật của Waiting API/snapshot, không thay luật scoring. Join PUBLIC/PRIVATE đã được Host chọn không yêu cầu người tham gia sở hữu Quiz; PRIVATE vẫn không cho họ đọc Quiz REST.
+decisionDurationMs cố định7000 theo cập nhật người dùng07/10/2026, không nhận field để sửa; min3 Player và Quiz10–50 là điều kiện **Start Task8**, không điều kiện Join/Open. maxPlayers<=100 và tổng100 JOINED (kể cả Spectator) là giới hạn kỹ thuật của Waiting API/snapshot, không thay luật scoring. Join PUBLIC/PRIVATE đã được Host chọn không yêu cầu người tham gia sở hữu Quiz; PRIVATE vẫn không cho họ đọc Quiz REST.
 
 ```json
 {
@@ -338,7 +338,7 @@ Thứ tự câu được chọn ngẫu nhiên một lần và lưu order1..N; co
 | status,phase | string / có / không | ACTIVE/FINISHED; DECISION/QUESTION_OPEN/QUESTION_CLOSED/SCORING/RESULT/FINISHED |
 | questionIndex,questionCount,revision | integer,integer,int64 / có / không | Index0 khi mới commit Start, rồi1..N; revision Game commit tăng theo mutation; không so với revision Room |
 | serverTimeMs | int64 / có / không | Epoch ms lúc tạo snapshot/event |
-| deadlineEpochMs,remainingMs | int64 / có / có | DECISION/OPEN đã mở: epoch deadline và monotonic remaining>=0; CLOSED/SCORING/RESULT/FINISHED/UNAVAILABLE/initializing chưa window: null |
+| deadlineEpochMs,remainingMs | int64 / có / có | DECISION/OPEN/RESULT đã mở: epoch deadline và monotonic remaining>=0; FINISHED bình thường còn cửa sổ trình bày câu cuối cũng có deadline/remaining<=1500. CLOSED/SCORING/UNAVAILABLE/initializing, Cancel/Interrupted hoặc Final hết hạn: null |
 | runtimeState,cleanupPending | string,boolean / có / không | INITIALIZING/READY/RETRYING/FINISHED/UNAVAILABLE; cleanupPending=true chỉ khi terminal runtime lỗi chưa ghi durable cleanup |
 | endReason,winners,hasOfficialWinner | string,list<int64>,boolean / có / chỉ endReason nullable | endReason null khi ACTIVE; FINISHED: COMPLETED/ONE_SURVIVOR/ALL_ELIMINATED/CANCELLED/SERVER_INTERRUPTED. Official chỉ true với ba endReason bình thường; CANCELLED/SERVER_INTERRUPTED hoặc ACTIVE false/winners rỗng, vẫn standings |
 | config | GameplayRulesSnapshot object / có / không | Schema version1 hiện có: N, durations ms, initial/resources, toàn bộ normal/starOnly/spins/streaks, elimination/ranking/endReason rules; không field đáp án câu hỏi |
@@ -358,7 +358,7 @@ Thứ tự câu được chọn ngẫu nhiên một lần và lưu order1..N; co
 | player.momentum,recovery,remainingSpins,starAvailable,remainingSpinPool,starSelected,alreadyAnswered | boolean,boolean,integer,boolean,list<SpinEffect>,boolean,boolean / có / không | Dữ liệu riêng; gameplay commands đã implement Task9 theo WS canonical |
 | player.currentSpin,selectedOption,eliminatedAtMs,eliminatedQuestionIndex | SpinEffect,A/B/C/D,int64,integer / có / có | Current decision/answer riêng; elimination trace giữ nguyên qua các câu sau |
 
-Durations/deadline nội bộ monotonic, receivedAt do ingress Server, hợp lệ `<deadline` kể cả processor chậm; không nhận client timestamp. Epoch hiển thị lấy mốc lúc Server mở phase + duration; wall clock lùi trước startedAt được clamp epoch, không đổi monotonic window. Phase mở lấy clock mới sau chờ queue/DB lock, không dùng command/timer cũ. RESULT persist/publish rồi enqueue mở DECISION tiếp, không thêm thời lượng RESULT. GET trong RETRYING trả state committed trước đó; không state tạm. Sau retention Game terminal lấy projection DB, runtimeState FINISHED/không live deadline; History ở Task11B bên dưới. Task10 RECONNECT dùng cùng GameSnapshot, capture/subscribe/send trong session processor; generation/replacement/ordering tại WS canonical, không thêm REST endpoint.
+Durations/deadline nội bộ monotonic, receivedAt do ingress Server, hợp lệ `<deadline` kể cả processor chậm; không nhận client timestamp. Epoch hiển thị lấy mốc lúc Server mở phase + duration; wall clock lùi trước startedAt được clamp epoch, không đổi monotonic window. Phase mở lấy clock mới sau chờ queue/DB lock, không dùng command/timer cũ. RESULT mở cửa sổ chung1500ms sau scoring commit bằng PhaseWindow/monotonic clock và timer SessionQueue. Hết hạn mới mở DECISION kế tiếp với đủ7000ms. Không cộng RESULT vào answer time. Terminal scoring lưu FINISHED/ranking/Room WAITING/UAG release ngay; QUESTION_RESULT và GAME_END cùng deadline trình bày câu cuối. Actor retire ngay, UI dùng deadline còn lại để chuyển Final; sau hết hạn/retention deadline null. Cancel/UNAVAILABLE xóa window và vô hiệu hóa timer. GET trong RETRYING trả state committed trước đó; không state tạm. Sau retention Game terminal lấy projection DB, runtimeState FINISHED/không live deadline; History ở Task11B bên dưới. Task10 RECONNECT dùng cùng GameSnapshot, capture/subscribe/send trong session processor; generation/replacement/ordering tại WS canonical, không thêm REST endpoint.
 
 | Error | Điều kiện thực tế |
 |---|---|

@@ -27,6 +27,8 @@ UNIT=r'''(async()=>{
  check('alreadyAnswered and pending block actions',()=>!g.permissions({...s,phase:'QUESTION_OPEN',player:{...p,alreadyAnswered:true}},1,true).answer&&!g.permissions(s,1,true,true).spin);
  check('finished and unavailable forbid new actions',()=>!g.permissions({...s,status:'FINISHED'},1,true).cancel&&!g.permissions({...s,runtimeState:'UNAVAILABLE'},1,true).answer);
  check('old snapshot cannot roll back newer revision',()=>g.acceptSnapshot(s,{...s,revision:3})===s);
+ check('same revision older server time cannot restore a result window',()=>g.acceptSnapshot({...s,serverTimeMs:100},{...s,serverTimeMs:99})?.serverTimeMs===100);
+ check('leaderboard seconds and current user marker',()=>{let n=ui.standings({...s,members:[{...s.members[0],totalAnswerTimeMs:11706}]},1);return n.textContent.includes('11.706 s')&&n.querySelector('.current-player')&&n.querySelectorAll('th').length===4;});
  check('equal revision event remains consumable',()=>g.acceptSnapshot(s,{...s,phase:'RESULT'}).phase==='RESULT');
  check('receipt from older phase cannot restore resources',()=>g.applyReceipt({...s,revision:8,questionIndex:2},{target:{id:7},type:'USE_SPIN',revision:5,questionIndex:1,payload:{remainingSpins:0}}).revision===8);
  check('receipt updates own resource without inventing score',()=>{let x=g.applyReceipt(s,{target:{id:7},type:'USE_SPIN',revision:5,questionIndex:1,payload:{spinEffect:'SAFE',remainingSpins:0,starSelected:false,starAvailable:true,remainingSpinPool:[],alreadyAnswered:false,selectedOption:null}});return x.player.currentSpin==='SAFE'&&x.player.remainingSpins===0&&x.phase==='DECISION';});
@@ -34,6 +36,26 @@ UNIT=r'''(async()=>{
  check('CANCELLED/SERVER_INTERRUPTED no official winner',()=>['CANCELLED','SERVER_INTERRUPTED'].every(e=>{let n=ui.finalSummary({...s,status:'FINISHED',endReason:e});return n.textContent.includes('không có Official Winner')&&!n.querySelector('.winner');}));
  check('official co-winners rendered from Server ids',()=>{const members=[s.members[0],{...s.members[0],userId:2,displayName:'Peer'},{...s.members[0],userId:3,rank:3,displayName:'Third'}];return ui.standings({...s,members,hasOfficialWinner:true,winners:[1,2]}).querySelectorAll('.winner').length===2&&ui.standings({...s,members,hasOfficialWinner:false,winners:[]}).querySelectorAll('.winner').length===0;});
  check('RESULT snapshot renders effects and result',()=>ui.resultPanel({index:1,question:{correctAnswer:'A',options:{A:'a'}},results:[{userId:1,outcome:'CORRECT',scoreDelta:10,scoreAfter:30,answerTimeMs:4,winStreak:1,loseStreak:0,hasMomentumAfter:false,hasRecoveryAfter:false,momentumGranted:true}]},s.members).textContent.includes('cho câu sau'));
+ // Component tests use controlled promises; real HTTP/WS/MySQL smoke is recorded separately.
+ const openState={...s,gameSessionId:42,questionCount:10,quizTitleSnapshot:'DOM unit',serverTimeMs:10000,deadlineEpochMs:20000,results:[],phase:'QUESTION_OPEN',question:{content:'Q',options:{A:'a',B:'b',C:'c',D:'d'},correctAnswer:null},player:{...p,score:20,selectedOption:null}};
+ let resolveAction,rejectAction;const fake={user:{id:1},games:new Map(),transport:{status:'ready',send:c=>c.type==='RECONNECT'?Promise.resolve({payload:openState}):new Promise((resolve,reject)=>{resolveAction=resolve;rejectAction=reject;})},api:{request:async()=>openState},connect:()=>{}};
+ const page=await ui.gamePage(fake,42);document.body.append(page);await new Promise(r=>setTimeout(r,0));
+ page.querySelector('[data-option=A]').click();page.querySelector('#submit-answer').click();
+ check('pending Answer locks duplicate submission without acceptance',()=>page.querySelector('#submit-answer').disabled&&!page.querySelector('#answer-accepted'));
+ rejectAction(Object.assign(Error('Rejected test action'),{retryable:false}));await new Promise(r=>setTimeout(r,0));
+ check('Answer rejection restores choices and does not invent accepted state',()=>!page.querySelector('[data-option=A]').disabled&&!page.querySelector('#answer-accepted'));
+ page.querySelector('#submit-answer').click();
+ resolveAction({requestId:'accepted-unit',type:'ANSWER',target:{id:42},questionIndex:1,revision:5,payload:{selectedOption:'A',alreadyAnswered:true,spinEffect:null,starSelected:false,remainingSpins:1,starAvailable:true,remainingSpinPool:[]}});
+ await new Promise(r=>setTimeout(r,0));
+ check('accepted Answer hides submit and still conceals correctness',()=>!page.querySelector('#submit-answer')&&page.querySelector('[data-option=A]').disabled&&!page.querySelector('.answer-correct')&&page.querySelector('#answer-accepted'));
+ page.querySelector('#toggle-standings').click();
+ const result={...openState,members:[{...openState.members[0],score:16}],revision:6,phase:'RESULT',serverTimeMs:10001,deadlineEpochMs:11501,question:{...openState.question,correctAnswer:'B'},results:[{userId:1,outcome:'WRONG',scoreDelta:-4}],player:{...openState.player,score:16,alreadyAnswered:true,selectedOption:'A'}};
+ fake.gameController.receive({target:{kind:'GAME',id:42},kind:'EVENT',payload:result});
+ check('result uses Server answer/delta and hidden leaderboard updates',()=>page.querySelector('.answer-correct').dataset.option==='B'&&page.querySelector('.answer-wrong').dataset.option==='A'&&page.querySelector('#game-leaderboard').hidden&&page.querySelector('#standings tbody').textContent.includes('16')&&page.querySelector('#game-toasts').textContent.includes('trừ 4'));
+ await new Promise(r=>setTimeout(r,50));const before=page.querySelector('#game-countdown').textContent;
+ fake.gameController.receive({target:{kind:'GAME',id:42},kind:'EVENT',payload:result});
+ check('duplicate result does not restart its shared countdown',()=>parseFloat(page.querySelector('#game-countdown').textContent)<=parseFloat(before));
+ fake.gameController.dispose();page.remove();
  return done;
 })()'''
 
@@ -55,7 +77,7 @@ def smoke(cdp,origin,report):
     author.eval("document.querySelectorAll('.question-editor').forEach((r,i)=>{r.querySelector('[name=content]').value='Task12 question '+(i+1);['A','B','C','D'].forEach(k=>r.querySelector('[name=option'+k+']').value='Option '+k);r.querySelector('[name=correctAnswer]').value='A';})")
     author.submit('#quiz-form');author.wait(r"location.hash.match(/^#\/quiz\/\d+\/edit$/) && document.querySelectorAll('.question-editor').length===10")
     quiz=int(author.eval("location.hash.split('/')[2]"));report['quizIds'].append(quiz)
-    fixture=ROOT/'target/task12-image.png';legacy.png(fixture);author.upload('.question-editor [name=image]',fixture);author.submit('#quiz-form');author.wait("!!document.querySelector('.question-preview img')")
+    fixture=ROOT/'target/update-image.png';legacy.png(fixture);author.upload('.question-editor [name=image]',fixture);author.submit('#quiz-form');author.wait("!!document.querySelector('.question-preview img')")
     def start(host,roster,spectator):
         host.route(f'rooms/new?quiz={quiz}','#room-form');host.fill({'name':prefix+' room '+str(len(report['roomIds'])),'maxPlayers':'3','seconds':'2.5','hostParticipation':'SPECTATOR' if spectator else 'PLAYER'});host.submit('#room-form');host.wait("!!document.querySelector('#open-room')")
         room=int(host.eval("location.hash.split('/')[2]"));report['roomIds'].append(room);host.click('#open-room');host.wait("!!document.querySelector('#start-game')")
@@ -65,6 +87,7 @@ def smoke(cdp,origin,report):
             t.route('join','#join-form');t.fill({'code':code,'participation':'PLAYER'});t.submit('#join-form');t.wait("!!document.querySelector('#waiting-room')")
         host.wait("!document.querySelector('#start-game').disabled");host.click('#start-game');host.wait("!!document.querySelector('#game-page') && !!document.querySelector('#use-spin')")
         gid=int(host.eval("location.hash.split('/')[2]"));report['gameIds'].append(gid)
+        assert snapshot(host,gid)['config']['decisionDurationMs']==7000
         for t in roster:t.wait("!!document.querySelector('#game-page') && !document.querySelector('#use-spin').disabled")
         return gid,room
     def phase(t,index,name):t.wait(f"document.querySelector('#game-page')?.dataset.index==='{index}' && document.querySelector('#game-page').dataset.phase==='{name}'",timeout=16)
@@ -74,12 +97,19 @@ def smoke(cdp,origin,report):
     host=players[0];gid,room=start(host,players,False)
     phase(host,1,'DECISION');host.wait("!document.querySelector('#use-spin').disabled");host.click('#use-spin');host.wait("!!document.querySelector('#game-ack')")
     spin=snapshot(host,gid)['player']['currentSpin']
+    host.wait("document.querySelector('#game-toasts').textContent.includes('Spin:')")
+    host.screenshot(ROOT/'target/update-decision.png')
+    host.click('#toggle-standings');assert host.eval("document.querySelector('#game-leaderboard').hidden")
     if spin!='HARDSHIP':host.click('#use-star');host.wait("document.querySelector('#star-available').textContent==='Đã dùng'")
     else:assert host.eval("document.querySelector('#use-star').disabled")
     phase(players[1],1,'DECISION');players[1].click('#use-star');players[1].wait("document.querySelector('#use-spin').disabled && document.querySelector('#star-available').textContent==='Đã dùng'")
     players[1].eval("gameSocket.close()");players[1].wait("!!document.querySelector('#reconnect-room')");players[1].click('#reconnect-room');players[1].wait("document.querySelector('#connection-status')?.dataset.state==='ready' && document.querySelector('#star-available')?.textContent==='Đã dùng'")
     assert snapshot(players[1],gid)['player']['starSelected'] is True
-    passed('Spin consumes once, optional Star follows; Star alone locks Spin; actual effect '+spin)
+    players[1].wait("!document.querySelector('#game-toasts').textContent.includes('Hope Star')",timeout=4)
+    players[1].eval("gameSocket.close()");players[1].wait("!!document.querySelector('#reconnect-room')");players[1].click('#reconnect-room')
+    players[1].wait("document.querySelector('#connection-status')?.dataset.state==='ready' && document.querySelector('#star-available')?.textContent==='Đã dùng'")
+    assert players[1].eval("!document.querySelector('#game-toasts').textContent.includes('Hope Star')")
+    passed('Spin consumes once, optional Star follows; Star alone locks Spin; reconnect no old toast; actual effect '+spin)
     # Lost genuine ANSWER ACK: accepted data stays durable while UI retains the original UUID.
     players[2].eval("wire.dropType='ANSWER'")
     seen_image=False
@@ -108,6 +138,19 @@ def smoke(cdp,origin,report):
             assert next(r for r in result if r['userId']==people[3][1]['id'])['outcome']=='NO_ANSWER'
             players[2].click('#reconnect-room');players[2].wait("document.querySelector('#connection-status')?.dataset.state==='ready'")
             passed('Offline Player counted through deadline; NO_ANSWER and phase advance while disconnected')
+        elif i==3:
+            answer(host,'B');answer(players[1],'A');answer(players[2],'A')
+            phase(host,i,'RESULT')
+            assert host.eval("document.querySelector('[data-option=B]').classList.contains('answer-wrong') && document.querySelector('[data-option=A]').classList.contains('answer-correct')")
+            assert host.eval("document.querySelector('#game-leaderboard').hidden && !document.querySelector('#question-result') && !document.querySelector('#submit-answer')")
+            host.wait("document.querySelector('#game-toasts').textContent.includes('trừ 4')")
+            host.screenshot(ROOT/'target/update-result.png')
+            host.click('#toggle-standings');assert not host.eval("document.querySelector('#game-leaderboard').hidden")
+            cdp.call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True},host.session)
+            assert host.eval("document.documentElement.scrollWidth<=innerWidth")
+            host.screenshot(ROOT/'target/update-game-mobile.png')
+            cdp.call('Emulation.setDeviceMetricsOverride',{'width':1440,'height':1000,'deviceScaleFactor':1,'mobile':False},host.session)
+            passed('Shared RESULT: chosen wrong red/correct green, actual delta -4, hidden leaderboard updated, responsive gameplay')
         else:
             for t in players:answer(t,'A')
     for t in players:t.wait("!!document.querySelector('#final-summary')")
@@ -115,7 +158,7 @@ def smoke(cdp,origin,report):
     assert seen_image
     assert next(m for m in end['members'] if m['userId']==people[3][1]['id'])['score']==112
     assert all(t.eval("document.querySelectorAll('#standings tbody tr').length")==3 for t in players)
-    host.screenshot(ROOT/'target/task12-final.png')
+    host.screenshot(ROOT/'target/update-final.png')
     for t in players:
         t.route('history','#history-list');t.wait("document.querySelector('#history-list').textContent.includes('Trận #"+str(gid)+"')");t.route(f'history/{gid}','#history-detail');assert t.eval("document.querySelectorAll('.history-question').length")==10
     assert host.eval("document.querySelector('#history-detail').textContent.includes('Không trả lời')")
@@ -151,7 +194,7 @@ def smoke(cdp,origin,report):
     replacement.route(f'history/{gid}','#history-detail');assert replacement.eval("document.querySelector('#history-detail').textContent.includes('Đã bị loại')")
     cdp.call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True},replacement.session)
     assert replacement.eval("document.documentElement.scrollWidth<=innerWidth")
-    replacement.screenshot(ROOT/'target/task12-history-mobile.png')
+    replacement.screenshot(ROOT/'target/update-history-mobile.png')
     passed('Host eliminated score frozen; replacement disables old socket; new socket can Cancel; mobile History renders')
     # Permission and expired authentication are actual HTTP outcomes, no mock response.
     author.route(f'history/{gid}','[role=alert]');assert author.eval("document.body.innerText.includes('không có quyền')")

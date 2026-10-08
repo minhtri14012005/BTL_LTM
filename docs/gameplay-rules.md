@@ -1,12 +1,6 @@
 # Gameplay rules — bản trích Overview
 
-Ngày khảo sát: 04/10/2026 (Asia/Bangkok). Nguồn: [TASKS.md](../TASKS.md), phụ lục Overview, nguyên văn mục 1–13 (dòng 445–876 tại thời điểm khảo sát). Trích cả luồng sử dụng, quyền, dữ liệu, gameplay, concurrency, reconnect và idempotency để không bỏ luật nằm ngoài mục Cách chơi. Giữ số mục gốc để đối chiếu.
-
-SHA-256 của TASKS.md gốc: `DDD03F01C6DFEC02A8817FE4B45CE5BBE9D9286DFB66B4EE1611F03A328D5745`.
-
-Khối giữa hai marker bên dưới được sao chép trực tiếp, không diễn giải lại bảng điểm. Các quyết định bổ sung từ người dùng nằm trong [implementation-decisions.md](implementation-decisions.md), mục Nghiệp vụ cần chốt; không sửa âm thầm nguồn. Các nhắc đến Technical Design V2 trong bản trích là lời của Overview, không có nghĩa đã đọc được file đó. Scenario là ví dụ, không phải test đã chạy.
-
-Phạm vi giữ nguyên: Web Client + REST/WebSocket + Spring Boot + JPA + MySQL, Localhost/LAN, một Server và một Database; không Cloud, Redis, Kafka, multi-server hoặc failover. Checklist môn ở file riêng, chưa đối chiếu trực tiếp tài liệu môn.
+Cập nhật 07/10/2026 (Asia/Bangkok) theo yêu cầu người dùng: Decision7000ms và RESULT1500ms/giao diện mới. Nguồn [TASKS.md](../TASKS.md), Overview mục1–13; bảng điểm và luật khác giữ nguyên. SHA-256 TASKS.md tại lần đồng bộ: BF219E3C4219E7E714120E2B2D39A9836201421903F1CAF9A9033BBF97A028DD. Quyết định implementation tại [decisions](implementation-decisions.md).
 
 <!-- BEGIN OVERVIEW EXTRACT -->
 ## 1. Giới thiệu hệ thống
@@ -157,7 +151,7 @@ Các message sử dụng JSON. JOIN_ROOM/SUBMIT_ANSWER là hành động Client 
 | Điểm ban đầu | 20/người |
 | Hope Star | 1/người/trận, có ngay từ đầu |
 | Spin | floor(questionCount / 10), có ngay từ đầu |
-| Decision Phase | Baseline 5 giây trước mỗi câu, gồm câu đầu |
+| Decision Phase | Cố định 7 giây trước mỗi câu, gồm câu đầu |
 | Thời gian câu | Host cấu hình trước trận, do Server quản lý |
 
 | Số câu | Spin/người |
@@ -317,13 +311,13 @@ Server chấm toàn bộ Player của câu trước khi kiểm tra kết thúc; 
 | QUESTION_OPEN | Chọn và gửi một đáp án hợp lệ | Gửi câu/lựa chọn, quản lý deadline, nhận đáp án và ACK | Tất cả Player của câu đã Answer hoặc hết giờ |
 | QUESTION_CLOSED | Không gửi đáp án mới hợp lệ | Khóa nhận đáp án, xác định NO_ANSWER | Chuyển sang chấm câu |
 | SCORING | Chờ kết quả | Chọn bảng điểm, dùng effect đã có, cập nhật Score, Elimination và streak | Chấm toàn bộ câu xong |
-| RESULT | Xem kết quả/leaderboard | Công bố đáp án và kết quả, kiểm tra kết thúc trận | Trận kết thúc hoặc DECISION câu tiếp |
+| RESULT | Xem câu hỏi, đáp án đúng xanh/sai đã chọn đỏ và delta riêng; leaderboard có bật/tắt | Công bố sau scoring commit, nhịp chung1500ms; terminal đã lưu ranking/cleanup | Hết cửa sổ: DECISION câu tiếp hoặc Final |
 
 Trong OPEN: receivedAt < deadline là điều kiện thời gian để có thể chấp nhận; receivedAt >= deadline thì hết giờ. Request vẫn cần đúng danh tính, state và chưa Answer. Client không tự khai báo thời gian để kéo dài hạn.
 
 Scoring theo thứ tự: xác định kết quả → chọn scoring mode → áp dụng Momentum/Recovery đã có → cập nhật điểm → nếu dưới 0 thì loại và dừng streak → nếu còn sống thì cập nhật streak/cấp effect cho câu sau.
 
-**Ví dụ một câu:** A có 20 điểm và dùng Spin, Server chọn Bứt phá. A không dùng Star. Câu mở, A gửi đáp án B. Server gửi ANSWER_ACCEPTED, chưa tiết lộ đúng/sai. Khi tất cả đã trả lời hoặc hết hạn, câu đóng. Nếu A đúng, không có Momentum thì +18, đạt 38 điểm; nếu sai thì −7, còn 13. Server công bố kết quả sau khi chấm cả câu.
+**Ví dụ một câu:** A có 20 điểm và dùng Spin, Server chọn Bứt phá. A không dùng Star. Câu mở, A gửi đáp án B. Server gửi ANSWER_ACCEPTED, chưa tiết lộ đúng/sai. Khi tất cả đã trả lời hoặc hết hạn, câu đóng. Nếu A đúng, không có Momentum thì +18, đạt 38 điểm; nếu sai thì −7, còn 13. Server công bố sau khi chấm cả câu và commit; hiển thị chung1500ms rồi tự chuyển tiếp. Decision7000ms; thời gian xếp hạng không cộng Decision/RESULT.
 
 ```mermaid
 sequenceDiagram

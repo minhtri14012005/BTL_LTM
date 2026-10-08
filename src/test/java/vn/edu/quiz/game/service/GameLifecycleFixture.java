@@ -134,7 +134,18 @@ abstract class GameLifecycleFixture {
     StartGameRequest request(RoomResponse room) { return new StartGameRequest(UUID.randomUUID().toString(),room.revision(),10); }
     long start(Fixture f) { var result=operations.start(f.host().auth(),f.room().id(),request(f.room()),() -> {}); long id=result.gameSessionId(); gameIds.add(id); installed.add(id); observer.next("DECISION_STARTED",id,1); return id; }
     GameSnapshot open(long id,int index) {
-        var decision=observer.next("DECISION_STARTED",id,index); scheduler.advance(decision.deadlineEpochMs()-clock.epoch); return observer.next("QUESTION_START",id,index);
+        var decision=decision(id,index); scheduler.advance(decision.deadlineEpochMs()-clock.epoch); return observer.next("QUESTION_START",id,index);
+    }
+    GameSnapshot decision(long id,int index) {
+        if(index>1 && observer.seen.stream().noneMatch(e -> e.type().equals("DECISION_STARTED") && e.snapshot().gameSessionId()==id && e.snapshot().questionIndex()==index)) {
+            var result=observer.next("QUESTION_RESULT",id,index-1);
+            if(result.status()==GameStatus.ACTIVE) {
+                long target=result.deadlineEpochMs()-clock.epoch;
+                waitUntil(() -> scheduler.tasks.stream().anyMatch(task -> !task.cancelled().get() && task.due()==target));
+                scheduler.advance(Math.max(clock.mono.get(),target));
+            }
+        }
+        return observer.next("DECISION_STARTED",id,index);
     }
     void expire(GameSnapshot open) { scheduler.advance(open.deadlineEpochMs()-clock.epoch); }
     static void waitUntil(BooleanSupplier condition) {

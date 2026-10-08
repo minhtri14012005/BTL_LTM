@@ -44,3 +44,7 @@ python scripts/collect-handoff-evidence.py # fixed Task15 review dataset/artifac
 collect-handoff-evidence.py là collector cho dataset Task15 này, không generic claim một run khác đã đạt. Build/test XML paths có thể bị Maven ghi đè khi chạy bộ khác; giữ directory này để review. File doPowerShell redirect dùngUTF16BOM, collector decode khi kiểm chứng; JSON/CSV UTF8/UTF8BOM. Các logs nằm trong folder handoff nên đã force-retain qua rule .gitignore, không credential/raw DBdump.
 
 Còn: clean-machine install/build/run, LAN3–4 máy, Compilatio, danh tính4 thành viên và contribution có evidence, Instruction/Submission/mẫu README môn và format cuối. Bảng cần điền ở [team](../../docs/team-contributions.md), [course checklist](../../docs/course-requirements-checklist.md) và [LAN protocol](../experiment-protocol.md#lan-và-máy-mới). Không tick các mục bằng browser contexts hoặc phân công dự kiến.
+
+### Phạm vi evidence sau cập nhật07/10/2026
+
+CSV/log/config/hash và ảnh bàn giao06/10/2026 giữ nguyên: Decision5000ms, RESULT chuyển tiếp ngay. Production mới Decision7000ms/RESULT1500ms; chạy lại scenario lifecycle/reconnect/UI trong đợt cập nhật, không tái gán benchmark cũ cho phiên bản mới. Chưa đo lại benchmark/LAN nhiều máy; evidence mới xem docs/project-status.md.

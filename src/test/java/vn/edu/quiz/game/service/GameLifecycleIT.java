@@ -142,7 +142,7 @@ class GameLifecycleIT extends GameLifecycleFixture {
             var result=observer.next("QUESTION_RESULT",id,1);
             assertThat(result.results().stream().filter(row -> row.userId()==f.roster().getFirst().id()).findFirst().orElseThrow().outcome()).isEqualTo(AnswerStatus.CORRECT);
             assertThat(jdbc.queryForObject("select answer_time_ms from answer a join player_session p on p.id=a.player_session_id where a.game_session_id=? and p.user_id=?",Long.class,id,f.roster().getFirst().id())).isEqualTo(999L);
-            var next=observer.next("DECISION_STARTED",id,2);
+            var next=decision(id,2);
             assertThat(next.remainingMs()).isEqualTo(next.config().decisionDurationMs());
         } finally { release.countDown(); }
     }

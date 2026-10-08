@@ -77,3 +77,7 @@ Chưa có nhiều thiết bị/clean-machine evidence. Chạy lại bằng sourc
 | Build/run máy mới | | | | |
 | LAN3–4 thiết bị thật | | | | |
 | Baseline/proposed LAN nếu đo | | | | |
+
+### Phạm vi evidence sau cập nhật07/10/2026
+
+CSV/log/config/hash và ảnh bàn giao06/10/2026 giữ nguyên: Decision5000ms, RESULT chuyển tiếp ngay. Production mới Decision7000ms/RESULT1500ms; chạy lại scenario lifecycle/reconnect/UI trong đợt cập nhật, không tái gán benchmark cũ cho phiên bản mới. Chưa đo lại benchmark/LAN nhiều máy; evidence mới xem docs/project-status.md.

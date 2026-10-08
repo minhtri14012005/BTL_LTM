@@ -15,14 +15,14 @@ import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties =
+    "spring.datasource.url=jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/quizz_task2_test?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000")
 @ActiveProfiles("mysql")
 class MySqlSmokeIT {
     @Autowired
@@ -37,8 +37,7 @@ class MySqlSmokeIT {
     @LocalServerPort
     private int port;
 
-    @Value("${DB_NAME:quizz}")
-    private String databaseName;
+    private final String databaseName = "quizz_task2_test";
 
     @Test
     void connectsToRealMysqlAndRunsJpaQuery() throws Exception {

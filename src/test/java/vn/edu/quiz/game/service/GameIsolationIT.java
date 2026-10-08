@@ -47,7 +47,7 @@ class GameIsolationIT extends GameNetworkFixture {
         // is an interface method on this spy; commit performs the remaining normal flush.
         doAnswer(inv -> {if(Boolean.TRUE.equals(scoringA.get())){entered.countDown();await(release);}return null;}).when(players).flush();
         try {
-            expire(openedB);await(entered);observer.next("QUESTION_RESULT",gameB,1);observer.next("DECISION_STARTED",gameB,2);
+            expire(openedB);await(entered);observer.next("QUESTION_RESULT",gameB,1);decision(gameB,2);
             // A flushed its tentative SQL but has not committed. B progresses through the same worker/pool infrastructure.
             assertThat(runtime.snapshot(gameA,a.host().id()).members().stream().filter(m -> m.score()!=null).map(m -> m.score())).containsOnly(20);
             assertThat(jdbc.queryForList("select score from player_session where game_session_id=?",Integer.class,gameA)).containsOnly(20);
@@ -62,7 +62,7 @@ class GameIsolationIT extends GameNetworkFixture {
             assertThat(hostA.messages.stream().filter(m -> m.path("target").path("kind").asText().equals("GAME"))).allMatch(m -> m.path("target").path("id").asLong()==gameA);
             assertThat(hostB.messages.stream().filter(m -> m.path("target").path("kind").asText().equals("GAME"))).allMatch(m -> m.path("target").path("id").asLong()==gameB);
             scheduler.advance(clock.mono.get()+200);release.countDown();observer.next("QUESTION_RESULT",gameA,1);
-            var nextA=observer.next("DECISION_STARTED",gameA,2);assertThat(nextA.remainingMs()).isEqualTo(5000L);
+            var nextA=decision(gameA,2);assertThat(nextA.remainingMs()).isEqualTo(7000L);
             assertThat(runtime.snapshot(gameA,a.roster().getFirst().id()).player().score()).isEqualTo(50); // BONUS+Star correct +30.
             assertThat(runtime.snapshot(gameA,a.roster().getFirst().id()).player().remainingSpins()).isZero();
             assertThat(playerA.response(answerA)).isEqualTo(ackA);assertThat(observer.seen).noneMatch(e -> e.type().equals("GAME_UNAVAILABLE"));
@@ -75,12 +75,13 @@ class GameIsolationIT extends GameNetworkFixture {
         doAnswer(inv -> {scoringA.set(true);try{return inv.callRealMethod();}finally{scoringA.remove();}}).when(transactions).score(eq(gameA),eq(1),anyLong());
         doAnswer(inv -> {if(Boolean.TRUE.equals(scoringA.get()))throw new TransientDataAccessResourceException("Room A test rollback after real SQL flush");return null;}).when(players).flush();
         open(gameA,1);var openedB=observer.next("QUESTION_START",gameB,1);expire(openedB);
-        observer.next("DECISION_STARTED",gameB,2);scheduler.retry(100);scheduler.retry(300);
+        // Advance finite DB retries before advancing the shared clock by the RESULT window.
+        scheduler.retry(100);scheduler.retry(300);decision(gameB,2);
         var endedA=observer.next("GAME_END",gameA,1);assertThat(endedA.endReason().name()).isEqualTo("SERVER_INTERRUPTED");assertThat(endedA.hasOfficialWinner()).isFalse();
         occupancies(gameA,0);roomState(a,"WAITING");occupancies(gameB,4);roomState(b,"ACTIVE");
         assertThat(answerCount(gameA)).isZero();assertThat(jdbc.queryForList("select score from player_session where game_session_id=?",Integer.class,gameA)).containsOnly(20);
         assertThat(jdbc.queryForList("select score from player_session where game_session_id=?",Integer.class,gameB)).containsOnly(19);
-        var opened=open(gameB,2);var playerB=new Wire(b.roster().getFirst());accepted(playerB.response(command("ANSWER",gameB,2,Map.of("option","D"))));expire(opened);observer.next("DECISION_STARTED",gameB,3);
+        var opened=open(gameB,2);var playerB=new Wire(b.roster().getFirst());accepted(playerB.response(command("ANSWER",gameB,2,Map.of("option","D"))));expire(opened);decision(gameB,3);
         assertThat(runtime.snapshot(gameB,b.roster().getFirst().id()).player().score()).isEqualTo(29);
         assertThat(observer.seen.stream().filter(e -> e.type().equals("GAME_UNAVAILABLE"))).allMatch(e -> e.snapshot().gameSessionId()==gameA);
         verify(transactions,times(3)).score(eq(gameA),eq(1),anyLong());

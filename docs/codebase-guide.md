@@ -138,3 +138,9 @@ Start dùng Room boundary trước khi có GameSession. Timer dùng cùng ingres
 | [Final report](final-report.md) | Trình bày dự án và Results thực nghiệm. |
 
 Các README trong `.cache/` thuộc Maven hoặc thư viện tải về. Không sửa/đổi tên tài liệu của dependency để tổ chức README project.
+
+## Cập nhật gameplay 07/10/2026
+
+Room entity/service và GameTransactions chuẩn hóa Decision7000ms cho trận mới; [V3](../src/main/resources/db/migration/V3__decision_seven_seconds.sql) đổi default/Room idle, không đổi Game snapshot. GameLifecycle.closed nhận scoring đã commit rồi tạo PhaseWindow RESULT1500ms; timer của SessionQueue gọi lifecycle.timer để mở Decision tiếp. Terminal cleanup ngay, contextual snapshot giữ thời gian trình bày còn lại.
+
+Client game.js giữ app.gamePresentation theo Game để lưu bật/tắt leaderboard và dedup toast/result; game-state.js chặn revision/serverTime cũ. Snapshot chỉ phục hồi state, event mới mới có delta/pulse; ACK hợp lệ mới khóa Answer hoặc thông báo resource. Countdown giữ ước lượng clock Server giữa các event trễ. Công thức ScoreEngine/RankingEngine không đổi. Kiểm thử mới: GamePresentationIT và scripts/test-game-client.py; kết quả ở project-status.

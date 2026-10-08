@@ -24,7 +24,8 @@ final class GameSnapshotAssertions {
         assertThat(s.get("hasOfficialWinner").isBoolean()).isTrue();assertThat(s.get("cleanupPending").isBoolean()).isTrue();
         assertThat(s.get("members").isArray()).isTrue();assertThat(s.get("results").isArray()).isTrue();assertThat(s.get("winners").isArray()).isTrue();assertThat(s.get("config").isObject()).isTrue();
         if(s.get("status").asText().equals("ACTIVE")) {assertThat(s.get("endReason").isNull()).isTrue();assertThat(s.get("hasOfficialWinner").asBoolean()).isFalse();assertThat(s.get("winners")).isEmpty();}
-        else {assertThat(s.get("endReason").asText()).isIn("COMPLETED","ONE_SURVIVOR","ALL_ELIMINATED","CANCELLED","SERVER_INTERRUPTED");assertThat(s.get("deadlineEpochMs").isNull()).isTrue();assertThat(s.get("remainingMs").isNull()).isTrue();}
+        else {assertThat(s.get("endReason").asText()).isIn("COMPLETED","ONE_SURVIVOR","ALL_ELIMINATED","CANCELLED","SERVER_INTERRUPTED");if(s.get("deadlineEpochMs").isNull())assertThat(s.get("remainingMs").isNull()).isTrue();
+            else { assertThat(s.get("hasOfficialWinner").asBoolean()).isTrue(); assertThat(s.get("remainingMs").asLong()).isBetween(0L,1500L); }}
         if(s.get("endReason").asText().equals("CANCELLED") || s.get("endReason").asText().equals("SERVER_INTERRUPTED")) {assertThat(s.get("hasOfficialWinner").asBoolean()).isFalse();assertThat(s.get("winners")).isEmpty();}
         JsonNode self=null;
         for(var m:s.get("members")) {

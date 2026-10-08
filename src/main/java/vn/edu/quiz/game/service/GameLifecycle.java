@@ -27,6 +27,7 @@ public final class GameLifecycle {
     private volatile View view;
     private QuestionCloseGate gate;
     private long token;
+    public static final long RESULT_DURATION_MS = 1500L;
     private final GameTransactions transactions;
     private final Control control;
     private final SpinSelector spins;
@@ -44,9 +45,10 @@ public final class GameLifecycle {
     }
     public void timer(int question,Phase phase,long expectedToken) {
         var current=view; var window=current.window();
-        if(window==null || !window.matches(question,phase,expectedToken) || !current.mode().equals("READY")) return;
+        if(window==null || !window.matches(question,phase,expectedToken) || !current.mode().equals("READY") || window.remainingMs(control.now().monotonicMs())>0) return;
         if(phase==Phase.DECISION) open(question,Phase.QUESTION_OPEN);
         else if(phase==Phase.QUESTION_OPEN && gate!=null && gate.close()) closed();
+        else if(phase==Phase.RESULT) open(question+1,Phase.DECISION);
     }
     private long id() { return view.data().publicView().gameSessionId(); }
     private void open(int index,Phase phase) {
@@ -113,12 +115,15 @@ public final class GameLifecycle {
             attempt(() -> transactions.transition(id(),index,Phase.QUESTION_CLOSED,Phase.SCORING),scoring -> {
                 view=new View(scoring,null,"READY",false); emit("SCORING_STARTED");
                 attempt(() -> transactions.score(id(),index,control.now().epochMs()),result -> {
-                    view=new View(result,null,result.publicView().status()==GameStatus.FINISHED?"FINISHED":"READY",false);
+                    // Presentation window starts only after the scoring proxy has committed.
+                    var now=control.now();
+                    var resultWindow=PhaseWindow.open(index,Phase.RESULT,++token,now.monotonicMs(),now.epochMs(),RESULT_DURATION_MS);
+                    view=new View(result,resultWindow,result.publicView().status()==GameStatus.FINISHED?"FINISHED":"READY",false);
                     emit("QUESTION_RESULT");
                     if(result.publicView().results().stream().anyMatch(GameSnapshot.Result::eliminatedNow)) emit("PLAYER_ELIMINATED");
                     emit("LEADERBOARD_UPDATED");
                     if(result.publicView().status()==GameStatus.FINISHED) { control.retire(); emit("GAME_END"); }
-                    else control.enqueue(() -> open(index+1,Phase.DECISION));
+                    else control.arm(resultWindow);
                 },1,null);
             },1,null);
         },1,null);
@@ -184,6 +189,7 @@ public final class GameLifecycle {
     }
     private GameSnapshot contextual(View current,GameSnapshot.Player self) {
         var now=control.now(); var window=current.window();
+        if(window!=null && current.data().publicView().status()==GameStatus.FINISHED && window.remainingMs(now.monotonicMs())==0) window=null;
         return current.data().publicView().contextual(now.epochMs(),window==null?null:window.deadlineEpochMs(),
                 window==null?null:window.remainingMs(now.monotonicMs()),current.mode(),current.cleanupPending(),self);
     }

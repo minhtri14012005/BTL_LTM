@@ -43,7 +43,7 @@ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -p -e 'source scripts/prepare-
 
 CREATE DATABASE IF NOT EXISTS, không DROP. Runtime mặc định `quizz`; integration riêng `quizz_task2_test`; harness riêng `quizz_task15_experiment`. Mỗi Server chỉ dùng một DB. Không trỏ integration vào dữ liệu đang chơi.
 
-Flyway V1/V2 tạo11 bảng domain; JPA ddl-auto=validate, không update/create. Giữ Flyway bật khi cài mới/demo. Schema integration đã chuẩn bị dùng `-Dspring.flyway.enabled=false` vì schema tests tự tạo DDL; không dùng cờ này để bỏ migration cài mới. [Schema/ERD](docs/database-schema.md) khớp [DDL](src/main/resources/db/migration/V1__quiz_domain.sql). Sao lưu MySQL và thư mục ảnh cùng bộ dữ liệu.
+Flyway V1/V2 tạo11 bảng domain; V3 cập nhật Decision của Room; JPA ddl-auto=validate, không update/create. Giữ Flyway bật khi cài mới/demo. Schema integration đã chuẩn bị dùng `-Dspring.flyway.enabled=false` vì schema tests tự tạo DDL; không dùng cờ này để bỏ migration cài mới. [Schema/ERD](docs/database-schema.md) khớp [DDL](src/main/resources/db/migration/V1__quiz_domain.sql). Sao lưu MySQL và thư mục ảnh cùng bộ dữ liệu.
 
 ## Config, Server và Client
 
@@ -117,7 +117,7 @@ Replay giữ10 phút sau FINISHED, không bảo đảm qua restart. Socket mới
 
 ~~~powershell
 # Full suite với MySQL/schema test đã chuẩn bị; không H2
-.\mvnw.cmd -B --no-transfer-progress verify -Pmysql-smoke '-Dspring.flyway.enabled=false' -Ddebug=false
+.\mvnw.cmd -B --no-transfer-progress verify -Pmysql-smoke -Ddebug=false
 # Server mysql/JAR đang ready; Chrome+Python
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-client.ps1 -Gameplay -ReportName task15-client-tests.json
 ~~~
@@ -158,3 +158,9 @@ Bộ review: README ứng dụng, final-report.md, team-contributions.md, schema
 - [Spring Boot3.5 reference](https://docs.spring.io/spring-boot/3.5/reference/index.html), [Spring Security servlet authentication](https://docs.spring.io/spring-security/reference/servlet/authentication/index.html), [Spring WebSocket](https://docs.spring.io/spring-framework/reference/web/websocket.html).
 - [MySQL8 CHECK](https://dev.mysql.com/doc/refman/8.0/en/create-table-check-constraints.html), [Java21 nanoTime](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/System.html#nanoTime()), [WHATWG WebSockets](https://websockets.spec.whatwg.org/).
 - Tài liệu nền tảng không thay chứng cứ implementation/tests hoặc yêu cầu môn chưa có.
+
+## Cập nhật gameplay 07/10/2026
+
+Trận mới: chọn Spin/Hope Star/Chơi thường trong7giây → Answer theo cấu hình Room → RESULT chung1,5giây → tự sang câu sau/Final. ACK không đúng/sai; khi chấm, đúng xanh/sai đã chọn đỏ, toast delta riêng. Leaderboard bên phải có bật/tắt, thời gian hiển thị giây; backend ms và công thức điểm/ranking giữ nguyên. Waiting ẩn Revision nhưng dữ liệu đồng bộ vẫn giữ.
+
+Khởi động với Flyway bật để V3 đổi default/Room DRAFT/WAITING cũ thành7000ms; không reset DB hoặc sửa snapshot Game ACTIVE/FINISHED. Room quay về WAITING/Start mới được chuẩn hóa7000ms. Không sửa V1/V2 đã áp dụng. Evidence/benchmark06/10/2026 giữ nguyên cho cấu hình5000ms; kiểm thử/ảnh bản mới xem docs/project-status.md.

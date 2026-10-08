@@ -95,7 +95,7 @@ class GameHistoryCancelIT extends GameNetworkFixture {
     @Test void eliminatedHostCanCancelButCannotAnswerSpinStarAndHistoryKeepsElimination() throws Exception {
         var hostAccount=account();var roster=List.of(hostAccount,account(),account());var author=account();long quiz=quiz(author,10);var f=new Fixture(hostAccount,roster,quiz,room(hostAccount,quiz,roster));
         var host=new Wire(hostAccount);var b=new Wire(roster.get(1));var c=new Wire(roster.get(2));long id=start(f);
-        for(int index=1;index<=6;index++){open(id,index);accepted(host.response(command("ANSWER",id,index,Map.of("option","A"))));accepted(b.response(command("ANSWER",id,index,Map.of("option","D"))));accepted(c.response(command("ANSWER",id,index,Map.of("option","D"))));observer.next("DECISION_STARTED",id,index+1);}
+        for(int index=1;index<=6;index++){open(id,index);accepted(host.response(command("ANSWER",id,index,Map.of("option","A"))));accepted(b.response(command("ANSWER",id,index,Map.of("option","D"))));accepted(c.response(command("ANSWER",id,index,Map.of("option","D"))));decision(id,index+1);}
         assertThat(runtime.snapshot(id,hostAccount.id()).player().score()).isEqualTo(-1); // 5 wrong:0, Recovery; sixth -1.
         assertThat(runtime.snapshot(id,hostAccount.id()).player().state()).isEqualTo(PlayerState.ELIMINATED);
         for(String type:List.of("ANSWER","USE_SPIN","USE_STAR"))rejected(host.response(command(type,id,7,type.equals("ANSWER")?Map.of("option","D"):Map.of())),"FORBIDDEN");
@@ -106,7 +106,7 @@ class GameHistoryCancelIT extends GameNetworkFixture {
     }
     @Test void completedHistoryContainsStreakEffectsAndNormalCoWinnersCancelCannotRewriteIt() throws Exception {
         var f=fixture();var host=new Wire(f.host());var ws=f.roster().stream().map(p -> {try{return new Wire(p);}catch(Exception e){throw new RuntimeException(e);}}).toList();long id=start(f);
-        for(int index=1;index<=10;index++){open(id,index);for(var wire:ws)accepted(wire.response(command("ANSWER",id,index,Map.of("option","D"))));observer.next(index==10?"GAME_END":"DECISION_STARTED",id,index==10?10:index+1);}
+        for(int index=1;index<=10;index++){open(id,index);for(var wire:ws)accepted(wire.response(command("ANSWER",id,index,Map.of("option","D"))));if(index==10) observer.next("GAME_END",id,10); else decision(id,index+1);}
         rejected(host.response(cancel(id)),"INVALID_STATE");var detail=json.readTree(host.client.call("GET",history(id),null).body());
         assertThat(detail.path("finalSnapshot").path("endReason").asText()).isEqualTo("COMPLETED");assertThat(detail.path("finalSnapshot").path("hasOfficialWinner").asBoolean()).isTrue();assertThat(detail.path("finalSnapshot").path("winners").size()).isEqualTo(3);
         for(var member:detail.path("finalSnapshot").path("members"))if(!member.path("score").isNull()){assertThat(member.path("score").asInt()).isEqualTo(123);assertThat(member.path("rank").asInt()).isEqualTo(1);}

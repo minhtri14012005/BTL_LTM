@@ -154,7 +154,7 @@ Dấu NULL/NOT NULL và default bên dưới lấy từ migration V1. Mọi FK d
 | `status` | `VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL` |
 | `max_players` | `INT NOT NULL` |
 | `question_duration_ms` | `BIGINT NOT NULL` |
-| `decision_duration_ms` | `BIGINT NOT NULL DEFAULT 5000` |
+| `decision_duration_ms` | `BIGINT NOT NULL DEFAULT 7000` |
 | `created_at_ms` | `BIGINT NOT NULL` |
 | `revision` | `BIGINT NOT NULL DEFAULT 0` |
 
@@ -324,3 +324,7 @@ Cancel trước scoring giữ ACCEPTED_UNSCORED, không đổi thành CORRECT/WR
 Flyway migrate/validate chạy trước Hibernate ddl-auto=validate; clean-disabled=true, SQL init never. V1 đã áp dụng thì giữ nguyên checksum; V2 bổ sung constraint riêng. MySQL tối thiểu **8.0.17** cho JSON_SCHEMA_VALID và enforced CHECK, kiểm chứng trên8.0.45. Không dùng H2. [MySqlSchemaIT](../src/test/java/vn/edu/quiz/game/repository/MySqlSchemaIT.java) cố định database quizz_task2_test và rollback fixture; MySqlSmokeIT dùng DB_NAME/quizz, chỉ migration/schema và SELECT/readiness, không insert test vào quizz.
 
 Tài liệu chính thức: [MySQL FK](https://dev.mysql.com/doc/refman/8.0/en/create-table-foreign-keys.html), [CHECK](https://dev.mysql.com/doc/refman/8.0/en/create-table-check-constraints.html), [JSON schema validation](https://dev.mysql.com/doc/refman/8.0/en/json-validation-functions.html), [Hibernate 6.6 mapping](https://docs.hibernate.org/orm/6.6/userguide/html_single/), [Spring Boot database initialization](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html). Kết quả chạy thật ghi tại project-status.
+
+### Migration V3 — Decision7000ms
+
+V1/V2 giữ checksum. V3 đổi default Room và cập nhật DRAFT/WAITING cũ, tăng revision cho Room thay đổi; không đụng config_snapshot Game ACTIVE/FINISHED hoặc cấu hình Room ACTIVE/CLOSED. Start mới và terminal cleanup chuẩn hóa Room về7000ms để lần chơi tiếp theo đúng luật mới. Không thêm bảng UI.

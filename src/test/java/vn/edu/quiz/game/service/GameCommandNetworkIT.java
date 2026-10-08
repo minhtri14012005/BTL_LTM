@@ -34,7 +34,7 @@ class GameCommandNetworkIT extends GameNetworkFixture {
         rejected(a.response(command("ANSWER",id,1,Map.of("option","A"))),"ALREADY_ANSWERED");
         // User is part of scope: a different Player can use the same request UUID independently.
         accepted(b.response(original)); assertThat(answerCount(id)).isEqualTo(2);
-        expire(observer.next("QUESTION_START",id,1)); observer.next("DECISION_STARTED",id,2);
+        expire(observer.next("QUESTION_START",id,1)); decision(id,2);
         a.send(original); assertThat(a.response(original.path("requestId").asText(),3)).isEqualTo(ack);
         var changedIndex=original.deepCopy().put("questionIndex",2); rejected(a.response(changedIndex),"INVALID_REQUEST_ID");
         var changedType=original.deepCopy().put("type","USE_SPIN"); changedType.set("payload",json.createObjectNode());
@@ -103,7 +103,7 @@ class GameCommandNetworkIT extends GameNetworkFixture {
         open(id,1); accepted(player.response(command("ANSWER",id,1,Map.of("option","A")))); accepted(other.response(command("ANSWER",id,1,Map.of("option","D")))); accepted(third.response(command("ANSWER",id,1,Map.of("option","D"))));
         var eliminated=player.event("PLAYER_ELIMINATED",1); assertThat(eliminated.path("payload").path("player").path("state").asText()).isEqualTo("ELIMINATED");
         assertThat(eliminated.path("payload").path("results").get(0).path("eliminatedQuestionIndex").asInt()).isEqualTo(1);
-        observer.next("DECISION_STARTED",id,2);
+        decision(id,2);
         rejected(player.response(command("ANSWER",id,2,Map.of("option","D"))),"FORBIDDEN"); rejected(player.response(command("USE_SPIN",id,2,Map.of())),"FORBIDDEN"); rejected(player.response(command("USE_STAR",id,2,Map.of())),"FORBIDDEN");
         player.send(spin); assertThat(player.response(spin.path("requestId").asText(),2)).isEqualTo(original);
         var otherType=spin.deepCopy().put("type","USE_STAR"); player.send(otherType);
@@ -187,7 +187,7 @@ class GameCommandNetworkIT extends GameNetworkFixture {
         var first=command("USE_SPIN",id,1,Map.of()); accepted(player.response(first));
         var pool=runtime.snapshot(id,roster.getFirst().id()).player(); assertThat(pool.remainingSpins()).isEqualTo(1);assertThat(pool.remainingSpinPool()).doesNotContain(SpinEffect.BONUS);
         assertThat(runtime.snapshot(id,roster.get(1).id()).player().remainingSpinPool()).hasSize(6);
-        open(id,1); expire(observer.next("QUESTION_START",id,1));observer.next("DECISION_STARTED",id,2);
+        open(id,1); expire(observer.next("QUESTION_START",id,1));decision(id,2);
         var second=player.response(command("USE_SPIN",id,2,Map.of())); accepted(second);
         assertThat(second.path("payload").path("remainingSpins").asInt()).isZero();assertThat(runtime.snapshot(id,roster.getFirst().id()).player().remainingSpinPool()).doesNotContain(SpinEffect.BONUS,SpinEffect.SAFE);
         runtime.interrupt(id).get(5,TimeUnit.SECONDS); observer.next("GAME_END",id,2);
