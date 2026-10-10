@@ -70,6 +70,7 @@ public class AuthController {
         var session = request.getSession(false);
         if (session != null) sessions.revoke(session.getId(), "LOGGED_OUT");
         var logout = new SecurityContextLogoutHandler();
+        logout.setInvalidateHttpSession(false); // AuthSessionRegistry invalidates after the asynchronous transport close.
         logout.setSecurityContextRepository(contexts); logout.logout(request, response, authentication);
         csrf.saveToken(null, request, response);
         String path = request.getContextPath().isEmpty() ? "/" : request.getContextPath();

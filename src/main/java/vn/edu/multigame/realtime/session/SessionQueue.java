@@ -92,22 +92,31 @@ public final class SessionQueue<C> implements AutoCloseable {
 
     /** Successful enqueue is ingress. Waiting for this monitor is not ingress, and client time is never read. */
     public Submission<C> submit(SessionKey key, C command) {
+        return admit(key,command,true);
+    }
+
+    /** Trusted presence/close continuations share ingress order; command floods cannot discard them. */
+    Submission<C> submitControl(SessionKey key,C command) {
+        return admit(key,command,false);
+    }
+
+    private Submission<C> admit(SessionKey key,C command,boolean counted) {
         Objects.requireNonNull(command, "command");
         State state = state(key);
         synchronized (state) {
             requireAvailable(state);
-            if (state.pendingCommands >= commandLimit) throw unavailable();
+            if (counted && state.pendingCommands >= commandLimit) throw unavailable();
             ServerClock.Sample now = clock.sample();
             long sequence = Math.incrementExact(state.sequence);
             Ingress<C> ingress = new Ingress<>(key.gameSessionId(), key.generation(), sequence,
                     now.monotonicMs(), now.epochMs(), command);
             var completion = new CompletableFuture<Void>();
-            Work work = new Work(() -> state.handler.onCommand(ingress), null, completion, true);
+            Work work = new Work(() -> state.handler.onCommand(ingress), null, completion, counted);
             state.sequence = sequence;
-            state.queue.addLast(work); state.pendingCommands++;
+            state.queue.addLast(work); if(counted) state.pendingCommands++;
             try { dispatch(state); }
             catch (RejectedExecutionException failure) {
-                state.queue.removeLast(); state.pendingCommands--; state.sequence--;
+                state.queue.removeLast(); if(counted) state.pendingCommands--; state.sequence--;
                 throw failure; // Not admitted, no side effect and no returned ingress receipt.
             }
             return new Submission<>(ingress, completion);

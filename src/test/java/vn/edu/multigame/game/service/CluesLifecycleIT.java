@@ -105,7 +105,7 @@ class CluesLifecycleIT extends GameNetworkFixture {
         assertThat(jdbc.queryForObject("select count(*) from user_active_game where game_session_id=?",Integer.class,id)).isZero();assertThat(jdbc.queryForObject("select status from room where id=?",String.class,f.room().id())).isEqualTo("WAITING");
     }
 
-    @Test void delayedFirstHintDisconnectedPlayerStillWaitsAndOfflineNextQuestionCanCloseWithoutHints() throws Exception {
+    @Test void delayedHintsAndReconnectStartNewOfflineEpisodeThatWaitsFirstQuestion() throws Exception {
         var s=setup(false);var f=s.fixture();
         quizService.edit(f.host().auth(),s.set(),new EditQuestionBankRequest("Delayed first hint",Visibility.PRIVATE,0L,List.of(clue("One","bắt cá",100,900),clue("Two","bắt cá",100,900)),GameMode.CLUES));
         var ws=online(f);long id=start2(f);ready(ws,id,1);var q=observer.next("QUESTION_START",id,1);long at=clock.mono.get();
@@ -116,10 +116,13 @@ class CluesLifecycleIT extends GameNetworkFixture {
         var reconnected=new Wire(f.roster().getFirst());var re=reconnected.response(envelope("RECONNECT","GAME",id,null,Map.of()));accepted(re);
         assertThat(re.path("payload").path("remainingMs").asLong()).isEqualTo(1);assertThat(re.path("payload").path("question").path("payload").path("hints").size()).isEqualTo(1);
         accepted(reconnected.response(command("ANSWER",id,1,Map.of("text","bắt cá"))));var result=observer.next("QUESTION_RESULT",id,1);
-        reconnected.close();waitUntil(()->!sockets.onlineUsers().contains(f.roster().getFirst().id()));advanceDeadline(result);observer.next("QUESTION_START",id,2);long second=clock.mono.get();var hint=pendingHint(second+100);
-        for(int i=1;i<3;i++)accepted(ws.get(i).response(command("ANSWER",id,2,Map.of("text","bắt cá"))));var end=observer.next("GAME_END",id,2);
-        assertThat(hintCount(id,2)).isZero();assertThat(end.results().stream().map(GameSnapshot.Result::scoreDelta)).containsExactly(0,20,20);assertThat((List<?>)end.question().payload().get("hints")).isEmpty();
-        clock.mono.set(second+900);hint.action().run();assertThat(hintCount(id,2)).isZero();assertThat(hintEvents(id)).isEqualTo(1);
+        reconnected.close();waitUntil(()->!sockets.onlineUsers().contains(f.roster().getFirst().id()));advanceDeadline(result);var q2=observer.next("QUESTION_START",id,2);long second=clock.mono.get();var hint=pendingHint(second+100);
+        for(int i=1;i<3;i++)accepted(ws.get(i).response(command("ANSWER",id,2,Map.of("text","bắt cá"))));
+        assertThat(runtime.snapshot(id,f.host().id()).phase()).isEqualTo(Phase.QUESTION_OPEN);
+        scheduler.advance(second+100);waitUntil(()->hintCount(id,2)==1);pendingHint(second+900);scheduler.advance(second+900);waitUntil(()->hintCount(id,2)==2);
+        advanceDeadline(q2);var end=observer.next("GAME_END",id,2);
+        assertThat(end.results().stream().map(GameSnapshot.Result::scoreDelta)).containsExactly(0,20,20);assertThat((List<?>)end.question().payload().get("hints")).hasSize(2);
+        hint.action().run();assertThat(hintCount(id,2)).isEqualTo(2);assertThat(hintEvents(id)).isEqualTo(3);
     }
 
     @Test void authoringPermissionsValidationDurationRevalidationAndMysqlCursorConstraints() throws Exception {

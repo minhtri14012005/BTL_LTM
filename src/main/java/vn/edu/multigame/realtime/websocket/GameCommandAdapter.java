@@ -1,6 +1,5 @@
 package vn.edu.multigame.realtime.websocket;
 
-import java.io.IOException;
 import java.util.concurrent.*;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
@@ -65,6 +64,6 @@ public class GameCommandAdapter {
                 command==null || command.questionIndex()==null || command.questionIndex()==0?null:command.questionIndex(),code,code,retryable,System.currentTimeMillis()));
     }
     private void close(WebSocketSession socket,int code,String reason) {
-        try { socket.close(new CloseStatus(code,reason)); } catch(IOException ignored) {}
+        sockets.close(socket,new CloseStatus(code,reason));
     }
 }

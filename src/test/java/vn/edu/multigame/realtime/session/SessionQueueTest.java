@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -388,6 +389,22 @@ class SessionQueueTest {
                 assertThatThrownBy(() -> f.submit("retry", command -> {})).isInstanceOf(java.util.concurrent.RejectedExecutionException.class);
                 assertThat(calls).hasValue(1);
             } finally { release.countDown(); }
+        }
+    }
+
+    @Test void trustedPresenceAndCloseKeepIngressOrderWhenCommandCapacityIsFull() throws Exception {
+        try(var f=new Fixture(1,1,1)) {
+            var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
+            var block=f.submit("block",command->{entered.countDown();await(release);});await(entered);
+            try {
+                var answer=f.submit("answer",command->{});
+                var presence=f.queue.submitControl(f.key,new Command("disconnect",command->{}));
+                var close=f.queue.submitControl(f.key,new Command("close",command->{}));
+                assertThatThrownBy(()->f.submit("overflow",command->{})).isInstanceOf(RejectedExecutionException.class);
+                release.countDown();done(block);done(answer);done(presence);done(close);
+                assertThat(f.trace).containsExactly("block","answer","disconnect","close");
+                assertThat(f.ingress).extracting(Ingress::sequence).containsExactly(1L,2L,3L,4L);
+            } finally {release.countDown();}
         }
     }
 

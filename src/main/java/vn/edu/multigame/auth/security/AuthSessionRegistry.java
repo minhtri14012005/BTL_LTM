@@ -48,8 +48,20 @@ public class AuthSessionRegistry {
     public void revoke(String id, String reason) {
         Binding removed = sessions.remove(id);
         if (removed == null) return;
-        events.publishEvent(new AuthSessionRevoked(id, reason));
-        try { removed.session().invalidate(); } catch (IllegalStateException ignored) { /* Already invalidated by container. */ }
+        // Remove HTTP authentication now as well; delayed physical invalidation must
+        // not leave the revoked cookie authorized on other REST endpoints.
+        try {removed.session().removeAttribute(org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);}
+        catch(IllegalStateException alreadyInvalid){/* Container expiry. */}
+        var revoked=new AuthSessionRevoked(id,reason);
+        events.publishEvent(revoked);
+        // Authority is already revoked. Let transport close with 4001 before Tomcat's
+        // HTTP-session invalidation emits its own 1008 close; never wait on the caller.
+        revoked.delivered().completeOnTimeout(null,5,java.util.concurrent.TimeUnit.SECONDS).whenComplete((ignored,failure)->{
+            try {
+                // Login may rotate and reuse this HTTP session while close is pending.
+                if(id.equals(removed.session().getId()))removed.session().invalidate();
+            }catch(IllegalStateException alreadyInvalid){/* Container expiry. */}
+        });
     }
     @Scheduled(fixedDelay = 1000)
     public void expireIdleSessions() {

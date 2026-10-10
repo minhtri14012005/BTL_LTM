@@ -28,6 +28,7 @@ public class GameRuntime {
         SessionQueue.SessionKey key;
         GameLifecycle lifecycle;
         final GameReplayCache replay;
+        java.util.Set<Long> players;
         Node(Reservation reservation,Semaphore budget) { this.reservation=reservation; this.replay=new GameReplayCache(budget); }
     }
     public static final class Reservation implements AutoCloseable {
@@ -48,11 +49,13 @@ public class GameRuntime {
     private final CommandFingerprint fingerprints;
     private final vn.edu.multigame.realtime.connection.AuthenticatedSocketRegistry sockets;
     private volatile boolean closed;
+    private final Consumer<vn.edu.multigame.realtime.connection.AuthenticatedSocketRegistry.PresenceChange> presenceListener=this::presence;
     public GameRuntime(GameTransactions transactions,GameStartupCleanup startup,ApplicationEventPublisher events,
             ServerClock clock,TimerScheduler scheduler,SpinSelector spins,CommandFingerprint fingerprints,vn.edu.multigame.realtime.connection.AuthenticatedSocketRegistry sockets) {
         this.transactions=transactions; this.startup=startup; this.events=events; this.clock=clock;
         this.spins=spins; this.fingerprints=fingerprints;this.sockets=sockets;
         queue=new SessionQueue<>(clock,scheduler,4,512,64,32);
+        sockets.onPresence(presenceListener);
     }
     public Reservation reserve() {
         cleanup();
@@ -64,11 +67,10 @@ public class GameRuntime {
         node.lifecycle=new GameLifecycle(transactions,new GameLifecycle.Control() {
             public GameLifecycle.Time now() { var time=clock.sample(); return new GameLifecycle.Time(time.monotonicMs(),time.epochMs()); }
             public void defer(long delay,Runnable action) { queue.defer(node.key,delay,action); }
-            public void enqueue(Runnable action) { submit(node,ignored -> action.run()); }
+            public void enqueue(Runnable action) { queue.submitControl(node.key,new Job(ignored -> action.run())); }
             public void arm(PhaseWindow window) { queue.armTimer(node.key,window); }
             public void retire() { queue.retire(node.key); }
             public void stopTimers() { queue.stopTimer(node.key); }
-            public java.util.Set<Long> onlineUsers() {return sockets.onlineUsers();}
             public void publish(GameLifecycleEvent event) { events.publishEvent(event); }
         },data,spins);
         node.key=queue.register(id,new SessionQueue.Handler<>() {
@@ -77,7 +79,18 @@ public class GameRuntime {
                 var identity=timer.value(); node.lifecycle.timer(identity.questionIndex(),identity.phase(),identity.token(),identity.deadlineMs());
             }
         });
-        nodes.put(id,node); submit(node,ignored -> node.lifecycle.boot());
+        node.players=data.publicView().schemaVersion()==2?java.util.Set.copyOf(data.players().keySet()):java.util.Set.of();
+        sockets.withPresence(online -> {
+            node.lifecycle.initialPresence(online);
+            nodes.put(id,node); submit(node,ignored -> node.lifecycle.boot());
+        });
+    }
+    private void presence(vn.edu.multigame.realtime.connection.AuthenticatedSocketRegistry.PresenceChange changed) {
+        if(closed) return;
+        nodes.values().stream().filter(node -> node.players.contains(changed.userId())).forEach(node -> {
+            try {queue.submitControl(node.key,new Job(ignored -> node.lifecycle.presence(changed.userId(),changed.connected())));}
+            catch(RejectedExecutionException expired) { /* Disposed/failed actors cannot advance gameplay. */ }
+        });
     }
     public void failedInstallation(CommittedGame data) {
         publishHandoff("GAME_UNAVAILABLE",data,true);
@@ -193,5 +206,5 @@ public class GameRuntime {
     @Scheduled(fixedDelay=60_000) public void cleanup() {
         queue.cleanup(); nodes.forEach((id,node) -> { if(!queue.registered(node.key) && nodes.remove(id,node)) { node.replay.clear(); node.reservation.close(); } });
     }
-    @PreDestroy public synchronized void close() { closed=true; queue.close(); nodes.values().forEach(n -> { n.replay.clear(); n.reservation.close(); }); nodes.clear(); }
+    @PreDestroy public synchronized void close() { closed=true; sockets.removePresenceListener(presenceListener); queue.close(); nodes.values().forEach(n -> { n.replay.clear(); n.reservation.close(); }); nodes.clear(); }
 }

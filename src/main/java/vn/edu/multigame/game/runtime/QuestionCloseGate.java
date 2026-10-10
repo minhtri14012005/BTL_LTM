@@ -21,8 +21,9 @@ public final class QuestionCloseGate {
         return !closed && eligiblePlayers.contains(playerId) && answered.add(playerId);
     }
     public boolean closeIfAllAnswered() {
-        return !eligiblePlayers.isEmpty() && answered.size() == eligiblePlayers.size() && close();
+        return allAnswered() && close();
     }
+    public boolean allAnswered() { return !closed && !eligiblePlayers.isEmpty() && answered.size()==eligiblePlayers.size(); }
     /** True grants the handler the single close/scoring attempt. This is not a DB exactly-once guarantee. */
     public boolean close() {
         if (closed) return false;

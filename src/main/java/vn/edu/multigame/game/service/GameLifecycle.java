@@ -22,11 +22,23 @@ public final class GameLifecycle {
         void retire();
         void stopTimers();
         void publish(GameLifecycleEvent event);
-        default Set<Long> onlineUsers() { return Set.of(); }
     }
     private record View(CommittedGame data,PhaseWindow window,String mode,boolean cleanupPending) {}
     private volatile View view;
     private QuestionCloseGate gate;
+    private boolean earlyCloseQueued;
+    // Actor-owned disconnect episodes: 0 means no QUESTION_OPEN has occurred in this episode yet.
+    private final java.util.Map<Long,Integer> firstOfflineQuestion=new java.util.HashMap<>();
+    public void initialPresence(Set<Long> online) {
+        if(v2()) view.data().players().keySet().stream().filter(id -> !online.contains(id)).forEach(id -> firstOfflineQuestion.put(id,0));
+    }
+    /** Only the session sequencer invokes this; never mutate the current question's frozen wait-set. */
+    public void presence(long userId,boolean connected) {
+        if(!v2() || !view.data().players().containsKey(userId) || view.data().publicView().status()!=GameStatus.ACTIVE) return;
+        if(connected) firstOfflineQuestion.remove(userId);
+        else firstOfflineQuestion.computeIfAbsent(userId,id -> view.window()!=null && view.window().phase()==Phase.QUESTION_OPEN
+                ?view.window().questionIndex():0);
+    }
     private long token;
     private java.util.List<Long> hintOffsets=java.util.List.of();
     private final Set<Long> ready=new java.util.HashSet<>();
@@ -88,17 +100,21 @@ public final class GameLifecycle {
     private void open(int index,Phase phase) {
         // A queued next-phase continuation can be overtaken by an earlier queued Cancel.
         if(view.data().publicView().status()!=GameStatus.ACTIVE || view.mode().equals("UNAVAILABLE")) return;
-        var onlineAtOpen=new java.util.concurrent.atomic.AtomicReference<Set<Long>>(Set.of());
         attempt(() -> transactions.open(id(),index,phase,duration -> {
             var now=control.now();
-            if(v2() && phase==Phase.QUESTION_OPEN) onlineAtOpen.set(control.onlineUsers()); return PhaseWindow.open(index,phase,++token,now.monotonicMs(),now.epochMs(),duration);
+            return PhaseWindow.open(index,phase,++token,now.monotonicMs(),now.epochMs(),duration);
         }),opened -> {
             ready.clear();hintOffsets=opened.hintOffsets();view=new View(opened.game(),opened.window(),"READY",false);
             if(phase==Phase.QUESTION_OPEN) {
                 Set<Long> eligible=opened.game().players().values().stream().filter(p -> p.state()==PlayerState.PLAYING)
                         .map(GameSnapshot.Player::userId).collect(java.util.stream.Collectors.toUnmodifiableSet());
-                if(v2()) eligible=eligible.stream().filter(onlineAtOpen.get()::contains).collect(java.util.stream.Collectors.toUnmodifiableSet());
+                if(v2()) {
+                    firstOfflineQuestion.replaceAll((user,first) -> first==0?index:first);
+                    eligible=eligible.stream().filter(user -> !firstOfflineQuestion.containsKey(user) || firstOfflineQuestion.get(user)==index)
+                            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                }
                 gate=new QuestionCloseGate(eligible);
+                earlyCloseQueued=false;
             }
             armCurrent(); emit(phase==Phase.INTRO?"INTRO_STARTED":phase==Phase.DECISION?"DECISION_STARTED":"QUESTION_START");
         },1,null);
@@ -174,8 +190,16 @@ public final class GameLifecycle {
         attempt(() -> typed==null?transactions.accept(id(),userId,index,option,epoch,elapsed):transactions.acceptTyped(id(),userId,index,option,typed,epoch,elapsed),committed -> {
             view=new View(committed,before.window(),"READY",false);
             gate.recordValidAnswer(userId); reply.complete(snapshot(userId));
-            if(gate.closeIfAllAnswered()) closed();
+            if(v2()) queueEarlyClose();
+            else if(gate.closeIfAllAnswered()) closed();
         },1,reply);
+    }
+    private void queueEarlyClose() {
+        if(earlyCloseQueued || !gate.allAnswered()) return;
+        earlyCloseQueued=true;
+        var expectedGate=gate;
+        // Close gets its own ingress position. Already-admitted Answers remain ahead of it.
+        control.enqueue(() -> { if(gate==expectedGate && expectedGate.closeIfAllAnswered()) closed(); });
     }
     private void closed() {
         int index=view.data().publicView().questionIndex();

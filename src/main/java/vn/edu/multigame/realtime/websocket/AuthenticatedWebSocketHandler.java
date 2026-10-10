@@ -42,6 +42,7 @@ public class AuthenticatedWebSocketHandler extends AbstractWebSocketHandler {
             long generation=sockets.add(sessionId(socket),socket,initial.getId());
             // Recheck after registration: logout could occur between handshake and connection establishment.
             var user = validate(socket);
+            sockets.connected(socket);
             if (socket.isOpen()) sockets.send(socket,AuthReady.of(user.getId(), user.getUsername(),generation));
         } catch (AuthFailure failure) { socket.close(new CloseStatus(4001, "SESSION_EXPIRED")); }
         catch(vn.edu.multigame.realtime.connection.SocketReplaced failure) { socket.close(new CloseStatus(4002,"SESSION_REPLACED")); }
