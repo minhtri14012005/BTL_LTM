@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "browser": "Chrome/154.0.8037.98",
+  "checks": [
+    "Real mouse hover opens all seven modes plus All",
+    "Mouse leaving closes the menu",
+    "Keyboard ArrowDown opens/focuses options; Escape restores trigger",
+    "Selection loads the chosen mode and preserves mode across scope tabs",
+    "Six PUBLIC banks have five questions each; non-owner gets metadata only",
+    "Real touch opens menu at 390px with no horizontal overflow",
+    "Owner previews all five real SONG videos with metadata and browser playback",
+    "Owner previews all five real rebus images"
+  ]
+}

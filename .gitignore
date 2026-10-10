@@ -1,3 +1,6 @@
+__pycache__/
+*.pyc
+
 target/
 .cache/
 .idea/
@@ -11,3 +14,5 @@ config/application-local.properties
 !experiments/results/**/*.log
 !experiments/handoff/**/*.log
 data/quiz-images/
+
+/data/quiz-videos/

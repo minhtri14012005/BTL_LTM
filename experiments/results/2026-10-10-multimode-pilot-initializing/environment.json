@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-10",
+  "placement": "same-machine TCP loopback",
+  "cpu": "13th Gen Intel(R) Core(TM) i5-13500HX",
+  "logicalProcessors": 20,
+  "totalMemoryBytes": 16886128640,
+  "os": {
+    "type": "Windows_NT",
+    "release": "10.0.26200",
+    "version": "Windows 11 Home"
+  },
+  "java": "java version \"21.0.9\" 2025-10-21 LTS\r\nJava(TM) SE Runtime Environment (build 21.0.9+7-LTS-338)\r\nJava HotSpot(TM) 64-Bit Server VM (build 21.0.9+7-LTS-338, mixed mode, sharing)\r\n",
+  "python": "Python 3.12.10\r\n",
+  "mysql": "8.0.45",
+  "gitCommit": "5fd560e3951238c3de9e52de8c7d91e3cc76983f",
+  "workingTree": "dirty Tasks16-24 + Task25; commit is base only, see source hashes",
+  "rulesVersion": 2,
+  "stages": [
+    "QUIZ:10",
+    "RIDDLE:1"
+  ],
+  "introDurationMs": 10000,
+  "decisionDurationMs": 7000,
+  "resultDurationMs": 1500,
+  "questionDurationMs": 10000,
+  "serverWorkers": 4,
+  "hikariMaximumPool": 5,
+  "database": "quizz_task15_experiment",
+  "origin": "http://127.0.0.1:8086",
+  "seed": 15062026,
+  "randomness": "seed is fixture workload only; UUID/SecureRandom Spin not seeded; raw replies retained",
+  "loads": [
+    3,
+    4
+  ],
+  "rounds": 3,
+  "reliabilityGames": 10,
+  "trialsPerScenarioPerMode": 30,
+  "accountPolicy": "one account per active gameplay Client + separate HTTP-only Author",
+  "baseline": "test-only receipt erasure; reconnect authenticated socket + Room subscription, no full snapshot",
+  "runOrder": [
+    "baseline",
+    "proposed"
+  ],
+  "measurements": "Java System.nanoTime entry GameRuntime to future completion; Python perf_counter_ns send to reply and socket-open to deep-copy snapshot into model; not browser paint or media/network latency",
+  "limits": [
+    "no Wi-Fi/multi-device LAN",
+    "no CPU/RAM utilization sampled",
+    "no packet-loss emulator",
+    "sequential modes, no counterbalanced warmup"
+  ]
+}

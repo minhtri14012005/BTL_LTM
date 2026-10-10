@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="vn.edu.multigame.game.service.GameHistoryCancelIT" time="10.991" tests="12" errors="0" skipped="0" failures="0" flakes="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="D:\BTL_LTM\target\test-classes;D:\BTL_LTM\target\classes;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-web\3.5.16\spring-boot-starter-web-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter\3.5.16\spring-boot-starter-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot\3.5.16\spring-boot-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-autoconfigure\3.5.16\spring-boot-autoconfigure-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-logging\3.5.16\spring-boot-starter-logging-3.5.16.jar;D:\BTL_LTM\.cache\maven\ch\qos\logback\logback-classic\1.5.34\logback-classic-1.5.34.jar;D:\BTL_LTM\.cache\maven\ch\qos\logback\logback-core\1.5.34\logback-core-1.5.34.jar;D:\BTL_LTM\.cache\maven\org\apache\logging\log4j\log4j-to-slf4j\2.24.3\log4j-to-slf4j-2.24.3.jar;D:\BTL_LTM\.cache\maven\org\apache\logging\log4j\log4j-api\2.24.3\log4j-api-2.24.3.jar;D:\BTL_LTM\.cache\maven\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;D:\BTL_LTM\.cache\maven\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;D:\BTL_LTM\.cache\maven\org\yaml\snakeyaml\2.4\snakeyaml-2.4.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-json\3.5.16\spring-boot-starter-json-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-databind\2.21.4\jackson-databind-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.21.4\jackson-datatype-jdk8-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\module\jackson-module-parameter-names\2.21.4\jackson-module-parameter-names-2.21.4.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-tomcat\3.5.16\spring-boot-starter-tomcat-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-core\10.1.55\tomcat-embed-core-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-websocket\10.1.55\tomcat-embed-websocket-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-web\6.2.19\spring-web-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-beans\6.2.19\spring-beans-6.2.19.jar;D:\BTL_LTM\.cache\maven\io\micrometer\micrometer-observation\1.15.12\micrometer-observation-1.15.12.jar;D:\BTL_LTM\.cache\maven\io\micrometer\micrometer-commons\1.15.12\micrometer-commons-1.15.12.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-webmvc\6.2.19\spring-webmvc-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-context\6.2.19\spring-context-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-expression\6.2.19\spring-expression-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-websocket\3.5.16\spring-boot-starter-websocket-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-messaging\6.2.19\spring-messaging-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-websocket\6.2.19\spring-websocket-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-security\3.5.16\spring-boot-starter-security-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-aop\6.2.19\spring-aop-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-config\6.5.11\spring-security-config-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-core\6.5.11\spring-security-core-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-crypto\6.5.11\spring-security-crypto-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-web\6.5.11\spring-security-web-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-data-jpa\3.5.16\spring-boot-starter-data-jpa-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-jdbc\3.5.16\spring-boot-starter-jdbc-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\zaxxer\HikariCP\6.3.3\HikariCP-6.3.3.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-jdbc\6.2.19\spring-jdbc-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\hibernate\orm\hibernate-core\6.6.53.Final\hibernate-core-6.6.53.Final.jar;D:\BTL_LTM\.cache\maven\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;D:\BTL_LTM\.cache\maven\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;D:\BTL_LTM\.cache\maven\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;D:\BTL_LTM\.cache\maven\org\hibernate\common\hibernate-commons-annotations\7.0.3.Final\hibernate-commons-annotations-7.0.3.Final.jar;D:\BTL_LTM\.cache\maven\io\smallrye\jandex\3.2.0\jandex-3.2.0.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\classmate\1.7.3\classmate-1.7.3.jar;D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy\1.17.8\byte-buddy-1.17.8.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\jaxb-runtime\4.0.9\jaxb-runtime-4.0.9.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\jaxb-core\4.0.9\jaxb-core-4.0.9.jar;D:\BTL_LTM\.cache\maven\org\eclipse\angus\angus-activation\2.0.3\angus-activation-2.0.3.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\txw2\4.0.9\txw2-4.0.9.jar;D:\BTL_LTM\.cache\maven\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;D:\BTL_LTM\.cache\maven\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;D:\BTL_LTM\.cache\maven\org\antlr\antlr4-runtime\4.13.2\antlr4-runtime-4.13.2.jar;D:\BTL_LTM\.cache\maven\org\springframework\data\spring-data-jpa\3.5.13\spring-data-jpa-3.5.13.jar;D:\BTL_LTM\.cache\maven\org\springframework\data\spring-data-commons\3.5.13\spring-data-commons-3.5.13.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-orm\6.2.19\spring-orm-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-tx\6.2.19\spring-tx-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-aspects\6.2.19\spring-aspects-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\aspectj\aspectjweaver\1.9.25.1\aspectjweaver-1.9.25.1.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-validation\3.5.16\spring-boot-starter-validation-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-el\10.1.55\tomcat-embed-el-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\hibernate\validator\hibernate-validator\8.0.3.Final\hibernate-validator-8.0.3.Final.jar;D:\BTL_LTM\.cache\maven\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;D:\BTL_LTM\.cache\maven\com\mysql\mysql-connector-j\9.7.0\mysql-connector-j-9.7.0.jar;D:\BTL_LTM\.cache\maven\org\flywaydb\flyway-core\11.7.2\flyway-core-11.7.2.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\dataformat\jackson-dataformat-toml\2.21.4\jackson-dataformat-toml-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-core\2.21.4\jackson-core-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.21.4\jackson-datatype-jsr310-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;D:\BTL_LTM\.cache\maven\org\flywaydb\flyway-mysql\11.7.2\flyway-mysql-11.7.2.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-test\3.5.16\spring-boot-starter-test-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-test\3.5.16\spring-boot-test-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-test-autoconfigure\3.5.16\spring-boot-test-autoconfigure-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\jayway\jsonpath\json-path\2.9.0\json-path-2.9.0.jar;D:\BTL_LTM\.cache\maven\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;D:\BTL_LTM\.cache\maven\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;D:\BTL_LTM\.cache\maven\net\minidev\json-smart\2.5.2\json-smart-2.5.2.jar;D:\BTL_LTM\.cache\maven\net\minidev\accessors-smart\2.5.2\accessors-smart-2.5.2.jar;D:\BTL_LTM\.cache\maven\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;D:\BTL_LTM\.cache\maven\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;D:\BTL_LTM\.cache\maven\org\awaitility\awaitility\4.2.2\awaitility-4.2.2.jar;D:\BTL_LTM\.cache\maven\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter\5.12.2\junit-jupiter-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-api\5.12.2\junit-jupiter-api-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;D:\BTL_LTM\.cache\maven\org\junit\platform\junit-platform-commons\1.12.2\junit-platform-commons-1.12.2.jar;D:\BTL_LTM\.cache\maven\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-params\5.12.2\junit-jupiter-params-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-engine\5.12.2\junit-jupiter-engine-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\platform\junit-platform-engine\1.12.2\junit-platform-engine-1.12.2.jar;D:\BTL_LTM\.cache\maven\org\mockito\mockito-core\5.17.0\mockito-core-5.17.0.jar;D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar;D:\BTL_LTM\.cache\maven\org\objenesis\objenesis\3.3\objenesis-3.3.jar;D:\BTL_LTM\.cache\maven\org\mockito\mockito-junit-jupiter\5.17.0\mockito-junit-jupiter-5.17.0.jar;D:\BTL_LTM\.cache\maven\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;D:\BTL_LTM\.cache\maven\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-core\6.2.19\spring-core-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-jcl\6.2.19\spring-jcl-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-test\6.2.19\spring-test-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\xmlunit\xmlunit-core\2.10.4\xmlunit-core-2.10.4.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="catalina.useNaming" value="false"/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Asia/Bangkok"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="APPLICATION_NAME" value="multigame"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-21.0.9\bin"/>
+    <property name="sun.java.command" value="D:\BTL_LTM\target\surefire15629466000567924748\surefirebooter-20261010124801054_3.jar D:\BTL_LTM\target\surefire15629466000567924748 2026-10-10T12-48-00_990-jvmRun1 surefire-20261010124801054_1tmp surefire_0-20261010124801054_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="D:\BTL_LTM\target\test-classes;D:\BTL_LTM\target\classes;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-web\3.5.16\spring-boot-starter-web-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter\3.5.16\spring-boot-starter-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot\3.5.16\spring-boot-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-autoconfigure\3.5.16\spring-boot-autoconfigure-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-logging\3.5.16\spring-boot-starter-logging-3.5.16.jar;D:\BTL_LTM\.cache\maven\ch\qos\logback\logback-classic\1.5.34\logback-classic-1.5.34.jar;D:\BTL_LTM\.cache\maven\ch\qos\logback\logback-core\1.5.34\logback-core-1.5.34.jar;D:\BTL_LTM\.cache\maven\org\apache\logging\log4j\log4j-to-slf4j\2.24.3\log4j-to-slf4j-2.24.3.jar;D:\BTL_LTM\.cache\maven\org\apache\logging\log4j\log4j-api\2.24.3\log4j-api-2.24.3.jar;D:\BTL_LTM\.cache\maven\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;D:\BTL_LTM\.cache\maven\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;D:\BTL_LTM\.cache\maven\org\yaml\snakeyaml\2.4\snakeyaml-2.4.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-json\3.5.16\spring-boot-starter-json-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-databind\2.21.4\jackson-databind-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.21.4\jackson-datatype-jdk8-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\module\jackson-module-parameter-names\2.21.4\jackson-module-parameter-names-2.21.4.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-tomcat\3.5.16\spring-boot-starter-tomcat-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-core\10.1.55\tomcat-embed-core-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-websocket\10.1.55\tomcat-embed-websocket-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-web\6.2.19\spring-web-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-beans\6.2.19\spring-beans-6.2.19.jar;D:\BTL_LTM\.cache\maven\io\micrometer\micrometer-observation\1.15.12\micrometer-observation-1.15.12.jar;D:\BTL_LTM\.cache\maven\io\micrometer\micrometer-commons\1.15.12\micrometer-commons-1.15.12.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-webmvc\6.2.19\spring-webmvc-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-context\6.2.19\spring-context-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-expression\6.2.19\spring-expression-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-websocket\3.5.16\spring-boot-starter-websocket-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-messaging\6.2.19\spring-messaging-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-websocket\6.2.19\spring-websocket-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-security\3.5.16\spring-boot-starter-security-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-aop\6.2.19\spring-aop-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-config\6.5.11\spring-security-config-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-core\6.5.11\spring-security-core-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-crypto\6.5.11\spring-security-crypto-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\security\spring-security-web\6.5.11\spring-security-web-6.5.11.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-data-jpa\3.5.16\spring-boot-starter-data-jpa-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-jdbc\3.5.16\spring-boot-starter-jdbc-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\zaxxer\HikariCP\6.3.3\HikariCP-6.3.3.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-jdbc\6.2.19\spring-jdbc-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\hibernate\orm\hibernate-core\6.6.53.Final\hibernate-core-6.6.53.Final.jar;D:\BTL_LTM\.cache\maven\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;D:\BTL_LTM\.cache\maven\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;D:\BTL_LTM\.cache\maven\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;D:\BTL_LTM\.cache\maven\org\hibernate\common\hibernate-commons-annotations\7.0.3.Final\hibernate-commons-annotations-7.0.3.Final.jar;D:\BTL_LTM\.cache\maven\io\smallrye\jandex\3.2.0\jandex-3.2.0.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\classmate\1.7.3\classmate-1.7.3.jar;D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy\1.17.8\byte-buddy-1.17.8.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\jaxb-runtime\4.0.9\jaxb-runtime-4.0.9.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\jaxb-core\4.0.9\jaxb-core-4.0.9.jar;D:\BTL_LTM\.cache\maven\org\eclipse\angus\angus-activation\2.0.3\angus-activation-2.0.3.jar;D:\BTL_LTM\.cache\maven\org\glassfish\jaxb\txw2\4.0.9\txw2-4.0.9.jar;D:\BTL_LTM\.cache\maven\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;D:\BTL_LTM\.cache\maven\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;D:\BTL_LTM\.cache\maven\org\antlr\antlr4-runtime\4.13.2\antlr4-runtime-4.13.2.jar;D:\BTL_LTM\.cache\maven\org\springframework\data\spring-data-jpa\3.5.13\spring-data-jpa-3.5.13.jar;D:\BTL_LTM\.cache\maven\org\springframework\data\spring-data-commons\3.5.13\spring-data-commons-3.5.13.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-orm\6.2.19\spring-orm-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-tx\6.2.19\spring-tx-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-aspects\6.2.19\spring-aspects-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\aspectj\aspectjweaver\1.9.25.1\aspectjweaver-1.9.25.1.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-validation\3.5.16\spring-boot-starter-validation-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\apache\tomcat\embed\tomcat-embed-el\10.1.55\tomcat-embed-el-10.1.55.jar;D:\BTL_LTM\.cache\maven\org\hibernate\validator\hibernate-validator\8.0.3.Final\hibernate-validator-8.0.3.Final.jar;D:\BTL_LTM\.cache\maven\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;D:\BTL_LTM\.cache\maven\com\mysql\mysql-connector-j\9.7.0\mysql-connector-j-9.7.0.jar;D:\BTL_LTM\.cache\maven\org\flywaydb\flyway-core\11.7.2\flyway-core-11.7.2.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\dataformat\jackson-dataformat-toml\2.21.4\jackson-dataformat-toml-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-core\2.21.4\jackson-core-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.21.4\jackson-datatype-jsr310-2.21.4.jar;D:\BTL_LTM\.cache\maven\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;D:\BTL_LTM\.cache\maven\org\flywaydb\flyway-mysql\11.7.2\flyway-mysql-11.7.2.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-starter-test\3.5.16\spring-boot-starter-test-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-test\3.5.16\spring-boot-test-3.5.16.jar;D:\BTL_LTM\.cache\maven\org\springframework\boot\spring-boot-test-autoconfigure\3.5.16\spring-boot-test-autoconfigure-3.5.16.jar;D:\BTL_LTM\.cache\maven\com\jayway\jsonpath\json-path\2.9.0\json-path-2.9.0.jar;D:\BTL_LTM\.cache\maven\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;D:\BTL_LTM\.cache\maven\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;D:\BTL_LTM\.cache\maven\net\minidev\json-smart\2.5.2\json-smart-2.5.2.jar;D:\BTL_LTM\.cache\maven\net\minidev\accessors-smart\2.5.2\accessors-smart-2.5.2.jar;D:\BTL_LTM\.cache\maven\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;D:\BTL_LTM\.cache\maven\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;D:\BTL_LTM\.cache\maven\org\awaitility\awaitility\4.2.2\awaitility-4.2.2.jar;D:\BTL_LTM\.cache\maven\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter\5.12.2\junit-jupiter-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-api\5.12.2\junit-jupiter-api-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;D:\BTL_LTM\.cache\maven\org\junit\platform\junit-platform-commons\1.12.2\junit-platform-commons-1.12.2.jar;D:\BTL_LTM\.cache\maven\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-params\5.12.2\junit-jupiter-params-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\jupiter\junit-jupiter-engine\5.12.2\junit-jupiter-engine-5.12.2.jar;D:\BTL_LTM\.cache\maven\org\junit\platform\junit-platform-engine\1.12.2\junit-platform-engine-1.12.2.jar;D:\BTL_LTM\.cache\maven\org\mockito\mockito-core\5.17.0\mockito-core-5.17.0.jar;D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar;D:\BTL_LTM\.cache\maven\org\objenesis\objenesis\3.3\objenesis-3.3.jar;D:\BTL_LTM\.cache\maven\org\mockito\mockito-junit-jupiter\5.17.0\mockito-junit-jupiter-5.17.0.jar;D:\BTL_LTM\.cache\maven\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;D:\BTL_LTM\.cache\maven\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-core\6.2.19\spring-core-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-jcl\6.2.19\spring-jcl-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\springframework\spring-test\6.2.19\spring-test-6.2.19.jar;D:\BTL_LTM\.cache\maven\org\xmlunit\xmlunit-core\2.10.4\xmlunit-core-2.10.4.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\CodexSandboxOffline"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-10-21"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-21.0.9"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="D:\BTL_LTM"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="surefire.real.class.path" value="D:\BTL_LTM\target\surefire15629466000567924748\surefirebooter-20261010124801054_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="polyglot.engine.WarnInterpreterOnly" value="false"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.9+7-LTS-338"/>
+    <property name="user.name" value="CodexSandboxOffline"/>
+    <property name="stdout.encoding" value="Cp1252"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="D:\BTL_LTM\.cache\maven"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="D:\BTL_LTM\target\"/>
+    <property name="debug" value="false"/>
+    <property name="catalina.home" value="D:\BTL_LTM\target\tomcat.0.5080229837318148128"/>
+    <property name="com.zaxxer.hikari.pool_number" value="6"/>
+    <property name="java.version" value="21.0.9"/>
+    <property name="user.dir" value="D:\BTL_LTM"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="123512"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="catalina.base" value="D:\BTL_LTM\target\tomcat.0.1454607035167536936"/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-21.0.9\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\Admin\.codex\tmp\arg0\codex-arg0mw8SA5;C:\Users\Admin\.codex\tmp\arg0\codex-arg05gS94J;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\dotnet\;C:\Program Files\Java\jdk-21.0.9\bin;C:\Program Files\Java\apache-maven-3.9.12\bin;C:\Program Files\Git\cmd;C:\Program Files\Cloudflare\Cloudflare WARP\;C:\Users\Admin\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\Admin\AppData\Local\Programs\Python\Python312\;C:\Users\Admin\AppData\Local\Programs\Python\Launcher\;C:\Users\Admin\AppData\Local\Microsoft\WindowsApps;C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Admin\IntelliJ IDEA Community Edition 2025.2.1\bin;C:\Users\Admin\AppData\Local\JetBrains\Toolbox\scripts;C:\Users\Admin\.local\bin;C:\Users\Admin\AppData\Local\Microsoft\WindowsApps;C:\Users\Admin\AppData\Local\Programs\Antigravity IDE\bin;c:\Users\Admin\.vscode\extensions\openai.chatgpt-26.1007.21434-win32-x64\bin\windows-x86_64;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="Cp1252"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="21.0.9+7-LTS-338"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="maven.repo.local" value="D:/BTL_LTM/.cache/maven"/>
+    <property name="java.class.version" value="65.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[multigame] "/>
+  </properties>
+  <testcase name="exhaustedCancelRollbackDurablyInterruptsAndDoesNotCacheAccept" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.428">
+    <system-out><![CDATA[2026-10-10T12:49:00.704+07:00  INFO 123512 --- [multigame] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [vn.edu.multigame.game.service.GameHistoryCancelIT]: GameHistoryCancelIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-10T12:49:00.705+07:00  INFO 123512 --- [multigame] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration vn.edu.multigame.MultigameApplication for test class vn.edu.multigame.game.service.GameHistoryCancelIT
+]]></system-out>
+  </testcase>
+  <testcase name="realFreshServerStartupCleansAbandonedStateAndHistorySurvivesWithoutRuntime" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="1.326">
+    <system-out><![CDATA[
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-10T12:49:01.368+07:00  INFO 123512 --- [multigame] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.9 with PID 123512 (started by CodexSandboxOffline in D:\BTL_LTM)
+2026-10-10T12:49:01.369+07:00  INFO 123512 --- [multigame] [           main] o.a.maven.surefire.booter.ForkedBooter   : The following 1 profile is active: "mysql"
+2026-10-10T12:49:01.513+07:00  INFO 123512 --- [multigame] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-10T12:49:01.556+07:00  INFO 123512 --- [multigame] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 41 ms. Found 13 JPA repository interfaces.
+2026-10-10T12:49:01.634+07:00  INFO 123512 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-10T12:49:01.636+07:00  INFO 123512 --- [multigame] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-10T12:49:01.636+07:00  INFO 123512 --- [multigame] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-10T12:49:01.654+07:00  INFO 123512 --- [multigame] [           main] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring embedded WebApplicationContext
+2026-10-10T12:49:01.654+07:00  INFO 123512 --- [multigame] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 284 ms
+2026-10-10T12:49:01.704+07:00  INFO 123512 --- [multigame] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-10T12:49:01.706+07:00  INFO 123512 --- [multigame] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-10T12:49:01.716+07:00  INFO 123512 --- [multigame] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-10T12:49:01.717+07:00  INFO 123512 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Starting...
+2026-10-10T12:49:01.735+07:00  INFO 123512 --- [multigame] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-6 - Added connection com.mysql.cj.jdbc.ConnectionImpl@71d85b03
+2026-10-10T12:49:01.736+07:00  INFO 123512 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Start completed.
+2026-10-10T12:49:01.737+07:00  INFO 123512 --- [multigame] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-6)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-10T12:49:01.855+07:00  INFO 123512 --- [multigame] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-10T12:49:01.864+07:00  INFO 123512 --- [multigame] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-10T12:49:02.018+07:00  INFO 123512 --- [multigame] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name accountUserDetailsService
+2026-10-10T12:49:02.024+07:00  INFO 123512 --- [multigame] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-10T12:49:02.113+07:00  INFO 123512 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 59196 (http) with context path '/'
+2026-10-10T12:49:02.116+07:00  INFO 123512 --- [multigame] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.774 seconds (process running for 60.972)
+2026-10-10T12:49:02.197+07:00  INFO 123512 --- [multigame] [0-auto-5-exec-1] o.a.c.c.C.[Tomcat-2].[localhost].[/]     : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-10T12:49:02.197+07:00  INFO 123512 --- [multigame] [0-auto-5-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-10T12:49:02.198+07:00  INFO 123512 --- [multigame] [0-auto-5-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-10T12:49:02.363+07:00  INFO 123512 --- [multigame] [           main] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-10T12:49:02.377+07:00  INFO 123512 --- [multigame] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-10-10T12:49:02.378+07:00  INFO 123512 --- [multigame] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-10T12:49:02.379+07:00  INFO 123512 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-10-10T12:49:02.381+07:00  INFO 123512 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+]]></system-out>
+  </testcase>
+  <testcase name="continuedDbWriteFailureKeepsPendingDurableStateAndHistoryNotReady" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.45"/>
+  <testcase name="actualMysqlConnectionLossRollsBackCancelAndCommitsInterruptedCleanup" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.616">
+    <system-out><![CDATA[2026-10-10T12:49:03.372+07:00  WARN 123512 --- [multigame] [  game-worker-3] com.zaxxer.hikari.pool.ProxyConnection   : HikariPool-4 - Connection com.mysql.cj.jdbc.ConnectionImpl@641ce81c marked as broken because of SQLSTATE(08S01), ErrorCode(0)
+
+com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet successfully received from the server was 2 milliseconds ago. The last packet sent successfully to the server was 3 milliseconds ago.
+	at com.mysql.cj.jdbc.exceptions.SQLError.createCommunicationsException(SQLError.java:165) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:55) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.StatementImpl.executeQuery(StatementImpl.java:1318) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:111) ~[HikariCP-6.3.3.jar:na]
+	at com.zaxxer.hikari.pool.HikariProxyStatement.executeQuery(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar:na]
+	at org.springframework.jdbc.core.JdbcTemplate$1QueryStatementCallback.doInStatement(JdbcTemplate.java:463) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:393) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:476) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:486) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:519) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:526) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at vn.edu.multigame.game.service.GameHistoryCancelIT.lambda$actualMysqlConnectionLossRollsBackCancelAndCommitsInterruptedCleanup$20(GameHistoryCancelIT.java:183) ~[test-classes/:na]
+	at org.mockito.internal.stubbing.StubbedInvocationMatcher.answer(StubbedInvocationMatcher.java:42) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.MockHandlerImpl.handle(MockHandlerImpl.java:103) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.NullResultGuardian.handle(NullResultGuardian.java:29) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.InvocationNotifierHandler.handle(InvocationNotifierHandler.java:34) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:84) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:58) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor$DispatcherDefaultingToRealMethod.interceptAbstract(MockMethodInterceptor.java:163) ~[mockito-core-5.17.0.jar:na]
+	at vn.edu.multigame.game.repository.PlayerSessionRepository$MockitoMock$ko5zI76B.flush(Unknown Source) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameTransactions.cancel(GameTransactions.java:398) ~[classes/:na]
+	at java.base/java.lang.invoke.MethodHandle.invokeWithArguments(MethodHandle.java:733) ~[na:na]
+	at org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$pPoFaeHC.invokeWithArguments(Unknown Source) ~[na:na]
+	at org.mockito.internal.util.reflection.InstrumentationMemberAccessor.invoke(InstrumentationMemberAccessor.java:265) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.util.reflection.ModuleMemberAccessor.invoke(ModuleMemberAccessor.java:55) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice.tryInvoke(MockMethodAdvice.java:316) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice$RealMethodCall.invoke(MockMethodAdvice.java:236) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.invocation.InterceptedInvocation.callRealMethod(InterceptedInvocation.java:142) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.stubbing.answers.CallsRealMethods.answer(CallsRealMethods.java:45) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.Answers.answer(Answers.java:90) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.MockHandlerImpl.handle(MockHandlerImpl.java:111) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.NullResultGuardian.handle(NullResultGuardian.java:29) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.InvocationNotifierHandler.handle(InvocationNotifierHandler.java:34) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:84) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice.handle(MockMethodAdvice.java:136) ~[mockito-core-5.17.0.jar:na]
+	at vn.edu.multigame.game.service.GameTransactions.cancel(GameTransactions.java:393) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728) ~[spring-aop-6.2.19.jar:6.2.19]
+	at vn.edu.multigame.game.service.GameTransactions$$SpringCGLIB$$0.cancel(<generated>) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.lambda$cancel$24(GameLifecycle.java:223) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.attempt(GameLifecycle.java:202) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.cancel(GameLifecycle.java:223) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.GameRuntime.lambda$command$4(GameRuntime.java:127) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.GameRuntime$2.onCommand(GameRuntime.java:75) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.lambda$submit$1(SessionQueue.java:105) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.drain(SessionQueue.java:229) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.lambda$dispatch$9(SessionQueue.java:210) ~[classes/:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications link failure
+
+The last packet successfully received from the server was 2 milliseconds ago. The last packet sent successfully to the server was 3 milliseconds ago.
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486) ~[na:na]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:52) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:95) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:140) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createCommunicationsException(ExceptionFactory.java:156) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.readMessage(NativeProtocol.java:590) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.checkErrorMessage(NativeProtocol.java:767) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.sendCommand(NativeProtocol.java:706) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.sendQueryPacket(NativeProtocol.java:938) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.NativeSession.execSQL(NativeSession.java:817) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.StatementImpl.executeQuery(StatementImpl.java:1280) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	... 54 common frames omitted
+Caused by: java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.SocketDispatcher.read0(Native Method) ~[na:na]
+	at java.base/sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:46) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.tryRead(NioSocketImpl.java:256) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:274) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:304) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[na:na]
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:489) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.readHeader(SSLSocketInputRecord.java:483) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:70) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1461) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1066) ~[na:na]
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:119) ~[na:na]
+	at com.mysql.cj.protocol.FullReadInputStream.readFully(FullReadInputStream.java:55) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeaderLocal(SimplePacketReader.java:72) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeader(SimplePacketReader.java:54) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeader(SimplePacketReader.java:36) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.TimeTrackingPacketReader.readHeader(TimeTrackingPacketReader.java:43) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.TimeTrackingPacketReader.readHeader(TimeTrackingPacketReader.java:32) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.MultiPacketReader.readHeader(MultiPacketReader.java:45) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.MultiPacketReader.readHeader(MultiPacketReader.java:35) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.readMessage(NativeProtocol.java:584) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	... 59 common frames omitted
+
+2026-10-10T12:49:03.379+07:00 ERROR 123512 --- [multigame] [  game-worker-3] o.s.t.i.TransactionInterceptor           : Application exception overridden by rollback exception
+
+org.springframework.dao.RecoverableDataAccessException: StatementCallback; SQL [select 1]; Communications link failure
+
+The last packet successfully received from the server was 2 milliseconds ago. The last packet sent successfully to the server was 3 milliseconds ago.
+	at org.springframework.jdbc.support.SQLExceptionSubclassTranslator.doTranslate(SQLExceptionSubclassTranslator.java:119) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:408) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:476) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:486) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:519) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:526) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at vn.edu.multigame.game.service.GameHistoryCancelIT.lambda$actualMysqlConnectionLossRollsBackCancelAndCommitsInterruptedCleanup$20(GameHistoryCancelIT.java:183) ~[test-classes/:na]
+	at vn.edu.multigame.game.service.GameTransactions.cancel(GameTransactions.java:398) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameTransactions.cancel(GameTransactions.java:393) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728) ~[spring-aop-6.2.19.jar:6.2.19]
+	at vn.edu.multigame.game.service.GameTransactions$$SpringCGLIB$$0.cancel(<generated>) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.lambda$cancel$24(GameLifecycle.java:223) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.attempt(GameLifecycle.java:202) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameLifecycle.cancel(GameLifecycle.java:223) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.GameRuntime.lambda$command$4(GameRuntime.java:127) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.GameRuntime$2.onCommand(GameRuntime.java:75) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.lambda$submit$1(SessionQueue.java:105) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.drain(SessionQueue.java:229) ~[classes/:na]
+	at vn.edu.multigame.realtime.session.SessionQueue.lambda$dispatch$9(SessionQueue.java:210) ~[classes/:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+Caused by: com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet successfully received from the server was 2 milliseconds ago. The last packet sent successfully to the server was 3 milliseconds ago.
+	at com.mysql.cj.jdbc.exceptions.SQLError.createCommunicationsException(SQLError.java:165) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:55) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.StatementImpl.executeQuery(StatementImpl.java:1318) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:111) ~[HikariCP-6.3.3.jar:na]
+	at com.zaxxer.hikari.pool.HikariProxyStatement.executeQuery(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar:na]
+	at org.springframework.jdbc.core.JdbcTemplate$1QueryStatementCallback.doInStatement(JdbcTemplate.java:463) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:393) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:476) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:486) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:519) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:526) ~[spring-jdbc-6.2.19.jar:6.2.19]
+	at vn.edu.multigame.game.service.GameHistoryCancelIT.lambda$actualMysqlConnectionLossRollsBackCancelAndCommitsInterruptedCleanup$20(GameHistoryCancelIT.java:183) ~[test-classes/:na]
+	at org.mockito.internal.stubbing.StubbedInvocationMatcher.answer(StubbedInvocationMatcher.java:42) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.MockHandlerImpl.handle(MockHandlerImpl.java:103) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.NullResultGuardian.handle(NullResultGuardian.java:29) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.InvocationNotifierHandler.handle(InvocationNotifierHandler.java:34) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:84) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:58) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor$DispatcherDefaultingToRealMethod.interceptAbstract(MockMethodInterceptor.java:163) ~[mockito-core-5.17.0.jar:na]
+	at vn.edu.multigame.game.repository.PlayerSessionRepository$MockitoMock$ko5zI76B.flush(Unknown Source) ~[classes/:na]
+	at vn.edu.multigame.game.service.GameTransactions.cancel(GameTransactions.java:398) ~[classes/:na]
+	at java.base/java.lang.invoke.MethodHandle.invokeWithArguments(MethodHandle.java:733) ~[na:na]
+	at org.mockito.internal.util.reflection.InstrumentationMemberAccessor$Dispatcher$ByteBuddy$pPoFaeHC.invokeWithArguments(Unknown Source) ~[na:na]
+	at org.mockito.internal.util.reflection.InstrumentationMemberAccessor.invoke(InstrumentationMemberAccessor.java:265) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.util.reflection.ModuleMemberAccessor.invoke(ModuleMemberAccessor.java:55) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice.tryInvoke(MockMethodAdvice.java:316) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice$RealMethodCall.invoke(MockMethodAdvice.java:236) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.invocation.InterceptedInvocation.callRealMethod(InterceptedInvocation.java:142) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.stubbing.answers.CallsRealMethods.answer(CallsRealMethods.java:45) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.Answers.answer(Answers.java:90) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.MockHandlerImpl.handle(MockHandlerImpl.java:111) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.NullResultGuardian.handle(NullResultGuardian.java:29) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.handler.InvocationNotifierHandler.handle(InvocationNotifierHandler.java:34) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.access.MockMethodInterceptor.doIntercept(MockMethodInterceptor.java:84) ~[mockito-core-5.17.0.jar:na]
+	at org.mockito.internal.creation.bytebuddy.MockMethodAdvice.handle(MockMethodAdvice.java:136) ~[mockito-core-5.17.0.jar:na]
+	... 22 common frames omitted
+Caused by: com.mysql.cj.exceptions.CJCommunicationsException: Communications link failure
+
+The last packet successfully received from the server was 2 milliseconds ago. The last packet sent successfully to the server was 3 milliseconds ago.
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486) ~[na:na]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:52) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:95) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createException(ExceptionFactory.java:140) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.exceptions.ExceptionFactory.createCommunicationsException(ExceptionFactory.java:156) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.readMessage(NativeProtocol.java:590) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.checkErrorMessage(NativeProtocol.java:767) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.sendCommand(NativeProtocol.java:706) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.sendQueryPacket(NativeProtocol.java:938) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.NativeSession.execSQL(NativeSession.java:817) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.jdbc.StatementImpl.executeQuery(StatementImpl.java:1280) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	... 54 common frames omitted
+Caused by: java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.SocketDispatcher.read0(Native Method) ~[na:na]
+	at java.base/sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:46) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.tryRead(NioSocketImpl.java:256) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:274) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:304) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[na:na]
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:489) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.readHeader(SSLSocketInputRecord.java:483) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:70) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1461) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1066) ~[na:na]
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:119) ~[na:na]
+	at com.mysql.cj.protocol.FullReadInputStream.readFully(FullReadInputStream.java:55) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeaderLocal(SimplePacketReader.java:72) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeader(SimplePacketReader.java:54) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.SimplePacketReader.readHeader(SimplePacketReader.java:36) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.TimeTrackingPacketReader.readHeader(TimeTrackingPacketReader.java:43) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.TimeTrackingPacketReader.readHeader(TimeTrackingPacketReader.java:32) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.MultiPacketReader.readHeader(MultiPacketReader.java:45) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.MultiPacketReader.readHeader(MultiPacketReader.java:35) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	at com.mysql.cj.protocol.a.NativeProtocol.readMessage(NativeProtocol.java:584) ~[mysql-connector-j-9.7.0.jar:9.7.0]
+	... 59 common frames omitted
+
+]]></system-out>
+  </testcase>
+  <testcase name="startupCleanupRollbackStopsAfterThreeAttemptsAndOnlyBecomesReadyAfterCommit" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.758"/>
+  <testcase name="restCancelPreservesAcceptedUnscoredAndReplaysAcrossWsAfterFinish" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.913"/>
+  <testcase name="eliminatedHostCanCancelButCannotAnswerSpinStarAndHistoryKeepsElimination" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="1.942"/>
+  <testcase name="completedHistoryContainsStreakEffectsAndNormalCoWinnersCancelCannotRewriteIt" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="2.545"/>
+  <testcase name="cancelBeforeTimerCloseDoesNotScoreAndDuplicateConcurrentCancelHasOneCommit" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.365"/>
+  <testcase name="cancelRollbackRetriesWithoutSuccessBeforeCommit" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.436"/>
+  <testcase name="cancelAuthorizationStrictRestAndHistoryPagination" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.689"/>
+  <testcase name="scoringInProgressCommitsAllPlayersThenQueuedCancelKeepsWholeQuestion" classname="vn.edu.multigame.game.service.GameHistoryCancelIT" time="0.502"/>
+</testsuite>

@@ -105,6 +105,9 @@ class Wire:
 class Harness:
     def __init__(self,args):
         self.args=args;self.output=Path(args.output);self.output.mkdir(parents=True,exist_ok=True)
+        existing=[self.output/(args.mode+suffix) for suffix in ['-client.csv','-wire.jsonl','-fixtures.json']]
+        if any(p.exists() for p in existing):
+            raise FileExistsError('Run already has raw evidence for this mode; choose a new output directory, never overwrite.')
         self.file=(self.output/(args.mode+'-client.csv')).open('w',newline='',encoding='utf-8')
         self.csv=csv.DictWriter(self.file,fieldnames=FIELDS);self.csv.writeheader()
         self.log=(self.output/(args.mode+'-wire.jsonl')).open('w',encoding='utf-8')
@@ -116,8 +119,11 @@ class Harness:
         self.clients=[Client(args.origin,prefix+'_'+str(i),password) for i in range(max(args.loads+[3]))]
         self.quiz=self.author.request('POST','/api/quizzes',{'title':prefix,'visibility':'PUBLIC','questions':[
             {'content':'Experiment question '+str(i+1),'options':dict(A='A',B='B',C='C',D='D'),'correctAnswer':'A','imageRef':None} for i in range(10)]})
-        self.fixture={'mode':args.mode,'prefix':prefix,'seed':args.seed,'accountIds':[self.author.user['id']]+[c.user['id'] for c in self.clients],
-                      'quizId':self.quiz['id'],'gameIds':self.games,'roomIds':self.rooms}
+        self.riddle=None
+        if args.multimode:
+            self.riddle=self.author.request('POST','/api/quizzes',{'title':prefix+' riddle','visibility':'PUBLIC','mode':'RIDDLE','questions':[{'content':'Synthetic riddle','acceptedAnswers':['answer'],'imageRef':None}]})
+        self.fixture={'rulesVersion':2 if args.multimode else 1,'stageModes':['QUIZ','RIDDLE'] if args.multimode else ['QUIZ'],'mode':args.mode,'prefix':prefix,'seed':args.seed,'accountIds':[self.author.user['id']]+[c.user['id'] for c in self.clients],
+                      'riddleId':self.riddle['id'] if self.riddle else None,'quizId':self.quiz['id'],'gameIds':self.games,'roomIds':self.rooms}
         self.save()
     def save(self):
         (self.output/(self.args.mode+'-fixtures.json')).write_text(json.dumps(self.fixture,indent=2),encoding='utf-8')
@@ -138,9 +144,12 @@ class Harness:
         if reply.get('kind')!='ACK':raise AssertionError('Expected ACCEPTED: '+json.dumps(reply))
     def begin(self,n):
         group=self.clients[:n]; host=group[0]
-        room=host.request('POST','/api/rooms',{'requestId':str(uuid.uuid4()),'config':{
-            'quizId':self.quiz['id'],'name':'Experiment '+str(len(self.rooms)+1),'maxPlayers':n,
-            'questionDurationMs':10000,'hostParticipation':'PLAYER'}})
+        config={'name':'Experiment '+str(len(self.rooms)+1),'maxPlayers':n,'hostParticipation':'PLAYER'}
+        if self.args.multimode:
+            config['stages']=[dict(mode='QUIZ',quizId=self.quiz['id'],questionCount=10,questionDurationMs=10000),
+                              dict(mode='RIDDLE',quizId=self.riddle['id'],questionCount=1,questionDurationMs=10000)]
+        else:config.update(quizId=self.quiz['id'],questionDurationMs=10000)
+        room=host.request('POST','/api/rooms',{'requestId':str(uuid.uuid4()),'config':config})
         self.rooms.append(room['id']);self.save()
         room=host.request('POST',f"/api/rooms/{room['id']}/open",{'requestId':str(uuid.uuid4()),'revision':room['revision']})
         for client in group:
@@ -149,8 +158,12 @@ class Harness:
             payload={} if client is host else dict(roomCode=room['roomCode'],participation='PLAYER')
             reply,_=self.response(client,self.command(type,'ROOM',room['id'],payload=payload));self.accepted(reply)
         room=host.request('GET',f"/api/rooms/{room['id']}")
-        reply,_=self.response(host,self.command('START_GAME','ROOM',room['id'],payload=dict(revision=room['revision'],questionCount=10)))
+        reply,_=self.response(host,self.command('START_GAME','ROOM',room['id'],payload=dict(revision=room['revision'],questionCount=11 if self.args.multimode else 10)))
         self.accepted(reply);game=reply['payload']['gameSessionId'];self.games.append(game);self.save()
+        if self.args.multimode:
+            for c in group:c.wire.wait(lambda m:m.get('type')=='INTRO_STARTED' and m.get('payload',{}).get('gameSessionId')==game)
+            for c in group:
+                reply,_=self.response(c,self.command('CONTINUE','GAME',game,1));self.accepted(reply)
         for c in group:c.wire.wait(lambda m:m.get('type')=='DECISION_STARTED' and m.get('payload',{}).get('gameSessionId')==game)
         return group,room,game
     def reconnect(self,c,room,game,scenario,n,round):
@@ -252,6 +265,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--origin',default='http://127.0.0.1:8080');p.add_argument('--mode',required=True,choices=['baseline','proposed'])
     p.add_argument('--output',required=True);p.add_argument('--seed',type=int,default=15062026)
     p.add_argument('--loads',type=int,nargs='+',default=[3,5,10,20]);p.add_argument('--rounds',type=int,default=3);p.add_argument('--reliability-games',type=int,default=10)
+    p.add_argument('--multimode',action='store_true',help='Use rules v2 QUIZ -> RIDDLE, Intro10s/Decision7s/Result1.5s; does not alter production rules.')
     args=p.parse_args()
     if min(args.loads)<3 or max(args.loads)>100 or args.rounds<1 or args.reliability_games<0:p.error('Invalid load/rounds')
     Harness(args).run()

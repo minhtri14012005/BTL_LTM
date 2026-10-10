@@ -1,0 +1,2 @@
+SELECT MAX(CAST(version AS UNSIGNED)) AS schema_version FROM quizz_task16_migration_5f5d1e45a96c.flyway_schema_history WHERE success=1;
+SELECT g.id,g.schema_version,g.rules_version,g.status,g.end_reason,p.score,p.player_state,p.total_answer_time_ms,p.final_rank FROM quizz_task16_migration_5f5d1e45a96c.game_session g JOIN quizz_task16_migration_5f5d1e45a96c.player_session p ON p.game_session_id=g.id WHERE g.schema_version=1 ORDER BY g.id;

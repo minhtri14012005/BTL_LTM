@@ -1,0 +1,269 @@
+{
+  "scope": "handoff cleanup only; no source/config/schema/gameplay change",
+  "deletedDocuments": [
+    "docs/codebase-guide.md",
+    "docs/course-requirements-checklist.md",
+    "docs/database-schema.md",
+    "docs/final-report.md",
+    "docs/gameplay-rules.md",
+    "docs/implementation-decisions.md",
+    "docs/project-status.md",
+    "docs/rest-api-contract.md",
+    "docs/team-contributions.md",
+    "docs/websocket-contract.md",
+    "experiments/experiment-protocol.md",
+    "experiments/handoff/artifact-audit.md",
+    "experiments/handoff/evidence-index.md",
+    "README.md",
+    "TASKS.md",
+    "TASKS_MO_RONG_7_CHE_DO.md",
+    "KHAO_SAT_MO_RONG_7_CHE_DO.md",
+    "1.sql",
+    "1.txt",
+    "scripts/collect-handoff-evidence.py"
+  ],
+  "deletedGenerated": [
+    "target/classes",
+    "target/test-classes",
+    "target/client",
+    "target/generated-sources",
+    "target/generated-test-sources",
+    "target/maven-status",
+    "target/maven-archiver",
+    "target/surefire-reports",
+    "target/failsafe-reports",
+    "target/competitive-quiz-0.0.1-SNAPSHOT.jar",
+    "target/multigame-0.0.1-SNAPSHOT.jar",
+    "target/multigame-0.0.1-SNAPSHOT.jar.original",
+    "target/refactor-full-verify.log",
+    "target/refactor-test-counts.json",
+    "target/refactor-browser-smoke.log",
+    "target/refactor-multigame-client-tests.json",
+    "target/refactor-multigame-seven-history-mobile.png",
+    "target/refactor-jar-inspection.txt",
+    "target/refactor-readiness.json",
+    "target/refactor-jar-server.log",
+    "target/refactor-http-static.json",
+    "target/refactor-db-before.tsv",
+    "target/refactor-db-after.tsv",
+    "target/refactor-browser-db.tsv",
+    "target/refactor-mechanical-audit.json",
+    "target/refactor-archive-check.json",
+    "target/refactor-result.json"
+  ],
+  "deletedCopies": [
+    {
+      "path": "target/handoff25-baseline-client.log",
+      "archive": "experiments\\results\\2026-10-10-multimode-loopback\\baseline-client.log",
+      "sha256": "fd7352e0d9c65212196d8da8eea429d7be9b509e6311f91c2eca05bf2734b9b8"
+    },
+    {
+      "path": "target/handoff25-baseline-server.log",
+      "archive": "experiments\\results\\2026-10-10-multimode-loopback\\baseline-server.log",
+      "sha256": "e886bde7d6debfc2341371cf7d9ba9516674b24f31be9d63d9050e0eed1e9bf2"
+    },
+    {
+      "path": "target/handoff25-browser.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-browser.log",
+      "sha256": "0662c6919f6180fbcf9fb0f51c5e26d0503de243c9de0e40cea7d2d91510b362"
+    },
+    {
+      "path": "target/handoff25-client-tests.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-client-tests.json",
+      "sha256": "d5ac527074ba8253d3943735dc0a9c802cb5615334a72e7015811afd3ea554b7"
+    },
+    {
+      "path": "target/handoff25-mysql-smoke.tsv",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-mysql-smoke.tsv",
+      "sha256": "03231e1b0e1f8af5aedc2e994055c49a520d3237a6051216107992c4a9645012"
+    },
+    {
+      "path": "target/handoff25-package.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-package.log",
+      "sha256": "366045fc1d336b805a9fcae7532e2c2756164d4527a9f120f545ed632056932c"
+    },
+    {
+      "path": "target/handoff25-proposed-client.log",
+      "archive": "experiments\\results\\2026-10-10-multimode-loopback\\proposed-client.log",
+      "sha256": "065e24a8a0251271a2ff216bf2aec153497cf842dd71785e70efdcba22462d1d"
+    },
+    {
+      "path": "target/handoff25-proposed-server.log",
+      "archive": "experiments\\results\\2026-10-10-multimode-loopback\\proposed-server.log",
+      "sha256": "fb6a662b8bf160fcbf418b24225c06300178fcfb7c226873f4efc0f2b8e04d5f"
+    },
+    {
+      "path": "target/handoff25-readiness.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-readiness.json",
+      "sha256": "ea55e137269f2d472a2fe76bdc2f176c811fefcb1344329060410688b0c6aad3"
+    },
+    {
+      "path": "target/handoff25-smoke-server.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-smoke-server.log",
+      "sha256": "0f40b0a5dbc0d6bbd35e8141a652da6125e6d38b7ba418723756cc9c1d4c2b40"
+    },
+    {
+      "path": "target/task13-evidence.json",
+      "archive": "experiments\\handoff\\historical-task13-evidence.json",
+      "sha256": "c92cefef46a550c46a70c8d7c601c25bee00db8afd129d9b57e52c33a51473a8"
+    },
+    {
+      "path": "target/task13-test-summary.json",
+      "archive": "experiments\\handoff\\historical-task13-test-summary.json",
+      "sha256": "d492b73c2c9ea47c77abc71abb87ff96baf000e636f48eaee9bf12f580b497a4"
+    },
+    {
+      "path": "target/task14-review-evidence.json",
+      "archive": "experiments\\handoff\\historical-task14-review-evidence.json",
+      "sha256": "388aa0ecdf3d49a6750945691b184871f7e2f14723f02f1340c10e3c344aa754"
+    },
+    {
+      "path": "target/task15-client-tests.json",
+      "archive": "experiments\\handoff\\task15-client-tests.json",
+      "sha256": "087b39d960a9219b584339c67bde157134c88aee22bc29fcc063079991e957ef"
+    },
+    {
+      "path": "target/task15-client.log",
+      "archive": "experiments\\handoff\\task15-client.log",
+      "sha256": "9f68d989d50b69f15ce67c9ab8d2da7945b5295e4f453f3dea7b84eddc3a5993"
+    },
+    {
+      "path": "target/task15-readiness.json",
+      "archive": "experiments\\handoff\\task15-readiness.json",
+      "sha256": "8ddf2e4432aa830e16edeb0e4451f09775cb4408f491878dee01d0ea42c965d8"
+    },
+    {
+      "path": "target/task15-regression.log",
+      "archive": "experiments\\handoff\\task15-regression.log",
+      "sha256": "6595f9f3a80ddb7566c7f008530bc832f1b2648858627e7db26756c83ff7a3ac"
+    },
+    {
+      "path": "target/task15-smoke-server.log",
+      "archive": "experiments\\handoff\\task15-smoke-server.log",
+      "sha256": "4e9dc860f63c5b14198ba1431d95e29673d4b9011fe2065e0d90ad2c54d690e9"
+    },
+    {
+      "path": "target/task21-client-tests.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task21-client-tests.json",
+      "sha256": "a62899270fbca6d72e8e01ddd90e0b8dbacd29ae2a771f12be7292d5c75dd83c"
+    },
+    {
+      "path": "target/task21-evidence.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task21-evidence.json",
+      "sha256": "67f5afd51b495a81111b472572a1ea22ea1be8810b3b8cac442ad9cf94ebfdbf"
+    },
+    {
+      "path": "target/task22-client-tests.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task22-client-tests.json",
+      "sha256": "dee060a0adcacb5524ca96ddc98cee005604cc218ae4894a8cbad6f8a874ed7e"
+    },
+    {
+      "path": "target/task22-evidence.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task22-evidence.json",
+      "sha256": "12737ab76f83bc0bea058690039114c1cd98e80d8a8a3f4bbfea5d47098ef613"
+    },
+    {
+      "path": "target/task23-client-tests.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task23-client-tests.json",
+      "sha256": "eae86920f67a86ab1cf9188ebf48a3b05acc3c16749e5c034c6c9148fa97061d"
+    },
+    {
+      "path": "target/task23-evidence.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task23-evidence.json",
+      "sha256": "2671c5cec4104c7e55a54fcd42f7d4baca24eae8da79023b9d5b3f4934dd858f"
+    },
+    {
+      "path": "target/task24-browser-db.tsv",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-browser-db.tsv",
+      "sha256": "e42696a5dc89d8356895b29605e824724de1ffed180ed3c46aaa85fd57670cdc"
+    },
+    {
+      "path": "target/task24-browser.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\handoff25-browser.log",
+      "sha256": "0662c6919f6180fbcf9fb0f51c5e26d0503de243c9de0e40cea7d2d91510b362"
+    },
+    {
+      "path": "target/task24-client-tests.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-client-tests.json",
+      "sha256": "ce7c799566146e76d463647e774688b4f9fee1bb61cbaf9cb98a080cc47d3a7c"
+    },
+    {
+      "path": "target/task24-evidence.json",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-evidence.json",
+      "sha256": "33f5d93ee614faec31b57431f88d4d62ac1f203ab01a244a4c3fed96cb05b5b2"
+    },
+    {
+      "path": "target/task24-focused.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-focused.log",
+      "sha256": "7810e3bdf6c46111ea9694cd397e0761c8045442c04be149e7470ac6cb883a1a"
+    },
+    {
+      "path": "target/task24-full-verify.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-full-verify.log",
+      "sha256": "d2631a8fc64bebbc67b947ea12afaa9793f81e0ff735399014a35294297fb009"
+    },
+    {
+      "path": "target/task24-legacy-migration.tsv",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-legacy-migration.tsv",
+      "sha256": "c5cd7854a054bd4f803f3ae4ab5205f098e753de32904dc04e3498f2f151477a"
+    },
+    {
+      "path": "target/task24-server.log",
+      "archive": "experiments\\handoff\\2026-10-10-seven-modes\\task24-server.log",
+      "sha256": "c7876026673b912a71af107030de68b89fe1ecd66fb53cb0ceda22241fb54277"
+    }
+  ],
+  "protectedUnchanged": 496,
+  "protectedChanged": [],
+  "plannedDeletionsInInitialProtectedInventory": [
+    "scripts\\collect-handoff-evidence.py",
+    "experiments\\experiment-protocol.md",
+    "experiments\\handoff\\artifact-audit.md",
+    "experiments\\handoff\\evidence-index.md"
+  ],
+  "build": {
+    "exit": 0,
+    "unit": 7,
+    "integration": 2,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "modules": 14,
+    "assets": 16
+  },
+  "ready": {
+    "status": 200,
+    "body": {
+      "application": "multigame",
+      "server": "UP",
+      "database": {
+        "status": "UP",
+        "message": "Đã truy vấn MySQL thành công."
+      },
+      "serverTimeMs": 1791613436857,
+      "gameplay": "GAMEPLAY_WS"
+    }
+  },
+  "http": {
+    "/": {
+      "status": 200,
+      "contentType": "text/html"
+    },
+    "/client/question-banks.js": {
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    "/client/game.js": {
+      "status": 200,
+      "contentType": "text/javascript"
+    },
+    "/client/history.js": {
+      "status": 200,
+      "contentType": "text/javascript"
+    }
+  },
+  "userDatabaseUnchanged": true,
+  "ownedServerStopped": true,
+  "stoppedPortCheck": "8087 ECONNREFUSED"
+}

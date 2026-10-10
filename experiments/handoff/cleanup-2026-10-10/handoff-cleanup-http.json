@@ -1,0 +1,18 @@
+{
+  "/": {
+    "status": 200,
+    "contentType": "text/html"
+  },
+  "/client/question-banks.js": {
+    "status": 200,
+    "contentType": "text/javascript"
+  },
+  "/client/game.js": {
+    "status": 200,
+    "contentType": "text/javascript"
+  },
+  "/client/history.js": {
+    "status": 200,
+    "contentType": "text/javascript"
+  }
+}

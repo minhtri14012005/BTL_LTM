@@ -1,0 +1,34 @@
+{
+  "clips": [
+    {
+      "title": "Happy Birthday to You",
+      "file": "song-01.mp4",
+      "durationSeconds": 10.4,
+      "bytes": 607339
+    },
+    {
+      "title": "Twinkle Twinkle Little Star",
+      "file": "song-02.mp4",
+      "durationSeconds": 13.1,
+      "bytes": 771313
+    },
+    {
+      "title": "Frère Jacques",
+      "file": "song-03.mp4",
+      "durationSeconds": 13.1,
+      "bytes": 771892
+    },
+    {
+      "title": "Jingle Bells",
+      "file": "song-04.mp4",
+      "durationSeconds": 13.1,
+      "bytes": 768564
+    },
+    {
+      "title": "Ode to Joy",
+      "file": "song-05.mp4",
+      "durationSeconds": 13.1,
+      "bytes": 769085
+    }
+  ]
+}

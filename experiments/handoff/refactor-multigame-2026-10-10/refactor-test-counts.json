@@ -1,0 +1,16 @@
+{
+  "unit": {
+    "tests": 302,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 21
+  },
+  "integration": {
+    "tests": 149,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 22
+  }
+}

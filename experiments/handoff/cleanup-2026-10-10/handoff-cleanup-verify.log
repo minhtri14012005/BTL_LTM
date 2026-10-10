@@ -1,0 +1,157 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< vn.edu.multigame:multigame >---------------------
+[INFO] Building MultiGame 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ multigame ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] Copying 23 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ multigame ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 180 source files with javac [debug parameters release 21] to target\classes
+[INFO] /D:/BTL_LTM/src/main/java/vn/edu/multigame/room/controller/RoomRequestDecoder.java: D:\BTL_LTM\src\main\java\vn\edu\multigame\room\controller\RoomRequestDecoder.java uses or overrides a deprecated API.
+[INFO] /D:/BTL_LTM/src/main/java/vn/edu/multigame/room/controller/RoomRequestDecoder.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ multigame ---
+[INFO] Copying 3 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ multigame ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 47 source files with javac [debug parameters release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ multigame ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running vn.edu.multigame.common.config.CodebaseStructureTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.179 s -- in vn.edu.multigame.common.config.CodebaseStructureTest
+[INFO] Running vn.edu.multigame.system.controller.SystemWebTest
+13:21:53.914 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [vn.edu.multigame.system.controller.SystemWebTest]: SystemWebTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:21:54.043 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration vn.edu.multigame.MultigameApplication for test class vn.edu.multigame.system.controller.SystemWebTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-10T13:22:02.649+07:00  INFO 123704 --- [multigame] [           main] v.e.m.system.controller.SystemWebTest    : Starting SystemWebTest using Java 21.0.9 with PID 123704 (started by CodexSandboxOffline in D:\BTL_LTM)
+2026-10-10T13:22:02.650+07:00  INFO 123704 --- [multigame] [           main] v.e.m.system.controller.SystemWebTest    : The following 1 profile is active: "web-only"
+2026-10-10T13:22:03.984+07:00  INFO 123704 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-10T13:22:04.005+07:00  INFO 123704 --- [multigame] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-10T13:22:04.005+07:00  INFO 123704 --- [multigame] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-10T13:22:04.061+07:00  INFO 123704 --- [multigame] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-10T13:22:04.062+07:00  INFO 123704 --- [multigame] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1392 ms
+2026-10-10T13:22:04.383+07:00  INFO 123704 --- [multigame] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-10T13:22:04.813+07:00  INFO 123704 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 57427 (http) with context path '/'
+2026-10-10T13:22:04.821+07:00  INFO 123704 --- [multigame] [           main] v.e.m.system.controller.SystemWebTest    : Started SystemWebTest in 2.466 seconds (process running for 11.672)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-10T13:22:05.469+07:00  INFO 123704 --- [multigame] [0-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-10T13:22:05.469+07:00  INFO 123704 --- [multigame] [0-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-10T13:22:05.470+07:00  INFO 123704 --- [multigame] [0-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-10T13:22:07.266+07:00  WARN 123704 --- [multigame] [0-auto-1-exec-1] o.a.c.util.SessionIdGeneratorBase        : Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [1,765] milliseconds.
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.68 s -- in vn.edu.multigame.system.controller.SystemWebTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ multigame ---
+[INFO] Building jar: D:\BTL_LTM\target\multigame-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:3.5.16:repackage (repackage) @ multigame ---
+[INFO] Replacing main artifact D:\BTL_LTM\target\multigame-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to D:\BTL_LTM\target\multigame-0.0.1-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ multigame ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running vn.edu.multigame.system.controller.MySqlSmokeIT
+13:22:09.657 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [vn.edu.multigame.system.controller.MySqlSmokeIT]: MySqlSmokeIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:22:09.784 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration vn.edu.multigame.MultigameApplication for test class vn.edu.multigame.system.controller.MySqlSmokeIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-10T13:22:10.213+07:00  INFO 111672 --- [multigame] [           main] v.e.m.system.controller.MySqlSmokeIT     : Starting MySqlSmokeIT using Java 21.0.9 with PID 111672 (started by CodexSandboxOffline in D:\BTL_LTM)
+2026-10-10T13:22:10.214+07:00  INFO 111672 --- [multigame] [           main] v.e.m.system.controller.MySqlSmokeIT     : The following 1 profile is active: "mysql"
+2026-10-10T13:22:11.086+07:00  INFO 111672 --- [multigame] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-10T13:22:11.197+07:00  INFO 111672 --- [multigame] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 104 ms. Found 13 JPA repository interfaces.
+2026-10-10T13:22:19.922+07:00  INFO 111672 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-10T13:22:19.932+07:00  INFO 111672 --- [multigame] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-10T13:22:19.932+07:00  INFO 111672 --- [multigame] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-10T13:22:19.966+07:00  INFO 111672 --- [multigame] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-10T13:22:19.967+07:00  INFO 111672 --- [multigame] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 9731 ms
+2026-10-10T13:22:20.331+07:00  INFO 111672 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-10T13:22:20.631+07:00  INFO 111672 --- [multigame] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@d2cb2d0
+2026-10-10T13:22:20.632+07:00  INFO 111672 --- [multigame] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-10T13:22:20.674+07:00  INFO 111672 --- [multigame] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://127.0.0.1:3306/quizz_task2_test?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000 (MySQL 8.0)
+2026-10-10T13:22:20.724+07:00  INFO 111672 --- [multigame] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.030s)
+2026-10-10T13:22:20.738+07:00  INFO 111672 --- [multigame] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `quizz_task2_test`: 7
+2026-10-10T13:22:20.741+07:00  INFO 111672 --- [multigame] [           main] o.f.core.internal.command.DbMigrate      : Schema `quizz_task2_test` is up to date. No migration necessary.
+2026-10-10T13:22:20.865+07:00  INFO 111672 --- [multigame] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-10T13:22:20.925+07:00  INFO 111672 --- [multigame] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.53.Final
+2026-10-10T13:22:20.957+07:00  INFO 111672 --- [multigame] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-10T13:22:21.168+07:00  INFO 111672 --- [multigame] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-10T13:22:21.252+07:00  INFO 111672 --- [multigame] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-10T13:22:22.084+07:00  INFO 111672 --- [multigame] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-10T13:22:22.123+07:00  INFO 111672 --- [multigame] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-10T13:22:22.401+07:00  INFO 111672 --- [multigame] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-10T13:22:23.800+07:00  INFO 111672 --- [multigame] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name accountUserDetailsService
+2026-10-10T13:22:23.886+07:00  INFO 111672 --- [multigame] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-10T13:22:24.403+07:00  INFO 111672 --- [multigame] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 49858 (http) with context path '/'
+2026-10-10T13:22:24.413+07:00  INFO 111672 --- [multigame] [           main] v.e.m.system.controller.MySqlSmokeIT     : Started MySqlSmokeIT in 14.516 seconds (process running for 15.292)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (D:\BTL_LTM\.cache\maven\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-10T13:22:24.836+07:00  INFO 111672 --- [multigame] [0-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-10T13:22:24.836+07:00  INFO 111672 --- [multigame] [0-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-10T13:22:24.837+07:00  INFO 111672 --- [multigame] [0-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+MYSQL_SMOKE: product=MySQL, version=8.0.45, database=quizz_task2_test
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.43 s -- in vn.edu.multigame.system.controller.MySqlSmokeIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ multigame ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  50.453 s
+[INFO] Finished at: 2026-10-10T13:22:25+07:00
+[INFO] ------------------------------------------------------------------------

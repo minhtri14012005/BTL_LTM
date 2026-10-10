@@ -1,0 +1,1 @@
+mode,scenario,clients,rooms,round,trial,user_id,game_id,operation,response_ms,snapshot_response_ms,client_apply_resync_ms,original_recovered,duplicate_side_effects,state_mismatch,invariant_violation,code

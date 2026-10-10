@@ -1,0 +1,49 @@
+{
+  "origin": "http://127.0.0.1:8088",
+  "authorUsername": "demo_banks_e428a535",
+  "authorUserId": 52,
+  "banks": [
+    {
+      "id": 17,
+      "mode": "VIETNAMESE_PUZZLE",
+      "title": "Vua Tiếng Việt — 5 câu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    },
+    {
+      "id": 18,
+      "mode": "RIDDLE",
+      "title": "Đố mẹo — 5 câu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    },
+    {
+      "id": 19,
+      "mode": "CLUES",
+      "title": "Truy tìm dấu vết — 5 câu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    },
+    {
+      "id": 20,
+      "mode": "ORDERING",
+      "title": "Sắp xếp trình tự — 5 câu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    },
+    {
+      "id": 21,
+      "mode": "IMAGE_WORD",
+      "title": "Đuổi hình bắt chữ — 5 câu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    },
+    {
+      "id": 22,
+      "mode": "SONG",
+      "title": "Đoán tên bài hát — 5 giai điệu mẫu",
+      "questionCount": 5,
+      "status": "EXISTING_VERIFIED"
+    }
+  ]
+}

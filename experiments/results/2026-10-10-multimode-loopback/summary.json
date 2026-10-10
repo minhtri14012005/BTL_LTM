@@ -1,0 +1,339 @@
+{
+  "placement": "same-machine loopback; no multi-device LAN or Internet inference",
+  "modes": {
+    "baseline": {
+      "client_rows": 208,
+      "server_rows": 289,
+      "reliability": {
+        "lost_answer_ack": {
+          "attempts": 30,
+          "success": 0,
+          "success_rate": 0.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 5.0814,
+            "p95_ms": 8.9307,
+            "max_ms": 11.2902
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "lost_spin_ack": {
+          "attempts": 30,
+          "success": 0,
+          "success_rate": 0.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 6.7124,
+            "p95_ms": 11.7859,
+            "max_ms": 15.5228
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "reconnect_after_answer": {
+          "attempts": 30,
+          "success": 0,
+          "success_rate": 0.0,
+          "state_mismatches": 30,
+          "response": {
+            "n": 30,
+            "p50_ms": 12.4672,
+            "p95_ms": 22.9047,
+            "max_ms": 28.4342
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "reconnect_decision": {
+          "attempts": 30,
+          "success": 0,
+          "success_rate": 0.0,
+          "state_mismatches": 30,
+          "response": {
+            "n": 30,
+            "p50_ms": 14.0307,
+            "p95_ms": 31.4095,
+            "max_ms": 35.5805
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "retry_finished": {
+          "attempts": 30,
+          "success": 0,
+          "success_rate": 0.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 6.0312,
+            "p95_ms": 9.7279,
+            "max_ms": 12.3431
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        }
+      },
+      "loads": {
+        "3": {
+          "clients": 3,
+          "concurrent_rooms": 1,
+          "rounds": 3,
+          "samples": 18,
+          "client_response": {
+            "n": 18,
+            "p50_ms": 29.1489,
+            "p95_ms": 62.9013,
+            "max_ms": 62.9013
+          },
+          "server_processing": {
+            "n": 18,
+            "p50_ms": 26.5092,
+            "p95_ms": 59.8326,
+            "max_ms": 59.8326
+          }
+        },
+        "4": {
+          "clients": 4,
+          "concurrent_rooms": 1,
+          "rounds": 3,
+          "samples": 24,
+          "client_response": {
+            "n": 24,
+            "p50_ms": 44.4443,
+            "p95_ms": 81.629,
+            "max_ms": 88.701
+          },
+          "server_processing": {
+            "n": 24,
+            "p50_ms": 41.6101,
+            "p95_ms": 77.5018,
+            "max_ms": 85.8068
+          }
+        }
+      },
+      "duplicate_side_effects": 0,
+      "durable_invariant_violations": 0,
+      "durable_game_checks": 16
+    },
+    "proposed": {
+      "client_rows": 208,
+      "server_rows": 349,
+      "reliability": {
+        "lost_answer_ack": {
+          "attempts": 30,
+          "success": 30,
+          "success_rate": 1.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 5.8639,
+            "p95_ms": 12.9952,
+            "max_ms": 14.6871
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "lost_spin_ack": {
+          "attempts": 30,
+          "success": 30,
+          "success_rate": 1.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 6.272,
+            "p95_ms": 13.9032,
+            "max_ms": 15.3492
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        },
+        "reconnect_after_answer": {
+          "attempts": 30,
+          "success": 30,
+          "success_rate": 1.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 4.7007,
+            "p95_ms": 11.428,
+            "max_ms": 11.8633
+          },
+          "snapshot_response": {
+            "n": 30,
+            "p50_ms": 4.7007,
+            "p95_ms": 11.428,
+            "max_ms": 11.8633
+          },
+          "client_apply_resync": {
+            "n": 30,
+            "p50_ms": 30.5134,
+            "p95_ms": 38.1876,
+            "max_ms": 45.4389
+          }
+        },
+        "reconnect_decision": {
+          "attempts": 30,
+          "success": 30,
+          "success_rate": 1.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 4.4474,
+            "p95_ms": 12.5863,
+            "max_ms": 17.2423
+          },
+          "snapshot_response": {
+            "n": 30,
+            "p50_ms": 4.4474,
+            "p95_ms": 12.5863,
+            "max_ms": 17.2423
+          },
+          "client_apply_resync": {
+            "n": 30,
+            "p50_ms": 23.4611,
+            "p95_ms": 43.0581,
+            "max_ms": 46.1963
+          }
+        },
+        "retry_finished": {
+          "attempts": 30,
+          "success": 30,
+          "success_rate": 1.0,
+          "state_mismatches": 0,
+          "response": {
+            "n": 30,
+            "p50_ms": 6.0504,
+            "p95_ms": 10.8225,
+            "max_ms": 14.1246
+          },
+          "snapshot_response": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          },
+          "client_apply_resync": {
+            "n": 0,
+            "p50_ms": null,
+            "p95_ms": null,
+            "max_ms": null
+          }
+        }
+      },
+      "loads": {
+        "3": {
+          "clients": 3,
+          "concurrent_rooms": 1,
+          "rounds": 3,
+          "samples": 18,
+          "client_response": {
+            "n": 18,
+            "p50_ms": 32.7385,
+            "p95_ms": 71.5582,
+            "max_ms": 71.5582
+          },
+          "server_processing": {
+            "n": 18,
+            "p50_ms": 30.1408,
+            "p95_ms": 63.3808,
+            "max_ms": 63.3808
+          }
+        },
+        "4": {
+          "clients": 4,
+          "concurrent_rooms": 1,
+          "rounds": 3,
+          "samples": 24,
+          "client_response": {
+            "n": 24,
+            "p50_ms": 42.7185,
+            "p95_ms": 83.5126,
+            "max_ms": 104.8654
+          },
+          "server_processing": {
+            "n": 24,
+            "p50_ms": 40.6766,
+            "p95_ms": 80.2648,
+            "max_ms": 100.5782
+          }
+        }
+      },
+      "duplicate_side_effects": 0,
+      "durable_invariant_violations": 0,
+      "durable_game_checks": 16
+    }
+  }
+}

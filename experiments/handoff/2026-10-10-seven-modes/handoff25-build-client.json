@@ -1,0 +1,6 @@
+{
+  "modules": 14,
+  "files": 16,
+  "status": "PASS",
+  "command": "python -B scripts/build-client.py"
+}

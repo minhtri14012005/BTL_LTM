@@ -1,25 +1,32 @@
+import {releasedClues} from "./clues.js";
 import {h,button,link,notice,heading} from "./dom.js";
-import {gameCommand,permissions,acceptSnapshot,applyReceipt,countdown,effects,outcomes,endReasons} from "./game-state.js";
+import {gameCommand,permissions,acceptSnapshot,applyReceipt,countdown,effects,outcomes,endReasons,gameMode} from "./game-state.js";
 
+import {arrangementAnswer,correctArrangement,isArrangement,permutation} from "./arrangement.js";
+import {songVideo} from "./video.js";
+import {MODE_LABELS} from "./core.js";
+export function gameTitle(s){return s.quizTitleSnapshot || (s.stages?.length?s.stages.map(stage=>stage.title).join(" → "):"Trận nhiều màn");}
 function append(node,...children){node.append(...children.filter(child=>child!=null));}
 
 export function standings(s,selfId=null) {
   const players=s.members.filter(m=>m.participation==="PLAYER").sort((a,b)=>a.rank-b.rank || a.userId-b.userId);
-  return h("section",{className:"card"},h("h2",{},"Bảng xếp hạng"),h("div",{className:"table-scroll"},h("table",{className:"standings",id:"standings"},h("thead",{},h("tr",{},["Hạng","Người chơi","Điểm","Thời gian"].map(x=>h("th",{scope:"col"},x)))),h("tbody",{},players.map(m=>h("tr",{"data-user-id":m.userId,className:m.userId===selfId?"current-player":""},h("td",{},m.rank??"—"),h("td",{},m.displayName,m.userId===selfId?" · Bạn":"",m.role==="HOST"?" · Host":"",s.hasOfficialWinner && s.winners.includes(m.userId)?h("span",{className:"badge winner"},"Winner"):null),h("td",{},m.score),h("td",{},`${(m.totalAnswerTimeMs/1000).toFixed(3)} s`)))))));
+  return h("section",{className:"card"},h("h2",{},"Bảng xếp hạng"),h("div",{className:"table-scroll"},h("table",{className:"standings",id:"standings"},h("thead",{},h("tr",{},["Hạng","Người chơi","Điểm",s.schemaVersion===2?"Thời gian đúng":"Thời gian"].map(x=>h("th",{scope:"col"},x)))),h("tbody",{},players.map(m=>h("tr",{"data-user-id":m.userId,className:m.userId===selfId?"current-player":""},h("td",{},m.rank??"—"),h("td",{},m.displayName,m.userId===selfId?" · Bạn":"",m.role==="HOST"?" · Host":"",s.hasOfficialWinner && s.winners.includes(m.userId)?h("span",{className:"badge winner"},"Winner"):null),h("td",{},m.score),h("td",{},`${((s.schemaVersion===2?m.totalCorrectAnswerTimeMs:m.totalAnswerTimeMs)/1000).toFixed(3)} s`)))))));
 }
 export function finalSummary(s) {
   return h("section",{className:"card final-summary",id:"final-summary"},h("p",{className:"eyebrow"},"KẾT QUẢ CUỐI TRẬN"),h("h2",{},endReasons[s.endReason]||s.endReason),
     notice(s.hasOfficialWinner?`Winner: ${s.members.filter(m=>s.winners.includes(m.userId)).map(m=>m.displayName).join(", ")}`:"Trận kết thúc bất thường · không có Official Winner.",s.hasOfficialWinner?"success":"info"),
     h("div",{className:"actions"},link("Chi tiết lịch sử",`history/${s.gameSessionId}`,"button"),link("Quay lại phòng",`room/${s.roomId}`,"button secondary"),link("Home","home","button secondary")));
 }
-export function image(s,question) {
+export function image(s,question,index=s.questionIndex) {
   if(!question?.imageRef)return null;
+  const source=s.schemaVersion===2?s.stages.find(stage=>index>=stage.firstQuestionIndex && index<stage.firstQuestionIndex+stage.questionCount)?.sourceQuizId:s.quizId;
+  if(!source)return notice("Không xác định được bộ ảnh của câu hỏi.");
   const hash=question.imageRef.replace(/^sha256:/,"");
-  const node=h("img",{className:"question-image",alt:"Ảnh minh họa câu hỏi",src:`/api/quizzes/${s.quizId}/images/${hash}?gameSessionId=${s.gameSessionId}`});
-  node.addEventListener("error",()=>node.replaceWith(notice("Không tải được ảnh câu hỏi. Nội dung chữ vẫn có thể xem.")));return node;
+  const node=h("img",{className:"question-image",alt:"Ảnh minh họa câu hỏi",src:`/api/quizzes/${source}/images/${hash}?gameSessionId=${s.gameSessionId}`});
+  node.addEventListener("error",()=>node.replaceWith(notice("Không tải được ảnh. Câu vẫn tiếp tục theo giờ Server; bạn có thể nhập đáp án phỏng đoán.")));return node;
 }
 export function resultPanel(result,members,id="question-result") {
-  return h("section",{className:"card",id,"data-index":result.index},h("h2",{},`Kết quả câu ${result.index}`),result.question?h("p",{},`Đáp án: ${result.question.correctAnswer} · ${result.question.options[result.question.correctAnswer]}`):null,
+  return h("section",{className:"card",id,"data-index":result.index},h("h2",{},`Kết quả câu ${result.index}`),result.question?h("p",{},(["CLUES","RIDDLE","IMAGE_WORD","SONG","VIETNAMESE_PUZZLE"].includes(result.question.mode))?"Đáp án: "+(result.question.payload?.acceptedAnswers||[]).join(" / "):result.question.mode==="ORDERING"?"Thứ tự đúng: "+correctArrangement(result.question).join(" → "):`Đáp án: ${result.question.correctAnswer} · ${result.question.options[result.question.correctAnswer]}`):null,
     result.results.map(r=>{const name=members.find(m=>m.userId===r.userId)?.displayName||`User #${r.userId}`;
       const trace=[r.momentumConsumed?"Đã dùng Momentum":null,r.recoveryConsumed?"Đã dùng Recovery":null,r.momentumGranted?"Nhận Momentum (cho câu sau)":null,r.recoveryGranted?"Nhận Recovery (cho câu sau)":null].filter(Boolean);
       return h("div",{className:"result-row","data-user-id":r.userId},h("strong",{},name),h("span",{},`${outcomes[r.outcome]} · ${r.scoreDelta>=0?"+":""}${r.scoreDelta} → ${r.scoreAfter} điểm · ${(r.answerTimeMs/1000).toFixed(3)} s`),h("small",{},`Streak đúng ${r.winStreak} / sai ${r.loseStreak} · Momentum ${r.hasMomentumAfter?"có":"không"} / Recovery ${r.hasRecoveryAfter?"có":"không"}${trace.length?" · "+trace.join(" · "):""}${r.eliminatedNow?" · Đã bị loại":""}`));}));
@@ -29,8 +36,8 @@ export async function gamePage(app,id) {
   app.gamePresentation??=new Map();
   const memory=app.gamePresentation.get(id)||{leaderboard:true,actions:new Set(),results:new Set()};
   app.gamePresentation.set(id,memory);
-  let state=app.games.get(id)||null,selected=null,pending=null,working=false,synced=false,reconnecting=false,feedback=null,sampled=performance.now(),clock=null,disposed=false,toast=null,toastUntil=0,animateIndex=null;
-  const controller={id,dispose(){disposed=true;clearInterval(clock);},update(){render();},receive(m){
+  let state=app.games.get(id)||null,selected=null,textDraft="",arrangementDraft=[],pending=null,working=false,synced=false,reconnecting=false,feedback=null,sampled=performance.now(),clock=null,disposed=false,toast=null,toastUntil=0,animateIndex=null,videoPlayer=null;
+  const controller={id,dispose(){disposed=true;clearInterval(clock);videoPlayer?.dispose();},update(){render();},receive(m){
     if(m.target?.kind!=="GAME" || m.target.id!==id || m.kind!=="EVENT")return;
     adopt(m.payload,true);
   },async reconnect(){
@@ -43,13 +50,13 @@ export async function gamePage(app,id) {
   app.gameController=controller;
   function remaining(){return state?countdown(state.deadlineEpochMs,state.serverTimeMs,sampled,performance.now()):null;}
   function presenting(){
-    return !!state?.question?.correctAnswer && remaining()>0 && (state.phase==="RESULT" || (state.status==="FINISHED" && state.hasOfficialWinner));
+    return !!state?.question && !!state?.results.length && remaining()>0 && (state.phase==="RESULT" || (state.status==="FINISHED" && state.hasOfficialWinner));
   }
   function showToast(text,kind="success"){toast={text,kind};toastUntil=performance.now()+3000;}
   function adopt(next,event=false){
     if(disposed || next?.gameSessionId!==id)return;
     if(acceptSnapshot(state,next)!==next)return;
-    if(state?.questionIndex!==next.questionIndex){selected=null;animateIndex=null;if(!pending)feedback=null;}
+    if(state?.questionIndex!==next.questionIndex){selected=null;textDraft="";arrangementDraft=[];animateIndex=null;if(!pending)feedback=null;}
     if(next.phase==="QUESTION_OPEN" && state?.phase==="DECISION" && !pending)feedback=null;
     if(!event && pending?.questionIndex===next.questionIndex && ((pending.type==="USE_SPIN" && next.player?.currentSpin) || (pending.type==="USE_STAR" && next.player?.starSelected)))memory.actions.add(pending.requestId);
     // Carry the existing server-clock estimate across delayed events; never start a fresh 1.5s locally.
@@ -93,8 +100,10 @@ export async function gamePage(app,id) {
   function render(){
     if(disposed || app.gameController!==controller)return;
     if(!state){root.replaceChildren(notice("Đang lấy trạng thái trận…"));return;}
+    const arrangementFocus=root.contains(document.activeElement) && document.activeElement.closest("#arrangement-answer")?document.activeElement.id:null;
+    const focus=root.contains(document.activeElement) && document.activeElement.id==="answer-text"?{start:document.activeElement.selectionStart,end:document.activeElement.selectionEnd}:null;
     const s=state,p=s.player,ready=app.transport.status==="ready" && synced,policy=permissions(s,app.user.id,ready,!!pending||working),present=presenting(),final=s.status==="FINISHED"&&!present;
-    const phase=present?"Kết quả câu":({DECISION:"Quyết định chiến thuật",QUESTION_OPEN:"Đang trả lời",QUESTION_CLOSED:"Đã đóng câu",SCORING:"Đang chấm",RESULT:"Kết quả câu",FINISHED:"Kết thúc"}[s.phase]);
+    const phase=present?"Kết quả câu":({INTRO:"Giới thiệu màn",DECISION:"Quyết định chiến thuật",QUESTION_OPEN:"Đang trả lời",QUESTION_CLOSED:"Đã đóng câu",SCORING:"Đang chấm",RESULT:"Kết quả câu",FINISHED:"Kết thúc"}[s.phase]);
     root.dataset.phase=s.phase;root.dataset.index=s.questionIndex;root.dataset.revision=s.revision;root.dataset.presenting=String(present);
     const controls=h("div",{className:"actions"});
     controls.append(button(memory.leaderboard?"Ẩn bảng xếp hạng":"Hiện bảng xếp hạng",()=>{memory.leaderboard=!memory.leaderboard;render();},{id:"toggle-standings",className:"secondary","aria-expanded":memory.leaderboard,"aria-controls":"game-leaderboard"}));
@@ -103,8 +112,17 @@ export async function gamePage(app,id) {
     const self=h("div",{id:"player-state",className:"player-strip"});
     if(p)append(self,h("span",{},"Điểm: ",h("strong",{id:"player-score"},p.score)),h("span",{},"Spin: ",h("strong",{id:"remaining-spins"},p.remainingSpins)),h("span",{},"Hope Star: ",h("strong",{id:"star-available"},p.starAvailable?"Còn":"Đã dùng")),h("small",{id:"current-decision"},"Spin: "+(effects[p.currentSpin]||"Không dùng")+" · Star: "+(p.starSelected?"đã chọn":"chưa chọn")),p.state==="ELIMINATED"?h("span",{},"Bạn đã bị loại · Đang quan sát"):null);
     else self.append(h("span",{},"Bạn đang quan sát"));
+    if(gameMode(s)!=="QUIZ"){self.querySelectorAll("#remaining-spins,#star-available,#current-decision").forEach(n=>n.id==="current-decision"?n.remove():n.parentElement.remove());}
     question.append(self);
     if(s.runtimeState==="UNAVAILABLE")question.append(notice(s.cleanupPending?"Trận không khả dụng. Chưa có kết quả cuối được lưu.":"Trận không khả dụng. Hãy tải lại trạng thái.","error"));
+    if(s.runtimeState==="INITIALIZING")question.append(notice("Server đang chuẩn bị màn đầu…"));
+    if(!s.question){videoPlayer?.dispose();videoPlayer=null;}
+    if(s.phase==="INTRO" && s.stage){
+      const players=s.members.filter(m=>m.participation==="PLAYER");
+      question.append(h("h3",{id:"intro-title"},`Màn ${s.stageIndex}/${s.stages.length} · ${MODE_LABELS[s.stage.mode]}`),h("p",{},`${s.stage.title} · ${s.stage.questionCount} câu · ${s.stage.questionDurationMs/1000} giây/câu`),notice(s.stage.mode==="QUIZ"?"Chọn một trong4 đáp án. Spin/Star chỉ dùng trong Decision trước câu Quiz.":s.stage.mode==="CLUES"?"Server mở gợi ý theo mốc chung. Nhập đáp án bất cứ lúc nào trước hạn, giữ dấu tiếng Việt. Câu cuối màn đúng được20 điểm.":s.stage.mode==="SONG"?"Xem/nghe video rồi nhập tên bài hát. Bấm Bật tiếng nếu trình duyệt chặn phát; thời gian không dừng. Câu cuối màn đúng được20 điểm.":isArrangement(s.stage.mode)?"Sắp xếp đủ các mảnh / mục rồi gửi. Mỗi mục dùng một lần. Câu cuối màn đúng được20 điểm.":"Nhập đáp án bằng chữ, giữ dấu tiếng Việt. Câu cuối màn đúng được20 điểm."),h("p",{id:"intro-ready"},`${s.readyPlayers.length}/${players.length} người chơi sẵn sàng. Server mở khi đủ hoặc hết10 giây.`));
+      if(p)question.append(button(s.readyPlayers.includes(app.user.id)?"Đã sẵn sàng":"Tiếp tục",()=>begin("CONTINUE"),{id:"continue-stage",disabled:!policy.continue}));
+      else question.append(notice("Bạn là người quan sát, không cần bấm Tiếp tục."));
+    }
     if(s.phase==="DECISION"){
       const ordinary=!!(ready && s.status==="ACTIVE" && s.runtimeState==="READY" && p?.state==="PLAYING" && !pending && !working && !p.currentSpin && !p.starSelected);
       question.append(h("p",{className:"muted"},"Chọn chiến thuật cho câu sắp tới. Không chọn thì chơi thường. Spin trước để có thể thêm Hope Star."),
@@ -114,6 +132,12 @@ export async function gamePage(app,id) {
     }
     if(s.question){
       append(question,h("h3",{id:"question-content"},s.question.content),image(s,s.question));
+      if(gameMode(s)==="CLUES")question.append(releasedClues(s.question.payload,"released-clues"));
+      if(gameMode(s)==="SONG") {
+        if(videoPlayer?.key!==s.question.id){videoPlayer?.dispose();videoPlayer=songVideo(s,()=>state.serverTimeMs+Math.max(0,performance.now()-sampled),memory);}
+        videoPlayer.update(s);question.append(videoPlayer.box);
+      } else {videoPlayer?.dispose();videoPlayer=null;}
+      if(gameMode(s)==="QUIZ"){
       const options=h("div",{className:"answer-options"});
       for(const k of ["A","B","C","D"]){
         const correct=!!s.question.correctAnswer && k===s.question.correctAnswer;
@@ -129,7 +153,30 @@ export async function gamePage(app,id) {
         if(!p?.alreadyAnswered && p?.state==="PLAYING")question.append(button("Gửi đáp án",()=>begin("ANSWER",{option:selected}),{id:"submit-answer",disabled:!policy.answer || !selected}));
         if(p?.alreadyAnswered)question.append(h("p",{className:"muted",id:"answer-accepted"},"Đã gửi đáp án. Đang chờ kết quả…"));
       }
-      if(s.status==="FINISHED" && p?.alreadyAnswered && !s.question.correctAnswer)question.append(notice("Đáp án đã được nhận, chưa chấm. Không cộng thời gian câu này vào tổng xếp hạng."));
+      } else if(isArrangement(gameMode(s))){
+        const items=s.question.payload?.pieces||s.question.payload?.items||[],ids=p?.submittedAnswer?.itemIds??arrangementDraft;
+        const result=s.results.find(r=>r.userId===app.user.id);
+        question.append(arrangementAnswer(items,ids,policy.answer,next=>{arrangementDraft=next;render();}));
+        if(gameMode(s)==="VIETNAMESE_PUZZLE")question.append(h("p",{id:"joined-pieces",className:"piece-text"},ids.map(id=>items.find(v=>v.id===id)?.text||"").join("")));
+        if(s.phase==="QUESTION_OPEN" && p?.state==="PLAYING"){
+          if(p.alreadyAnswered)question.append(h("p",{id:"answer-accepted",className:"muted"},"Đã gửi đáp án. Đang chờ kết quả…"));
+          else question.append(button("Gửi đáp án",()=>begin("ANSWER",{itemIds:arrangementDraft}),{id:"submit-answer",disabled:!policy.answer||!permutation(items,arrangementDraft)}));
+        }
+        if(result)question.append(notice(outcomes[result.outcome],result.outcome==="CORRECT"?"success":result.outcome==="WRONG"?"error":"info"));
+        if(s.question.payload?.correctOrder)question.append(h("p",{id:"correct-arrangement"},gameMode(s)==="VIETNAMESE_PUZZLE"?"Đáp án: "+(s.question.payload.acceptedAnswers||[correctArrangement(s.question).join("")]).join(" / "):"Thứ tự đúng: "+correctArrangement(s.question).join(" → ")));
+      } else if(["CLUES","RIDDLE","IMAGE_WORD","SONG"].includes(gameMode(s))){
+        const result=s.results.find(r=>r.userId===app.user.id),scored=!!result;
+        const answer=h("textarea",{id:"answer-text",name:"answerText",rows:2,maxLength:300,placeholder:"Nhập đáp án…",value:p?.submittedAnswer?.text??textDraft,disabled:!policy.answer,className:scored?(result.outcome==="CORRECT"?"answer-correct":result.outcome==="WRONG"?"answer-wrong":""):""});
+        if(p)question.append(h("label",{className:"field"},h("span",{},"Đáp án của bạn"),answer));
+        answer.oninput=()=>{textDraft=answer.value;const submit=root.querySelector("#submit-answer");if(submit)submit.disabled=!policy.answer || !textDraft.trim();};
+        if(s.phase==="QUESTION_OPEN" && p?.state==="PLAYING"){
+          if(p.alreadyAnswered)question.append(h("p",{id:"answer-accepted",className:"muted"},"Đã gửi đáp án. Đang chờ kết quả…"));
+          else question.append(button("Gửi đáp án",()=>begin("ANSWER",{text:textDraft}),{id:"submit-answer",disabled:!policy.answer || !textDraft.trim()}));
+        }
+        if(scored)question.append(notice(outcomes[result.outcome],result.outcome==="CORRECT"?"success":result.outcome==="WRONG"?"error":"info"));
+        if(s.question.payload?.acceptedAnswers)question.append(h("p",{id:"correct-text"},"Đáp án được chấp nhận: "+s.question.payload.acceptedAnswers.join(" / ")));
+      }
+      if(s.status==="FINISHED" && p?.alreadyAnswered && !s.results.length)question.append(notice("Đáp án đã được nhận, chưa chấm. Không cộng thời gian câu này vào tổng xếp hạng."));
     }
     const actionFeedback=h("div",{id:"game-feedback","aria-live":"polite"});
     if(working)actionFeedback.append(notice("Đang gửi…"));
@@ -140,13 +187,20 @@ export async function gamePage(app,id) {
     const toasts=h("div",{className:"game-toasts","aria-live":"polite",id:"game-toasts"});
     if(toast && performance.now()<toastUntil)toasts.append(notice(toast.text,toast.kind));
     const main=h("div",{className:"game-main"},final?finalSummary(s):null,final?null:question,actionFeedback);
-    root.replaceChildren(heading(s.quizTitleSnapshot,"Trận #"+id,link("Home","home","button secondary")),controls,h("div",{className:"game-layout"+(!memory.leaderboard?" board-hidden":"")},main,board),toasts);
+    root.replaceChildren(heading(gameTitle(s),"Trận #"+id+(s.stage?` · Màn ${s.stageIndex}/${s.stages.length} · ${MODE_LABELS[s.stage.mode]}`:""),link("Home","home","button secondary")),controls,h("div",{className:"game-layout"+(!memory.leaderboard?" board-hidden":"")},main,board),toasts);
+    if(focus){const answer=root.querySelector("#answer-text");if(answer && !answer.disabled){answer.focus({preventScroll:true});answer.setSelectionRange(focus.start,focus.end);}}
+    if(arrangementFocus){
+      let n=document.getElementById(arrangementFocus);
+      if(!n || n.disabled){const match=arrangementFocus.match(/^(piece|remove|up|down)-(.+)$/);if(match)n=document.getElementById((match[1]==="remove"?"piece-":"remove-")+match[2]);}
+      if(n && root.contains(n)&&!n.disabled)n.focus({preventScroll:true});
+    }
     tick(false);
   }
   function tick(allowRender=true){
     if(disposed || !state)return;
     if(allowRender && root.dataset.presenting==="true" && !presenting()){render();return;}
     const node=root.querySelector("#game-countdown"),ms=remaining();
+    videoPlayer?.sync();
     if(node)node.textContent=ms==null?"—":ms===0?"Chờ chuyển câu":(ms/1000).toFixed(1)+" s";
     if(toast && performance.now()>=toastUntil){toast=null;root.querySelector("#game-toasts")?.replaceChildren();}
   }

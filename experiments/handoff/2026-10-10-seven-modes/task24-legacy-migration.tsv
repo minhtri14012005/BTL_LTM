@@ -1,0 +1,5 @@
+schema_version
+7
+id	schema_version	rules_version	status	end_reason	score	player_state	total_answer_time_ms	final_rank
+1	1	1	FINISHED	ALL_ELIMINATED	-4	ELIMINATED	1312	1
+2	1	1	FINISHED	CANCELLED	20	PLAYING	0	1

@@ -1,0 +1,39 @@
+mysql_version
+8.0.45
+version	success
+1	1
+2	1
+3	1
+4	1
+5	1
+6	1
+7	1
+id	rules_version	status	end_reason
+1	2	FINISHED	COMPLETED
+2	2	FINISHED	COMPLETED
+3	2	FINISHED	COMPLETED
+4	2	FINISHED	CANCELLED
+active_users
+0
+answer_status	COUNT(*)
+CORRECT	47
+WRONG	10
+ACCEPTED_UNSCORED	1
+game_session_id	score	total_correct_answer_time_ms	final_rank
+1	221	5143	1
+1	120	4693	3
+1	209	5216	2
+2	20	42	1
+2	20	42	1
+2	20	44	3
+3	40	83	1
+3	40	88	2
+3	40	97	3
+4	0	0	1
+4	0	0	1
+4	0	0	1
+id	status
+1	WAITING
+2	WAITING
+3	WAITING
+4	WAITING

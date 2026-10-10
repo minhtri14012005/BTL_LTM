@@ -1,0 +1,7 @@
+{
+  "baseline-client.csv": "036af171ba18292a413163701003dbda46880fb51c48d4cbdb7cd8e6c07d00c0",
+  "baseline-fixtures.json": "d1e091f762ae415213e894b1483c2dc5bea271304faf87a34db97fcdf648589e",
+  "baseline-server.csv": "5a2263cdf6bce5cbbb03699422d985b5090371c380bb903efa376c4429649dd5",
+  "baseline-wire.jsonl": "0c5f41f8e60c067f2aef28ceb0e24ec75592011303783f034410d980cd5bcc31",
+  "environment.json": "a993905f277f52ec2ddd844f54c67e50394907215ca867446c711937f48d420b"
+}

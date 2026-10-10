@@ -1,0 +1,12 @@
+{
+  "cleanup-audit.json": "306174be35cfa2dc5f542079f79fe5c4d69fee7d96d46f74ef171413cbbedd2e",
+  "failsafe-reports/failsafe-summary.xml": "148c53f8f020ff6213746b781b2f0ee3f842e0f10cef43f51cb392155a44c655",
+  "failsafe-reports/TEST-vn.edu.multigame.system.controller.MySqlSmokeIT.xml": "c5b1f1a3db7287905b26b63ab8f6a0e3ef8f71793dfaa90c6b183af00126b797",
+  "handoff-cleanup-http.json": "da814bac6cbfc5f3b82b4fef4fd4022275ed442e168bf6205cde284c987c884c",
+  "handoff-cleanup-readiness.json": "9f264f6a6a73401397103a189c691fdccbe647e5e639b6288b3d89b1cbc75bc3",
+  "handoff-cleanup-server.log": "c1611a14555f4f620ec0a50d9783aff11d6674b39eafe24fa2708cba2f2dce64",
+  "handoff-cleanup-user-db.tsv": "aa8a3b6a3ae81d5ec75c50b60e26a59f3fe7a59533074f80768307759b6d5de3",
+  "handoff-cleanup-verify.log": "6079e77d3bb602d37f9835cfaf6087d58962a3659f9a527506405c4fa570235f",
+  "surefire-reports/TEST-vn.edu.multigame.common.config.CodebaseStructureTest.xml": "0d8572228511eae33d5a4bcfc5b254bbdfd26085a132805a259a85597e761bbb",
+  "surefire-reports/TEST-vn.edu.multigame.system.controller.SystemWebTest.xml": "e9405b399f93ffbcb1c9e0d20552cb01e889527bcb0275c20a4f3d0663e272f3"
+}

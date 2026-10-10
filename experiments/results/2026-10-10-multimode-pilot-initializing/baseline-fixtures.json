@@ -1,0 +1,25 @@
+{
+  "rulesVersion": 2,
+  "stageModes": [
+    "QUIZ",
+    "RIDDLE"
+  ],
+  "mode": "baseline",
+  "prefix": "e15_a77b717_b",
+  "seed": 15062026,
+  "accountIds": [
+    55,
+    56,
+    57,
+    58,
+    59
+  ],
+  "riddleId": 7,
+  "quizId": 6,
+  "gameIds": [
+    52
+  ],
+  "roomIds": [
+    52
+  ]
+}

@@ -1,0 +1,26 @@
+mysql_version
+8.0.45
+version	success
+1	1
+2	1
+3	1
+4	1
+5	1
+6	1
+7	1
+active_games
+0
+active_users
+0
+duplicate_answer_groups
+0
+cross_game_answers
+0
+spin_pool_inconsistency
+0
+invalid_unscored_results
+0
+end_reason	games
+CANCELLED	82
+COMPLETED	1
+SERVER_INTERRUPTED	1

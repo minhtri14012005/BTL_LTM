@@ -1,0 +1,57 @@
+{
+  "task": "Structure/name refactor only",
+  "project": "MultiGame",
+  "basePackage": "vn.edu.multigame",
+  "mainClass": "vn.edu.multigame.MultigameApplication",
+  "artifact": "target/multigame-0.0.1-SNAPSHOT.jar",
+  "unit": {
+    "tests": 302,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 21
+  },
+  "integration": {
+    "tests": 149,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 22
+  },
+  "frontend": {
+    "modules": 14,
+    "assets": 16,
+    "component": 89,
+    "smoke": 7
+  },
+  "readiness": {
+    "status": 200,
+    "body": {
+      "application": "multigame",
+      "server": "UP",
+      "database": {
+        "status": "UP",
+        "message": "Đã truy vấn MySQL thành công."
+      },
+      "serverTimeMs": 1791611422151,
+      "gameplay": "GAMEPLAY_WS"
+    }
+  },
+  "productionLogicChanges": false,
+  "migrationsChanged": false,
+  "gitCommitted": false,
+  "gameIds": [
+    5,
+    6,
+    7,
+    8
+  ],
+  "checks": [
+    "target/refactor-mechanical-audit.json",
+    "target/refactor-archive-check.json",
+    "target/refactor-db-before.tsv",
+    "target/refactor-db-after.tsv"
+  ],
+  "finalMysqlAudit": "target/refactor-browser-db.tsv",
+  "helperProcessesStopped": true
+}

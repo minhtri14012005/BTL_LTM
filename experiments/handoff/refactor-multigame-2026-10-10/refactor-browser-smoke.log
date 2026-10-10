@@ -1,0 +1,8 @@
+PASS Author UI creates all seven real sets, local video/image uploads, PRIVATE source denied to Players
+PASS INTRO reconnect and socket replacement preserve roster/resources; old tab remains replaced and cannot fight reconnect
+PASS Ten Quiz questions: Decision7s, one committed Spin/Star, same-frame replay after stage, final Quiz not doubled and floor0/no elimination
+PASS Real committed Answer ACK dropped at Client, reconnect/retry same frame after FINISHED, no duplicate Answer or score
+PASS Real seven-mode game Final/History: all six non-Quiz stage finals+20, Quiz final not doubled, carried Momentum, private media and Server scoring
+PASS Single-mode RIDDLE and multiple modes without Quiz complete on UI; zero Spin/Star and shared standings/History
+PASS Host Spectator Cancel keeps Accepted-Unscored, no Official Winner, Room reusable
+{"status": "PASS", "unit": 89, "smoke": 7}

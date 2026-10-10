@@ -1,0 +1,16 @@
+{
+  "javaSourceMoves": 227,
+  "productionFiles": 180,
+  "testFiles": 47,
+  "persistenceMappingChanges": [],
+  "restMappingChanges": [],
+  "migrationHashesUnchanged": true,
+  "applicationDbCountsAndMigrationUnchanged": true,
+  "protectedUserFiles": [
+    "1.sql",
+    "1.txt",
+    "TASKS.md"
+  ],
+  "preExistingGitStatus": "target/refactor-multigame-before/git-status.txt",
+  "preRefactorSnapshot": "target/refactor-multigame-before/manifest.json"
+}

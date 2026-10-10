@@ -1,0 +1,134 @@
+{
+  "task": 21,
+  "status": "DONE",
+  "date": "2026-10-09",
+  "java": "21.0.9",
+  "mysql": "8.0.45",
+  "browser": "Chrome/154.0.8037.98",
+  "environment": {
+    "server": "127.0.0.1:8087",
+    "db": "quizz_task2_test",
+    "transport": "same-origin REST/cookie/CSRF/raw WebSocket",
+    "clients": 4,
+    "lanPhysical": false,
+    "apiMocks": false
+  },
+  "unit": {
+    "command": ".\\mvnw.cmd -B --no-transfer-progress package -Ddebug=false",
+    "passed": 295,
+    "log": "target/task21-package.log"
+  },
+  "integration": {
+    "command": ".\\mvnw.cmd -B --no-transfer-progress test-compile failsafe:integration-test failsafe:verify -Pmysql-smoke -Dit.test=ImageWordLifecycleIT,QuizNetworkIT,ArrangementLifecycleIT,MultimodeLifecycleIT,AuthNetworkIT -Ddebug=false",
+    "passed": 34,
+    "skipped": 0,
+    "log": "target/task21-integration-final.log"
+  },
+  "browserTests": {
+    "command": "python -B scripts/test-image-word-client.py --origin http://127.0.0.1:8087 --port 9224 --smoke",
+    "components": 74,
+    "smokeGroups": 6,
+    "report": "target/task21-client-tests.json",
+    "log": "target/task21-browser-pass.log",
+    "mysqlAudit": "target/task21-browser-db.tsv",
+    "mediaFailureFixture": {
+      "quizId": 1810,
+      "imageRef": "sha256:b54014187c11f4074c122af48cb4f545118133dc251f7990fec09e7e58fe1ec9",
+      "originalRestored": true
+    },
+    "cachePolicy": "Cache disabled + real reload/404 for lost-media case, original file restored; no mock HTTP/WS."
+  },
+  "build": {
+    "command": "python scripts/build-client.py",
+    "modules": 12,
+    "assets": 14,
+    "jarMatchesSource": true,
+    "staticOnlyRepack": {
+      "command": ".\\mvnw.cmd -DskipTests package -Ddebug=false",
+      "log": "target/task21-package-static.log",
+      "doesNotCountAsUnitEvidence": true
+    }
+  },
+  "migrations": {
+    "V1__quiz_domain.sql": "730baa083f01d96e1efc08d39269040402ab0b98b4ed37e81c1d3e21e09c88e8",
+    "V2__require_answer_effect_snapshots.sql": "a4e5fb3a3cb8af2daec72f7cebfd4186837042f5d2d9bd34a628010151f06304",
+    "V3__decision_seven_seconds.sql": "47f4782b1accacd5962dd9a802356a0e55b2f80232aa04437026aba3c67a0e83",
+    "V4__multimode_data_foundation.sql": "97eb520765bde25c703aeadffb84f522d02e657a10a9181f2f42afd46a332b58",
+    "V5__room_stage_plans.sql": "2cfa3dc050ace7ee24535d37ad82a050d2ac14dc2f758523cb966a24ec71391c",
+    "V6__vietnamese_arrangement_aliases.sql": "2ea9ea3a5b749e907ef5b6509193411bbe53dbac0d0bc3aa61a3e21db362e971"
+  },
+  "originalV1toV5Unchanged": true,
+  "flywayValidated": 6,
+  "productionSchemaVersion": 3,
+  "testSchemaVersion": 6,
+  "changedFiles": [
+    "src/main/java/vn/edu/quiz/auth/security/SecurityConfiguration.java",
+    "src/main/java/vn/edu/quiz/quiz/controller/QuizController.java",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizImageStore.java",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizService.java",
+    "src/main/java/vn/edu/quiz/quiz/repository/QuestionRepository.java",
+    "src/main/java/vn/edu/quiz/game/service/GameTransactions.java",
+    "src/main/java/vn/edu/quiz/game/service/GameProjection.java",
+    "src/main/java/vn/edu/quiz/game/service/GameHistoryService.java",
+    "src/main/resources/static/client/core.js",
+    "src/main/resources/static/client/quizzes.js",
+    "src/main/resources/static/client/game.js",
+    "src/main/resources/static/client/history.js",
+    "src/test/java/vn/edu/quiz/quiz/controller/QuizNetworkIT.java",
+    "src/test/java/vn/edu/quiz/game/service/ImageWordLifecycleIT.java",
+    "scripts/test-arrangement-client.py",
+    "scripts/test-image-word-client.py",
+    "docs/project-status.md",
+    "docs/implementation-decisions.md",
+    "docs/rest-api-contract.md",
+    "docs/websocket-contract.md"
+  ],
+  "limitations": [
+    "LAN nhiều máy chưa đo",
+    "Không cắt MySQL vật lý giữa COMMIT; đã test rollback/retry bằng real MySQL TX + controlled injected transient failure",
+    "Topics/Instruction/Submission/README mẫu môn gốc không thấy",
+    "SONG/CLUES runtime/UI chưa triển khai"
+  ],
+  "failuresResolved": [
+    {
+      "log": "target/task21-integration.log",
+      "reason": "POST staging missing authenticated route; fixed exact matcher + auth/CSRF tests"
+    },
+    {
+      "log": "target/task21-browser.log",
+      "reason": "Harness JavaScript newline escaping; corrected fixture only"
+    },
+    {
+      "log": "target/task21-browser-final.log",
+      "reason": "Already downloaded image still available in browser cache; lost-media test now checks real404 and reload without cache"
+    }
+  ],
+  "cleanup": {
+    "ownedBrowserProfile": "Closed and exact owned profile removed after resolved path verification",
+    "ownedServerJar": "Server stopped; exact helper JAR removed",
+    "sourceDeleted": [],
+    "userDataDeleted": false,
+    "userFilesKept": [
+      "1.txt",
+      "1.sql",
+      "KHAO_SAT_MO_RONG_7_CHE_DO.md",
+      "TASKS_MO_RONG_7_CHE_DO.md"
+    ],
+    "regenerableRemoved": [
+      "target/task21-upload-2.png (unused third PNG; generator reduced to the two actually uploaded fixtures)",
+      "target/task21-chrome.log (browser startup diagnostic; no document/script reference; browser version/process evidence retained)"
+    ]
+  },
+  "startup": {
+    "readyStatus": 200,
+    "mysql": "UP",
+    "command": "java -jar target/competitive-quiz-0.0.1-SNAPSHOT.jar --spring.profiles.active=mysql --DB_NAME=quizz_task2_test --SERVER_ADDRESS=127.0.0.1 --SERVER_PORT=8087 --ALLOWED_ORIGINS=http://127.0.0.1:8087,http://localhost:8087 --spring.web.resources.static-locations=file:./src/main/resources/static/ --debug=false",
+    "credentials": "From ignored local config/environment; not included in evidence"
+  },
+  "reviewedAt": "2026-10-10",
+  "finalReview": {
+    "taskDiffCheck": "PASS",
+    "migrationHashesUnchanged": true,
+    "testsReused": "Existing final PASS evidence; no suite/benchmark rerun for documentation review"
+  }
+}

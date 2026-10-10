@@ -1,12 +1,12 @@
 spring:
   application:
-    name: competitive-quiz
+    name: multigame
   profiles:
     default: mysql
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 3MB
+      max-file-size: 20MB
+      max-request-size: 21MB
   jpa:
     open-in-view: false
     hibernate:
@@ -34,6 +34,8 @@ server:
         same-site: lax
 
 quiz:
+  videos:
+    directory: ${QUIZ_VIDEO_DIRECTORY:./data/quiz-videos}
   images:
     directory: ${QUIZ_IMAGE_DIRECTORY:./data/quiz-images}
   sample:

@@ -1,0 +1,13 @@
+id	status	end_reason	schema_version
+5	FINISHED	COMPLETED	2
+6	FINISHED	COMPLETED	2
+7	FINISHED	COMPLETED	2
+8	FINISHED	CANCELLED	2
+active_games
+0
+active_users
+0
+invalid_unscored
+0
+rooms_waiting
+4

@@ -1,0 +1,25 @@
+{
+  "purpose": "Exact harness source as used in measurements; snapshots are evidence, not a second production stack. Final source adds only overwrite guards after measurement.",
+  "files": {
+    "scripts/experiment-client.py": {
+      "path": "experiments/results/2026-10-10-multimode-loopback/measured-source/scripts/experiment-client.py",
+      "sha256": "ef74ac09c03da65d46a52cadb4cce20afcb389a4ce320b3b08a2e9ff9c682de2"
+    },
+    "scripts/run-experiment.ps1": {
+      "path": "experiments/results/2026-10-10-multimode-loopback/measured-source/scripts/run-experiment.ps1",
+      "sha256": "c6e0a9d0bdbbce534d21b8d9d37eaf12506dc30ca620fd944adb2e0a8b0351c9"
+    },
+    "scripts/summarize-experiment.py": {
+      "path": "experiments/results/2026-10-10-multimode-loopback/measured-source/scripts/summarize-experiment.py",
+      "sha256": "6ce67c5155b5adde088da6f433c039afea48638b881833ff3193e7ef1f2c9ba2"
+    },
+    "scripts/plot-experiment.py": {
+      "path": "experiments/results/2026-10-10-multimode-loopback/measured-source/scripts/plot-experiment.py",
+      "sha256": "e183662bf14471d77c864943706e346dcdb961d3de40095bd264f17a30e4ec3a"
+    },
+    "src/test/java/vn/edu/quiz/realtime/session/ExperimentServer.java": {
+      "path": "experiments/results/2026-10-10-multimode-loopback/measured-source/src/test/java/vn/edu/quiz/realtime/session/ExperimentServer.java",
+      "sha256": "f6d7818f45655a098b2a945c54c5f90dccf31a5a0a91425663b7552f84d7ea9d"
+    }
+  }
+}

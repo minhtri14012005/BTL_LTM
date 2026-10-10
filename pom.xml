@@ -9,11 +9,11 @@
         <version>3.5.16</version>
         <relativePath/>
     </parent>
-    <groupId>vn.edu.quiz</groupId>
-    <artifactId>competitive-quiz</artifactId>
+    <groupId>vn.edu.multigame</groupId>
+    <artifactId>multigame</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Competitive Multiplayer Network Quiz System</name>
-    <description>Single-server localhost/LAN quiz system</description>
+    <name>MultiGame</name>
+    <description>Single-server localhost/LAN multiplayer game system</description>
     <properties>
         <java.version>21</java.version>
     </properties>
@@ -62,6 +62,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>vn.edu.multigame.MultigameApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>

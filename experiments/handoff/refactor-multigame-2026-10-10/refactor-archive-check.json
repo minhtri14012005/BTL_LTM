@@ -1,0 +1,41 @@
+{
+  "measuredSource": [
+    {
+      "file": "scripts/experiment-client.py",
+      "unchanged": true
+    },
+    {
+      "file": "scripts/run-experiment.ps1",
+      "unchanged": true
+    },
+    {
+      "file": "scripts/summarize-experiment.py",
+      "unchanged": true
+    },
+    {
+      "file": "scripts/plot-experiment.py",
+      "unchanged": true
+    },
+    {
+      "file": "src/test/java/vn/edu/quiz/realtime/session/ExperimentServer.java",
+      "unchanged": true
+    }
+  ],
+  "archives": [
+    {
+      "archive": "experiments/results/2026-10-06-loopback",
+      "files": 21,
+      "mismatches": []
+    },
+    {
+      "archive": "experiments/results/2026-10-10-multimode-loopback",
+      "files": 27,
+      "mismatches": []
+    },
+    {
+      "archive": "experiments/handoff/2026-10-10-seven-modes",
+      "files": 35,
+      "mismatches": []
+    }
+  ]
+}

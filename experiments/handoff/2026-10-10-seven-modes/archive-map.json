@@ -1,0 +1,25 @@
+{
+  "provenance": "Copies of existing real Task21-24 evidence; never recounted as Task25 runs. Original target files retained; source manifests contain original target paths.",
+  "mapping": {
+    "target/task24-browser-db.sql": "experiments/handoff/2026-10-10-seven-modes/task24-browser-db.sql",
+    "target/task24-browser-db.tsv": "experiments/handoff/2026-10-10-seven-modes/task24-browser-db.tsv",
+    "target/task24-browser.log": "experiments/handoff/2026-10-10-seven-modes/task24-browser.log",
+    "target/task24-client-tests.json": "experiments/handoff/2026-10-10-seven-modes/task24-client-tests.json",
+    "target/task24-evidence.json": "experiments/handoff/2026-10-10-seven-modes/task24-evidence.json",
+    "target/task24-focused.log": "experiments/handoff/2026-10-10-seven-modes/task24-focused.log",
+    "target/task24-full-verify.log": "experiments/handoff/2026-10-10-seven-modes/task24-full-verify.log",
+    "target/task24-image-fixture.png": "experiments/handoff/2026-10-10-seven-modes/task24-image-fixture.png",
+    "target/task24-legacy-migration.sql": "experiments/handoff/2026-10-10-seven-modes/task24-legacy-migration.sql",
+    "target/task24-legacy-migration.tsv": "experiments/handoff/2026-10-10-seven-modes/task24-legacy-migration.tsv",
+    "target/task24-server.log": "experiments/handoff/2026-10-10-seven-modes/task24-server.log",
+    "target/task24-seven-history-mobile.png": "experiments/handoff/2026-10-10-seven-modes/task24-seven-history-mobile.png",
+    "target/task21-evidence.json": "experiments/handoff/2026-10-10-seven-modes/task21-evidence.json",
+    "target/task21-client-tests.json": "experiments/handoff/2026-10-10-seven-modes/task21-client-tests.json",
+    "target/task21-missing-image-mobile.png": "experiments/handoff/2026-10-10-seven-modes/task21-missing-image-mobile.png",
+    "target/task22-evidence.json": "experiments/handoff/2026-10-10-seven-modes/task22-evidence.json",
+    "target/task22-client-tests.json": "experiments/handoff/2026-10-10-seven-modes/task22-client-tests.json",
+    "target/task22-missing-video-mobile.png": "experiments/handoff/2026-10-10-seven-modes/task22-missing-video-mobile.png",
+    "target/task23-evidence.json": "experiments/handoff/2026-10-10-seven-modes/task23-evidence.json",
+    "target/task23-client-tests.json": "experiments/handoff/2026-10-10-seven-modes/task23-client-tests.json"
+  }
+}

@@ -1,0 +1,57 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-10T02:42:54.069+07:00  INFO 120260 --- [competitive-quiz] [           main] vn.edu.quiz.QuizApplication              : Starting QuizApplication v0.0.1-SNAPSHOT using Java 21.0.9 with PID 120260 (D:\BTL_LTM\target\competitive-quiz-0.0.1-SNAPSHOT.jar started by CodexSandboxOffline in D:\BTL_LTM)
+2026-10-10T02:42:54.075+07:00  INFO 120260 --- [competitive-quiz] [           main] vn.edu.quiz.QuizApplication              : The following 1 profile is active: "mysql"
+2026-10-10T02:42:54.946+07:00  INFO 120260 --- [competitive-quiz] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-10T02:42:55.019+07:00  INFO 120260 --- [competitive-quiz] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 65 ms. Found 13 JPA repository interfaces.
+2026-10-10T02:43:03.723+07:00  INFO 120260 --- [competitive-quiz] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8087 (http)
+2026-10-10T02:43:03.742+07:00  INFO 120260 --- [competitive-quiz] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-10T02:43:03.743+07:00  INFO 120260 --- [competitive-quiz] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-10T02:43:03.774+07:00  INFO 120260 --- [competitive-quiz] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-10T02:43:03.775+07:00  INFO 120260 --- [competitive-quiz] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 9643 ms
+2026-10-10T02:43:04.137+07:00  INFO 120260 --- [competitive-quiz] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-10T02:43:04.499+07:00  INFO 120260 --- [competitive-quiz] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@606b53a3
+2026-10-10T02:43:04.501+07:00  INFO 120260 --- [competitive-quiz] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-10T02:43:04.561+07:00  INFO 120260 --- [competitive-quiz] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://127.0.0.1:3306/quizz_task25_handoff?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000 (MySQL 8.0)
+2026-10-10T02:43:04.609+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table `quizz_task25_handoff`.`flyway_schema_history` does not exist yet
+2026-10-10T02:43:04.618+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.030s)
+2026-10-10T02:43:04.638+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table `quizz_task25_handoff`.`flyway_schema_history` ...
+2026-10-10T02:43:04.708+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `quizz_task25_handoff`: << Empty Schema >>
+2026-10-10T02:43:04.740+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "1 - quiz domain"
+2026-10-10T02:43:05.147+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "2 - require answer effect snapshots"
+2026-10-10T02:43:05.222+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "3 - decision seven seconds"
+2026-10-10T02:43:05.261+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "4 - multimode data foundation"
+2026-10-10T02:43:05.696+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "5 - room stage plans"
+2026-10-10T02:43:05.799+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "6 - vietnamese arrangement aliases"
+2026-10-10T02:43:05.937+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `quizz_task25_handoff` to version "7 - released clues"
+2026-10-10T02:43:06.018+07:00  INFO 120260 --- [competitive-quiz] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema `quizz_task25_handoff`, now at version v7 (execution time 00:01.144s)
+2026-10-10T02:43:06.131+07:00  INFO 120260 --- [competitive-quiz] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-10T02:43:06.214+07:00  INFO 120260 --- [competitive-quiz] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.53.Final
+2026-10-10T02:43:06.260+07:00  INFO 120260 --- [competitive-quiz] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-10T02:43:06.555+07:00  INFO 120260 --- [competitive-quiz] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-10T02:43:06.657+07:00  INFO 120260 --- [competitive-quiz] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.45
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-10T02:43:07.753+07:00  INFO 120260 --- [competitive-quiz] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-10T02:43:07.794+07:00  INFO 120260 --- [competitive-quiz] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-10T02:43:08.213+07:00  INFO 120260 --- [competitive-quiz] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-10T02:43:09.982+07:00  INFO 120260 --- [competitive-quiz] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name quizUserDetailsService
+2026-10-10T02:43:10.115+07:00  INFO 120260 --- [competitive-quiz] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-10T02:43:10.654+07:00  INFO 120260 --- [competitive-quiz] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8087 (http) with context path '/'
+2026-10-10T02:43:10.675+07:00  INFO 120260 --- [competitive-quiz] [           main] vn.edu.quiz.QuizApplication              : Started QuizApplication in 17.202 seconds (process running for 17.77)
+2026-10-10T02:45:52.022+07:00  INFO 120260 --- [competitive-quiz] [0.1-8087-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-10T02:45:52.023+07:00  INFO 120260 --- [competitive-quiz] [0.1-8087-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-10T02:45:52.024+07:00  INFO 120260 --- [competitive-quiz] [0.1-8087-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

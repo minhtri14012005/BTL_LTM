@@ -1,0 +1,531 @@
+{
+  "formatVersion": 1,
+  "visibility": "PUBLIC",
+  "modes": [
+    {
+      "mode": "VIETNAMESE_PUZZLE",
+      "title": "Vua Tiếng Việt — 5 câu mẫu",
+      "questions": [
+        {
+          "content": "Sắp xếp các mảnh thành một từ có nghĩa.",
+          "pieces": [
+            {
+              "id": "p1",
+              "text": "học "
+            },
+            {
+              "id": "p2",
+              "text": "sinh"
+            }
+          ],
+          "correctOrder": [
+            "p1",
+            "p2"
+          ],
+          "acceptedAnswers": [
+            "học sinh"
+          ]
+        },
+        {
+          "content": "Sắp xếp thành cụm từ về tinh thần cùng làm việc.",
+          "pieces": [
+            {
+              "id": "p1",
+              "text": "đồng "
+            },
+            {
+              "id": "p2",
+              "text": "đội"
+            }
+          ],
+          "correctOrder": [
+            "p1",
+            "p2"
+          ],
+          "acceptedAnswers": [
+            "đồng đội"
+          ]
+        },
+        {
+          "content": "Sắp xếp thành cụm từ chỉ lòng yêu quê hương.",
+          "pieces": [
+            {
+              "id": "p1",
+              "text": "yêu "
+            },
+            {
+              "id": "p2",
+              "text": "nước"
+            }
+          ],
+          "correctOrder": [
+            "p1",
+            "p2"
+          ],
+          "acceptedAnswers": [
+            "yêu nước"
+          ]
+        },
+        {
+          "content": "Sắp xếp thành cụm từ nói về gìn giữ thiên nhiên.",
+          "pieces": [
+            {
+              "id": "p1",
+              "text": "bảo "
+            },
+            {
+              "id": "p2",
+              "text": "vệ "
+            },
+            {
+              "id": "p3",
+              "text": "môi "
+            },
+            {
+              "id": "p4",
+              "text": "trường"
+            }
+          ],
+          "correctOrder": [
+            "p1",
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "acceptedAnswers": [
+            "bảo vệ môi trường"
+          ]
+        },
+        {
+          "content": "Sắp xếp thành một câu tục ngữ về nhớ ơn.",
+          "pieces": [
+            {
+              "id": "p1",
+              "text": "uống "
+            },
+            {
+              "id": "p2",
+              "text": "nước "
+            },
+            {
+              "id": "p3",
+              "text": "nhớ "
+            },
+            {
+              "id": "p4",
+              "text": "nguồn"
+            }
+          ],
+          "correctOrder": [
+            "p1",
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "acceptedAnswers": [
+            "uống nước nhớ nguồn"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "RIDDLE",
+      "title": "Đố mẹo — 5 câu mẫu",
+      "questions": [
+        {
+          "content": "Cái gì càng lấy bớt đi thì càng lớn?",
+          "acceptedAnswers": [
+            "cái hố",
+            "hố"
+          ]
+        },
+        {
+          "content": "Trong một năm, những tháng nào có ngày 28?",
+          "acceptedAnswers": [
+            "tất cả các tháng",
+            "mọi tháng",
+            "12 tháng",
+            "cả 12 tháng"
+          ]
+        },
+        {
+          "content": "Bạn vượt người đang đứng thứ hai trong cuộc đua. Bây giờ bạn đứng thứ mấy?",
+          "acceptedAnswers": [
+            "thứ hai",
+            "thứ 2",
+            "2"
+          ]
+        },
+        {
+          "content": "Cái gì có nhiều răng, dùng để chải tóc nhưng không nhai được?",
+          "acceptedAnswers": [
+            "cái lược",
+            "lược"
+          ]
+        },
+        {
+          "content": "Cái gì thuộc về bạn nhưng người khác thường dùng nhiều hơn bạn?",
+          "acceptedAnswers": [
+            "tên",
+            "tên của bạn",
+            "họ tên"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "CLUES",
+      "title": "Truy tìm dấu vết — 5 câu mẫu",
+      "questions": [
+        {
+          "content": "Công trình bí ẩn",
+          "acceptedAnswers": [
+            "hải đăng",
+            "ngọn hải đăng"
+          ],
+          "hints": [
+            {
+              "offsetMs": 0,
+              "text": "Giúp tàu thuyền định hướng."
+            },
+            {
+              "offsetMs": 2000,
+              "text": "Thường xây gần bờ biển hoặc trên đảo."
+            },
+            {
+              "offsetMs": 4000,
+              "text": "Có đèn sáng trên đỉnh tháp để báo hiệu trong đêm."
+            }
+          ]
+        },
+        {
+          "content": "Hạt ngọc của đồng quê",
+          "acceptedAnswers": [
+            "lúa",
+            "cây lúa"
+          ],
+          "hints": [
+            {
+              "offsetMs": 0,
+              "text": "Một cây lương thực quen thuộc ở Việt Nam."
+            },
+            {
+              "offsetMs": 2000,
+              "text": "Thường trồng trên ruộng có nước."
+            },
+            {
+              "offsetMs": 4000,
+              "text": "Hạt sau khi xay xát trở thành gạo."
+            }
+          ]
+        },
+        {
+          "content": "Nơi lưu giữ tri thức",
+          "acceptedAnswers": [
+            "thư viện"
+          ],
+          "hints": [
+            {
+              "offsetMs": 0,
+              "text": "Có nhiều nguồn tài liệu để học tập."
+            },
+            {
+              "offsetMs": 2000,
+              "text": "Mọi người thường giữ yên lặng ở đây."
+            },
+            {
+              "offsetMs": 4000,
+              "text": "Bạn có thể đọc hoặc mượn sách theo thẻ."
+            }
+          ]
+        },
+        {
+          "content": "Người bạn của đêm",
+          "acceptedAnswers": [
+            "mặt trăng",
+            "trăng"
+          ],
+          "hints": [
+            {
+              "offsetMs": 0,
+              "text": "Một thiên thể quan sát được từ Trái Đất."
+            },
+            {
+              "offsetMs": 2000,
+              "text": "Hình dạng nhìn thấy thay đổi theo chu kỳ."
+            },
+            {
+              "offsetMs": 4000,
+              "text": "Là vệ tinh tự nhiên của Trái Đất."
+            }
+          ]
+        },
+        {
+          "content": "Vùng vịnh nổi tiếng",
+          "acceptedAnswers": [
+            "vịnh hạ long",
+            "hạ long"
+          ],
+          "hints": [
+            {
+              "offsetMs": 0,
+              "text": "Một thắng cảnh ở miền Bắc Việt Nam."
+            },
+            {
+              "offsetMs": 2000,
+              "text": "Có nhiều đảo đá vôi trên mặt biển."
+            },
+            {
+              "offsetMs": 4000,
+              "text": "Nằm ở Quảng Ninh, tên gắn với rồng đáp xuống."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "ORDERING",
+      "title": "Sắp xếp trình tự — 5 câu mẫu",
+      "questions": [
+        {
+          "content": "Sắp xếp các giai đoạn phát triển của cây từ sớm đến muộn.",
+          "items": [
+            {
+              "id": "i1",
+              "text": "Hạt"
+            },
+            {
+              "id": "i2",
+              "text": "Nảy mầm"
+            },
+            {
+              "id": "i3",
+              "text": "Cây non"
+            },
+            {
+              "id": "i4",
+              "text": "Cây trưởng thành"
+            }
+          ],
+          "correctOrder": [
+            "i1",
+            "i2",
+            "i3",
+            "i4"
+          ]
+        },
+        {
+          "content": "Sắp xếp các thời điểm trong ngày từ sớm đến muộn.",
+          "items": [
+            {
+              "id": "i1",
+              "text": "Bình minh"
+            },
+            {
+              "id": "i2",
+              "text": "Buổi trưa"
+            },
+            {
+              "id": "i3",
+              "text": "Hoàng hôn"
+            },
+            {
+              "id": "i4",
+              "text": "Nửa đêm"
+            }
+          ],
+          "correctOrder": [
+            "i1",
+            "i2",
+            "i3",
+            "i4"
+          ]
+        },
+        {
+          "content": "Sắp xếp các cấp học theo thứ tự từ thấp đến cao.",
+          "items": [
+            {
+              "id": "i1",
+              "text": "Tiểu học"
+            },
+            {
+              "id": "i2",
+              "text": "Trung học cơ sở"
+            },
+            {
+              "id": "i3",
+              "text": "Trung học phổ thông"
+            },
+            {
+              "id": "i4",
+              "text": "Đại học"
+            }
+          ],
+          "correctOrder": [
+            "i1",
+            "i2",
+            "i3",
+            "i4"
+          ]
+        },
+        {
+          "content": "Sắp xếp các số theo thứ tự tăng dần.",
+          "items": [
+            {
+              "id": "i1",
+              "text": "3"
+            },
+            {
+              "id": "i2",
+              "text": "8"
+            },
+            {
+              "id": "i3",
+              "text": "15"
+            },
+            {
+              "id": "i4",
+              "text": "21"
+            },
+            {
+              "id": "i5",
+              "text": "34"
+            }
+          ],
+          "correctOrder": [
+            "i1",
+            "i2",
+            "i3",
+            "i4",
+            "i5"
+          ]
+        },
+        {
+          "content": "Sắp xếp các bước pha trà theo trình tự được mô tả.",
+          "items": [
+            {
+              "id": "i1",
+              "text": "Đun nước"
+            },
+            {
+              "id": "i2",
+              "text": "Cho trà vào ấm"
+            },
+            {
+              "id": "i3",
+              "text": "Rót nước nóng vào ấm"
+            },
+            {
+              "id": "i4",
+              "text": "Ủ trà"
+            },
+            {
+              "id": "i5",
+              "text": "Rót trà ra chén"
+            }
+          ],
+          "correctOrder": [
+            "i1",
+            "i2",
+            "i3",
+            "i4",
+            "i5"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "IMAGE_WORD",
+      "title": "Đuổi hình bắt chữ — 5 câu mẫu",
+      "questions": [
+        {
+          "content": "Quan sát hình và đoán thành ngữ hoặc cụm từ.",
+          "acceptedAnswers": [
+            "đầu voi đuôi chuột"
+          ],
+          "imageFile": "01.png"
+        },
+        {
+          "content": "Quan sát hình và đoán thành ngữ hoặc cụm từ.",
+          "acceptedAnswers": [
+            "nước mắt cá sấu"
+          ],
+          "imageFile": "02.png"
+        },
+        {
+          "content": "Quan sát hình và đoán thành ngữ hoặc cụm từ.",
+          "acceptedAnswers": [
+            "bắt cá hai tay"
+          ],
+          "imageFile": "03.png"
+        },
+        {
+          "content": "Quan sát hình và đoán thành ngữ hoặc cụm từ.",
+          "acceptedAnswers": [
+            "lửa thử vàng"
+          ],
+          "imageFile": "04.png"
+        },
+        {
+          "content": "Quan sát hình và đoán thành ngữ hoặc cụm từ.",
+          "acceptedAnswers": [
+            "ếch ngồi đáy giếng"
+          ],
+          "imageFile": "05.png"
+        }
+      ]
+    },
+    {
+      "mode": "SONG",
+      "title": "Đoán tên bài hát — 5 giai điệu mẫu",
+      "questions": [
+        {
+          "content": "Nghe giai điệu trong video và nhập tên bài hát.",
+          "acceptedAnswers": [
+            "Happy Birthday to You",
+            "Happy Birthday",
+            "Chúc mừng sinh nhật"
+          ],
+          "videoFile": "song-01.mp4"
+        },
+        {
+          "content": "Nghe giai điệu trong video và nhập tên bài hát.",
+          "acceptedAnswers": [
+            "Twinkle Twinkle Little Star",
+            "Twinkle, Twinkle, Little Star"
+          ],
+          "videoFile": "song-02.mp4"
+        },
+        {
+          "content": "Nghe giai điệu trong video và nhập tên bài hát.",
+          "acceptedAnswers": [
+            "Frère Jacques",
+            "Frere Jacques",
+            "Kìa con bướm vàng",
+            "Kia con buom vang"
+          ],
+          "videoFile": "song-03.mp4"
+        },
+        {
+          "content": "Nghe giai điệu trong video và nhập tên bài hát.",
+          "acceptedAnswers": [
+            "Jingle Bells",
+            "Jingle Bell",
+            "Tiếng chuông ngân",
+            "Chuông ngân vang"
+          ],
+          "videoFile": "song-04.mp4"
+        },
+        {
+          "content": "Nghe giai điệu trong video và nhập tên bài hát.",
+          "acceptedAnswers": [
+            "Ode to Joy",
+            "Hymn to Joy",
+            "Khúc ca niềm vui"
+          ],
+          "videoFile": "song-05.mp4"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "brand": true
+  },
+  {
+    "path": "/app.js",
+    "status": 200,
+    "newModule": true
+  },
+  {
+    "path": "/client/question-banks.js",
+    "status": 200
+  }
+]

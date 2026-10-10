@@ -1,0 +1,218 @@
+{
+  "task": 22,
+  "status": "DONE",
+  "date": "2026-10-10 Asia/Bangkok",
+  "java": "21.0.9",
+  "springBoot": "3.5.16",
+  "mysql": "8.0.45",
+  "browser": "Chrome/154.0.8037.98",
+  "environment": "Windows11, one localhost Server/test DB, 4 isolated browser contexts; no measured multi-machine LAN",
+  "unit": {
+    "passed": 299,
+    "failed": 0,
+    "skipped": 0,
+    "log": "target/task22-package-final.log"
+  },
+  "integration": {
+    "uniqueCases": 37,
+    "correctedRun": {
+      "cases": 13,
+      "log": "target/task22-integration-corrected.log"
+    },
+    "unaffectedReused": {
+      "cases": 24,
+      "classes": [
+        "AuthNetworkIT",
+        "ImageWordLifecycleIT",
+        "ArrangementLifecycleIT",
+        "MultimodeLifecycleIT"
+      ],
+      "log": "target/task22-integration-final.log"
+    },
+    "extraIntegrityVerification": {
+      "executed": 1,
+      "sameExistingCase": true,
+      "log": "target/task22-video-integrity.log"
+    },
+    "database": "quizz_task2_test",
+    "noH2": true
+  },
+  "browserTests": {
+    "componentAssertions": 79,
+    "smokeGroups": 7,
+    "report": "target/task22-client-tests.json",
+    "log": "target/task22-browser.log",
+    "gameIds": [
+      1803,
+      1804
+    ],
+    "roomIds": [
+      2013,
+      2014
+    ],
+    "quizIds": [
+      1872,
+      1873,
+      1874
+    ],
+    "reconnect": {
+      "beforeDeadline": 1791569073938,
+      "afterDeadline": 1791569073938,
+      "remainingMs": 9862,
+      "openedAtMs": 1791569048938,
+      "playhead": 15.106798,
+      "muted": true,
+      "server": 1791569064081
+    },
+    "mediaFailure": {
+      "quizId": 1873,
+      "mediaRef": "sha256:36e1704372e1664fc6a9a319c617d61df4e31a1d936914feb63ba8b0aef2aee6",
+      "originalRestored": true
+    },
+    "dbEvidence": "target/task22-browser-db.tsv"
+  },
+  "build": {
+    "modules": 13,
+    "staticFiles": 15,
+    "jarAssetsMatchSource": true,
+    "staticOnlyRepack": "target/task22-package-static.log",
+    "skippedTestsNotCounted": true
+  },
+  "migrations": {
+    "V1__quiz_domain.sql": "730baa083f01d96e1efc08d39269040402ab0b98b4ed37e81c1d3e21e09c88e8",
+    "V2__require_answer_effect_snapshots.sql": "a4e5fb3a3cb8af2daec72f7cebfd4186837042f5d2d9bd34a628010151f06304",
+    "V3__decision_seven_seconds.sql": "47f4782b1accacd5962dd9a802356a0e55b2f80232aa04437026aba3c67a0e83",
+    "V4__multimode_data_foundation.sql": "97eb520765bde25c703aeadffb84f522d02e657a10a9181f2f42afd46a332b58",
+    "V5__room_stage_plans.sql": "2cfa3dc050ace7ee24535d37ad82a050d2ac14dc2f758523cb966a24ec71391c",
+    "V6__vietnamese_arrangement_aliases.sql": "2ea9ea3a5b749e907ef5b6509193411bbe53dbac0d0bc3aa61a3e21db362e971"
+  },
+  "allSixMigrationHashesUnchanged": true,
+  "testSchemaVersion": 6,
+  "productionSchemaVersion": 3,
+  "changedFiles": [
+    ".gitignore",
+    "README.md",
+    "config/application-local.properties.example",
+    "docs/implementation-decisions.md",
+    "docs/project-status.md",
+    "docs/rest-api-contract.md",
+    "docs/websocket-contract.md",
+    "src/main/java/vn/edu/quiz/auth/security/SecurityConfiguration.java",
+    "src/main/java/vn/edu/quiz/game/service/GameProjection.java",
+    "src/main/java/vn/edu/quiz/game/service/GameTransactions.java",
+    "src/main/java/vn/edu/quiz/quiz/controller/QuizController.java",
+    "src/main/java/vn/edu/quiz/quiz/controller/QuizUploadExceptionHandler.java",
+    "src/main/java/vn/edu/quiz/quiz/dto/request/QuestionRequest.java",
+    "src/main/java/vn/edu/quiz/quiz/dto/response/QuestionResponse.java",
+    "src/main/java/vn/edu/quiz/quiz/repository/QuestionRepository.java",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizService.java",
+    "src/main/resources/application.yml",
+    "src/main/resources/static/client/core.js",
+    "src/main/resources/static/client/game.js",
+    "src/main/resources/static/client/history.js",
+    "src/main/resources/static/client/quizzes.js",
+    "src/main/resources/static/styles.css",
+    "src/test/java/vn/edu/quiz/quiz/controller/QuizNetworkIT.java",
+    "scripts/generate-song-fixture.py",
+    "scripts/test-song-client.py",
+    "src/main/java/vn/edu/quiz/quiz/dto/response/VideoResponse.java",
+    "src/main/java/vn/edu/quiz/quiz/service/Mp4Metadata.java",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizVideoStore.java",
+    "src/main/resources/static/client/video.js",
+    "src/test/java/vn/edu/quiz/game/service/SongLifecycleIT.java",
+    "src/test/java/vn/edu/quiz/quiz/service/Mp4MetadataTest.java",
+    "src/test/resources/quiz/song-av.mp4",
+    "src/test/resources/quiz/song-av2.mp4",
+    "src/test/resources/quiz/song-silent.mp4",
+    "scripts/test-arrangement-client.py"
+  ],
+  "changedSha256": {
+    ".gitignore": "01024949bffda0c672cf225714f5efed19386b8c3a8e9a4aa252a43c33f34059",
+    "README.md": "61ed1d4a1f9c8825228b93b570b4625aa8ef941ca3d3a97edb6a442903889f1e",
+    "config/application-local.properties.example": "4a0e3e49f2fd4dd44fb87b116ad4f36adec03e16dabfe937713dd5eec4ec18cf",
+    "docs/implementation-decisions.md": "9993d7afcbabf494509ba00abf3c2b40605eb61982c19f1319614857c0d91eb4",
+    "docs/project-status.md": "aa7316089388015c240ad827a95b6da299c79a4bfae0b968b1066b98883dfb5f",
+    "docs/rest-api-contract.md": "4054a612fee99cb468e4c9f6ca65306b36d59c1e77c5b869bcae2bbac93c3df5",
+    "docs/websocket-contract.md": "210d6e2c0627221d366b68645de44bf0cca297498b23aee108c9d9732a2c903a",
+    "src/main/java/vn/edu/quiz/auth/security/SecurityConfiguration.java": "b06bb3099c2c05e604dc08cc021c10174cd5811414eaa522138446b786241034",
+    "src/main/java/vn/edu/quiz/game/service/GameProjection.java": "7f98f1bf80b5a40cae9340f1f1eeeb2a22df61ba402d260d6128a10bf27dc5c9",
+    "src/main/java/vn/edu/quiz/game/service/GameTransactions.java": "3af0252e43b41283f48fd4da7bb77551b56e6b3b8c811b0eb6868f7f4b4716b1",
+    "src/main/java/vn/edu/quiz/quiz/controller/QuizController.java": "ee64f09ab876638889d6afb11972152b75c5c9fd20a3c936c7135d4b5673b71e",
+    "src/main/java/vn/edu/quiz/quiz/controller/QuizUploadExceptionHandler.java": "16a4af68c974ae271d2e7c127414e88341ab19d7d0559958722ba84feb8ae366",
+    "src/main/java/vn/edu/quiz/quiz/dto/request/QuestionRequest.java": "c0acbee49009bc38f21fda7b684988498425b9b345027404a21eeee55abb0ece",
+    "src/main/java/vn/edu/quiz/quiz/dto/response/QuestionResponse.java": "7c61e59b0f68368fb2a3cb4732be88a9b7474a21c03ca0ed3c0a528a58db28af",
+    "src/main/java/vn/edu/quiz/quiz/repository/QuestionRepository.java": "da19aa7348e06b4cde0bcf458e9f9cedae322f0cf54911b3958d57a5ddc81870",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizService.java": "99114bed3ff6cc4c541a86a69599b17fa8d0ee03e6feb87233a9bcbcf896d0c2",
+    "src/main/resources/application.yml": "bc450b248844f0e697c688f1651c218db12732acc54f46b66ab78f62d4ffbcba",
+    "src/main/resources/static/client/core.js": "020d886c2384fabcee603614634533b63cdb375b85e1e75e9a0f5ec39444d2da",
+    "src/main/resources/static/client/game.js": "4c95ef433111121b88b790c092c68a67f1a5a80ae885db653073939d75aa9a9b",
+    "src/main/resources/static/client/history.js": "f6d3a026627061dcf191d671950d212b2714d4efdabaacbbb8d3c5b0ccd068ad",
+    "src/main/resources/static/client/quizzes.js": "d643ad79a0e94d72b75227b2cadc7af155af8d5d8ff8c2e3c802e87e7f9bfac7",
+    "src/main/resources/static/styles.css": "06631f73079f8dc53379b7e3a55eca02a2e148ba85e1cb00ee3b8e3da265efd1",
+    "src/test/java/vn/edu/quiz/quiz/controller/QuizNetworkIT.java": "92c3a1d391302c5dea9f0d07a697f7a9fa817fd905fa82565830b1713c6c3029",
+    "scripts/generate-song-fixture.py": "02c2f0c80b7e058e88b79a4e9bd8a28ab16286561db651068beba0924a87ded2",
+    "scripts/test-song-client.py": "766f805e08929447252905dd7a3c225ed4b0ad8a6c4a103829f52893e502fbb9",
+    "src/main/java/vn/edu/quiz/quiz/dto/response/VideoResponse.java": "4861f882e3a2d2ee34c29c674c68026b47089bbc14c686c812a93f8740f8b569",
+    "src/main/java/vn/edu/quiz/quiz/service/Mp4Metadata.java": "73c9a7bd5159a0033571b1cad04ede6b69f72a028760902428be41dd2875e1fc",
+    "src/main/java/vn/edu/quiz/quiz/service/QuizVideoStore.java": "ddb30c4c205496890b449d07543e84259a2831b321cd8509ab5f65cb9f45c6f7",
+    "src/main/resources/static/client/video.js": "a2422829acbbffcbce4191d4dba389246f8504a31f0c28498d7b8e866f631421",
+    "src/test/java/vn/edu/quiz/game/service/SongLifecycleIT.java": "e0bb9dcf7aff956bcbb297e127d5dc67ad4c878d58cd06bb09f8a90709efea4e",
+    "src/test/java/vn/edu/quiz/quiz/service/Mp4MetadataTest.java": "c8c987f92829af168cd125e91e70fa451acb7a420c3014e93d14afbb8e810c2b",
+    "src/test/resources/quiz/song-av.mp4": "1aaeb2cf6bdaca0d2447e7cfb559d2bc0a0d322d313a77b883ec2f3d89d3ffcc",
+    "src/test/resources/quiz/song-av2.mp4": "36e1704372e1664fc6a9a319c617d61df4e31a1d936914feb63ba8b0aef2aee6",
+    "src/test/resources/quiz/song-silent.mp4": "be96a6ce12d6c8a936f4ac1e8c374ae2cb21b65b15ae801ffe8024521832bfd7",
+    "scripts/test-arrangement-client.py": "e09f20cf711fe47adeb8b9e8c2cf157cf3fda2ff0eb0f8df84d8f7c8f649f051"
+  },
+  "fixture": {
+    "generator": "scripts/generate-song-fixture.py",
+    "pyavVersion": "17.1.0",
+    "content": "Original synthetic colour video and440/660Hz tones, not copyrighted songs",
+    "testedContainer": "non-fragmented MP4",
+    "video": "H264 Constrained Baseline yuv420p320x180/10fps",
+    "audio": "AAC-LC48kHz mono",
+    "durationMs": 25000,
+    "decodedAudioRms": 0.05669025704264641
+  },
+  "failuresResolved": [
+    "History assertion used top-level mediaRef instead of payload.mediaRef",
+    "Old Quiz gate test still expected SONG unimplemented; now checks CLUES",
+    "New test compound var declaration fixed; no test disabled"
+  ],
+  "cleanup": {
+    "ownedProcessesStopped": true,
+    "ownedPortsNoListeners": [
+      8087,
+      9224
+    ],
+    "removed": [
+      "target/task22-owned-chrome-* (exact owned UUID directory)",
+      "target/task22-test-server.jar",
+      "target/task22-compile.log",
+      "target/task22-package.log (aborted build)",
+      "target/task22-chrome.log (diagnostic)"
+    ],
+    "keptUnknown": [
+      "1.txt",
+      "1.sql",
+      "KHAO_SAT_MO_RONG_7_CHE_DO.md",
+      "TASKS_MO_RONG_7_CHE_DO.md"
+    ]
+  },
+  "limitations": [
+    "Only same-machine evidence, no multi-device LAN",
+    "Browser playback verified for fixture codec subset only",
+    "No measured video throughput benchmark",
+    "No physical DB outage at uncertain COMMIT",
+    "No new-machine DB+media restore check",
+    "Original course documents remain absent"
+  ],
+  "noCommitPush": true,
+  "finalReview": {
+    "diffCheckScoped": "PASS",
+    "localMarkdownLinks": "PASS",
+    "pythonHarnessSyntax": "PASS",
+    "migrationsSha256": "6/6 unchanged",
+    "jarStaticAssets": "15/15 byte match",
+    "ownedListenersAfterStop": []
+  }
+}

@@ -1,0 +1,2 @@
+mode,operation,user_id,game_id,request_id,duration_ms,outcome
+baseline,CONTINUE,56,52,04e022be-153e-420b-9b80-dec227012271,67.274100,REJECTED_OR_ERROR
