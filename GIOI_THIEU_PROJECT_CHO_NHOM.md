@@ -23,6 +23,41 @@ Trong thư viện bộ câu, **Của tôi** gồm các bộ PUBLIC và PRIVATE d
 
 Khi Start, Server chụp **snapshot** của cấu hình và nội dung dùng cho trận. Nhờ vậy tác giả sửa bộ câu sau đó không làm câu đang chơi hoặc lịch sử trận đã kết thúc thay đổi.
 
+### 2.1. Phân biệt quyền quản lý và vai trò tham gia
+
+Hệ thống xét hai thông tin riêng: **ai là Host của Room** và **người đó tham gia với tư cách PLAYER hay SPECTATOR**. Host có thể vừa quản lý vừa chơi, hoặc chỉ quản lý và quan sát. Thành viên khác cũng có thể chọn chơi hoặc quan sát khi vào phòng. Quyền Host chỉ áp dụng trong phòng/trận của mình, không phải quyền quản trị toàn bộ hệ thống.
+
+| Thao tác | Host | Player là thành viên thường | Điều kiện và giới hạn |
+|---|---|---|---|
+| Tạo phòng mới | Có; người tạo trở thành Host. | Có thể tạo phòng riêng và trở thành Host ở phòng đó. | Cần đăng nhập, cấu hình và bộ câu hợp lệ. |
+| Sửa tên phòng, số chỗ, chế độ, thứ tự màn, bộ câu, số câu và thời gian | Có. | Không được sửa phòng của Host khác. | Chỉ khi Room ở `DRAFT` hoặc `WAITING`; Server kiểm tra phiên bản cấu hình để tránh ghi đè thay đổi mới. |
+| Mở phòng để mời người khác, đóng phòng | Có. | Không. | Mở từ `DRAFT`; đóng khi `DRAFT`/`WAITING`. Đóng Room trước trận khác với hủy Game đang chạy. |
+| Vào phòng bằng mã | Host đã là thành viên khi tạo phòng. | Có. | Phòng phải `WAITING`, mã đúng, còn chỗ và vai trò hợp lệ; không thêm người mới khi trận đã chạy. |
+| Đổi vai trò chơi/quan sát của bản thân | Có. | Có. | Thực hiện khi phòng chờ; vai trò PLAYER phải thỏa giới hạn chỗ và quy tắc tác giả bộ câu. |
+| Rời phòng chờ | Không dùng thao tác Leave; Host có thể đóng phòng. | Có. | Chỉ khi `WAITING`; Host nhận lỗi `HOST_CANNOT_LEAVE` nếu cố tự rời. |
+| Mời thành viên khác ra khỏi phòng | Có. | Không. | Chỉ khi `WAITING`, không được mời chính Host ra. Đây là loại khỏi danh sách hiện tại, không phải cơ chế cấm tài khoản vĩnh viễn. |
+| Bắt đầu trận | Có. | Không. | Room phải `WAITING`, có ít nhất 3 Player, đủ câu và quyền dùng bộ câu; Server kiểm tra lại toàn bộ điều kiện. Host spectator không được tính vào số Player. |
+| Bấm Tiếp tục ở giới thiệu màn | Có nếu Host là PLAYER. | Có. | Chỉ trong phase `INTRO`, trước deadline; SPECTATOR không có quyền và không nằm trong tập cần bấm. |
+| Gửi đáp án | Có nếu Host là PLAYER. | Có. | Chỉ câu đang mở, trước deadline; tối đa một Answer hợp lệ mỗi câu, không nộp thay người khác. |
+| Dùng Spin/Hope Star | Có nếu Host là PLAYER. | Có. | Chỉ Quiz, trong phase quyết định và còn tài nguyên; tuân theo luật kết hợp effect. |
+| Xem diễn biến, kết quả và bảng xếp hạng | Có. | Có. | Là thành viên của trận; SPECTATOR cũng được xem dữ liệu mà Server cho phép. |
+| Hủy trận đang diễn ra | Có. | Không. | Chỉ Host của Game đang `ACTIVE`; kết thúc theo trạng thái hủy. |
+| Tự sửa điểm, chọn effect Spin, đổi deadline hoặc ép chuyển câu | Không có quyền này. | Không có quyền này. | Server tính điểm, chọn effect và tự điều khiển tiến trình theo luật; Host chơi cũng chịu cùng luật với Player khác. |
+
+**SPECTATOR** được theo dõi phòng/trận nhưng không trả lời, không có điểm thi đấu và không dùng Spin/Star. Nếu SPECTATOR đồng thời là Host thì vẫn giữ quyền quản lý của Host, gồm quyền Start và hủy trận đúng trạng thái. Việc có thể xem trận không đồng nghĩa được xem đáp án đúng trước khi công bố.
+
+### 2.2. Host có được dùng hoặc sửa mọi bộ câu không?
+
+Không. **Quyền quản lý Room và quyền sở hữu bộ câu là độc lập.** Bất kỳ tài khoản nào cũng có thể tạo bộ câu của mình; tác giả mới được sửa/xóa bộ đó. Host được chọn bộ PUBLIC hoặc bộ PRIVATE do chính mình sở hữu, nhưng việc chọn PUBLIC của người khác không cấp quyền sửa bộ ấy. Player được mời vào trận dùng bộ PRIVATE có thể nhận nội dung cần chơi theo snapshot, không được vì vậy mà khám phá hoặc sửa bộ gốc.
+
+Tác giả của **bất kỳ bộ câu được chọn trong trận** không được tham gia trận đó với vai trò PLAYER; chỉ được quan sát. Ví dụ Host chọn bộ Đố mẹo do mình tạo thì phải làm Host spectator; nếu một thành viên khác là tác giả của bộ Quiz cũng được chọn, thành viên đó cũng phải quan sát. Quy tắc áp dụng cho toàn trận nhiều chế độ, không chỉ lúc chơi màn chứa bộ của tác giả.
+
+### 2.3. Quyền được kiểm tra ở đâu?
+
+Giao diện hiển thị nút theo vai trò để dễ dùng, nhưng **Server mới là nơi thực thi quyền**. Mỗi yêu cầu được xét theo tài khoản đã xác thực, Room/Game đích, tư cách thành viên, vai trò tham gia, quyền bộ câu và trạng thái hiện tại. Player tự gửi request Start/hủy trận hoặc SPECTATOR tự gửi Answer vẫn bị từ chối dù đã sửa JavaScript để hiện nút.
+
+Ví dụ Host có quyền sửa cấu hình lúc chờ, nhưng khi Start thành công thì cấu hình trận đã được chụp snapshot và không sửa giữa trận. Host có quyền bắt đầu trận, nhưng nếu chỉ có hai Player thì Server vẫn từ chối. **Có quyền thực hiện thao tác** và **đang đủ điều kiện thực hiện thao tác** là hai kiểm tra cùng phải vượt qua.
+
 ## 3. Bảy chế độ chơi
 
 | Chế độ | Trên màn hình | Người chơi trả lời như thế nào? | Ví dụ minh họa |
@@ -91,7 +126,26 @@ Server xếp theo **tổng điểm cao hơn**. Nếu bằng điểm, so **tổng
 
 Ví dụ A và B cùng 40 điểm. A có tổng thời gian của các câu đúng 28 giây, B là 34 giây: A xếp trên. Nếu cả hai đều 28 giây theo độ chính xác hệ thống dùng, họ đồng hạng.
 
-## 6. Client làm gì, Server làm gì?
+## 6. Kiến trúc client–server của hệ thống
+
+### 6.1. Hệ thống được bố trí như thế nào?
+
+Project dùng **kiến trúc client–server tập trung**: nhiều trình duyệt kết nối đến một ứng dụng Spring Boot, ứng dụng đó xử lý luật chơi và truy cập MySQL. Frontend là HTML/CSS/JavaScript trong `src/main/resources/static`, được chính Spring Boot phục vụ. Người chơi mở website để tải giao diện; JavaScript chạy trên thiết bị của từng người, còn Java chạy trên máy chủ.
+
+```mermaid
+flowchart LR
+    H["Trình duyệt của Host"] <-->|"HTTP REST và WebSocket /ws"| S["Spring Boot Server"]
+    A["Trình duyệt Player A"] <-->|"HTTP REST và WebSocket /ws"| S
+    B["Trình duyệt Player B"] <-->|"HTTP REST và WebSocket /ws"| S
+    S <-->|"JPA / JDBC"| D[("MySQL")]
+    S <-->|"Đọc và ghi tệp"| F["Ảnh và video trên ổ đĩa máy chủ"]
+```
+
+Các Client trao đổi thông qua Server. Ví dụ A nộp đáp án, Server nhận và xử lý, sau đó gửi kết quả cho các thành viên của trận. **Host là quyền của một tài khoản trong Room; Server là chương trình chạy trên máy chủ.** Host cũng dùng trình duyệt như Player. Máy chạy Server có thể đồng thời mở trình duyệt để làm Host, nhưng hai vai trò này vẫn khác nhau; đóng tab Host không đồng nghĩa với dừng chương trình Server.
+
+Khi demo LAN, ví dụ máy chủ có IP `192.168.1.10` và port `8080`, thiết bị khác mở `http://192.168.1.10:8080`. Đây là địa chỉ minh họa, phải thay bằng IP thực tế. Cấu hình hiện tại mặc định lắng nghe `127.0.0.1`, nên để thiết bị khác truy cập cần đặt `SERVER_ADDRESS` thành địa chỉ LAN hoặc `0.0.0.0`, thêm origin truy cập tương ứng vào `ALLOWED_ORIGINS` và cho phép kết nối đến port đó qua firewall. `localhost` trên điện thoại chỉ chính điện thoại, không chỉ máy chủ.
+
+### 6.2. Trách nhiệm của từng thành phần
 
 | Web Client trên máy từng người | Spring Boot Server trên máy chủ |
 |---|---|
@@ -99,9 +153,53 @@ Ví dụ A và B cùng 40 điểm. A có tổng thời gian của các câu đú
 | Gửi thao tác tạo phòng, chọn bộ, Start, Continue, Spin/Star, Answer, reconnect; hiển thị thông báo Server trả về. | Gán deadline chung, kiểm tra Answer đến kịp không, tính effect và điểm, xếp hạng, ghi MySQL rồi công bố kết quả. |
 | Phát video tại vị trí phù hợp với thời điểm câu đã mở; hiển thị clue chỉ sau khi Server công bố. | Quyết định clue nào đã được mở, tài nguyên nào còn, yêu cầu nào trùng, Answer nào được nhận. |
 
-**REST** là cách trình duyệt gửi những yêu cầu quản lý tài khoản, bộ câu, phòng và đọc dữ liệu theo từng lần gọi. **WebSocket** là kết nối hai chiều đang mở để gửi command của trận và nhận thay đổi giai đoạn, deadline, kết quả gần như ngay lập tức. Ảnh/video là tệp được Client tải từ Server bằng HTTP; WebSocket mang thông tin cần đồng bộ, không truyền toàn bộ video qua mỗi sự kiện.
+MySQL giữ dữ liệu cần lưu như tài khoản, bộ câu, Room, snapshot của trận, Answer và kết quả. Các tệp ảnh/video nằm trong thư mục local của máy chủ; dữ liệu câu hỏi lưu tham chiếu đến media để Client tải. Client không kết nối trực tiếp đến MySQL.
 
-Quy tắc dễ nhớ khi bảo vệ: **Client trình bày, Server quyết định**. Không thể tự sửa điểm trong giao diện để Server công nhận; Server dùng danh tính phiên đăng nhập và thời điểm nhận yêu cầu của chính mình. MySQL giữ dữ liệu tài khoản, bộ câu, snapshot và kết quả cần lưu. `@Entity`/Repository là cách Spring Data JPA làm việc với những bảng đó; WebSocket không thay MySQL.
+Quy tắc dễ nhớ khi bảo vệ: **Client trình bày, Server quyết định**. Client gửi “tôi chọn đáp án B”, Server kiểm tra và quyết định có nhận hay không. Client không được gửi “tôi đúng, hãy cộng 10 điểm” để hệ thống tin theo. Đồng hồ trên giao diện chỉ giúp người chơi theo dõi; deadline và thời gian trả lời hợp lệ do Server xác định.
+
+### 6.3. Vì sao dùng cả REST và WebSocket?
+
+| Kênh giao tiếp | Cách hoạt động | Ví dụ trong project |
+|---|---|---|
+| **REST qua HTTP** | Client gửi một request, Server xử lý và trả một response; phù hợp thao tác quản lý và đọc dữ liệu. | Đăng nhập, đọc/tạo/sửa bộ câu, tạo/sửa/mở/đóng Room, xem History. Ví dụ `GET /api/quizzes`, `POST /api/rooms`. |
+| **WebSocket tại `/ws`** | Sau khi thiết lập kết nối, cả hai phía có thể gửi thông điệp trên kết nối đang mở; phù hợp các thay đổi liên tục của phòng và trận. | Client gửi `JOIN_ROOM`, `START_GAME`, `CONTINUE`, `ANSWER`, Spin/Star hoặc `RECONNECT`; Server trả ACK/lỗi và phát sự kiện cập nhật phòng, giai đoạn, gợi ý, kết quả. |
+| **HTTP tải media** | Client tải nội dung tệp từ endpoint của Server để hiển thị hoặc phát. | Ảnh Đuổi hình bắt chữ, video Đoán tên bài hát; upload dùng HTTP multipart. |
+
+REST và WebSocket đều dùng chung hệ thống xác thực và luật trên Server. Một số thao tác có cả endpoint REST và command WebSocket, chẳng hạn Start/hủy trận; đây là các cổng vào cùng phần xử lý nghiệp vụ. Frontend hiện gửi Start qua WebSocket. HTTP dùng `fetch` và WebSocket dùng API `WebSocket` của trình duyệt; request và thông điệp được trao đổi dưới dạng JSON, riêng tệp media được truyền bằng HTTP.
+
+ACK xác nhận **một yêu cầu cụ thể** đã được Server chấp nhận; sự kiện cập nhật giúp **các thành viên liên quan** biết trạng thái mới. ACK của `ANSWER` không có nghĩa Client được biết ngay đáp án đúng: hệ thống nhận và lưu đáp án trước, chấm/công bố khi câu đóng. Dùng WebSocket giúp Server chủ động gửi thay đổi, các trình duyệt không phải liên tục hỏi “đã chuyển câu chưa?”.
+
+### 6.4. Bên trong Server có những phần nào?
+
+Ứng dụng Spring Boot được tổ chức theo feature, bên trong có các lớp phụ trách tiếp nhận, nghiệp vụ và lưu trữ:
+
+| Thành phần | Trách nhiệm | Điểm bắt đầu đọc code |
+|---|---|---|
+| Controller và WebSocket adapter | Nhận HTTP/JSON hoặc thông điệp WebSocket, đọc yêu cầu và chuyển đến phần xử lý. | `RoomController`, `GameController`, `GameCommandAdapter`. |
+| Xác thực và phân quyền | Xác định tài khoản từ session, kiểm tra thành viên, Host, Player và quyền với bộ câu. | `auth`, `PermissionPolicy`, `QuestionBankAccessPolicy`. |
+| Service và lifecycle | Quản lý Room; tạo snapshot; điều khiển các phase giới thiệu, quyết định, mở câu, kết quả và kết thúc. | `RoomService`, `GameLifecycle`, `GameTransactions`. |
+| Queue và timer | Tuần tự hóa công việc thuộc một Game, gắn thời điểm ingress và đưa timeout vào luồng xử lý. | `GameRuntime`, `SessionQueue`, `PhaseTimer`. |
+| Engine | So khớp đáp án, áp dụng luật điểm và xếp hạng. | `TextAnswerEvaluator`, `MultimodeScoreEngine`, `RankingEngine`. |
+| Entity và Repository | Ánh xạ dữ liệu và đọc/ghi MySQL bằng Spring Data JPA. | Các package `entity`, `repository`. |
+
+Các thành phần này nằm trong **một ứng dụng Server**, không phải mỗi feature chạy trên một máy riêng. Queue giữ thứ tự xử lý trong từng Game; transaction giữ các thay đổi dữ liệu liên quan được ghi nhất quán. Hai cơ chế có nhiệm vụ khác nhau: queue xử lý tranh chấp thao tác, transaction xử lý tính nhất quán khi lưu.
+
+### 6.5. Ví dụ một đáp án đi qua hệ thống
+
+1. Player chọn/gõ/sắp xếp đáp án rồi bấm Gửi. Client tạo command `ANSWER` với `requestId`, Game đích, chỉ số câu và nội dung đáp án.
+2. WebSocket adapter xác định người gửi từ phiên đăng nhập. Server kiểm tra kết nối, thành viên và đưa command vào queue của Game; thời điểm ingress do Server ghi nhận.
+3. Phần nghiệp vụ kiểm tra người đó là Player, trận/câu đang cho trả lời, request đến trước deadline, đáp án đúng định dạng và chưa có Answer hợp lệ cho câu này.
+4. Server lưu Answer trong transaction và trả ACK nếu được chấp nhận. Client cập nhật trạng thái đã gửi. Yêu cầu không hợp lệ nhận lỗi để giao diện báo cho người chơi.
+5. Khi đủ điều kiện đóng câu hoặc hết giờ, Server chấm các Answer, tính biến động điểm và xếp hạng; lưu kết quả thành công rồi phát sự kiện kết quả.
+6. Các Client nhận dữ liệu mới và cập nhật giao diện. Chuyển câu/màn tiếp theo do lifecycle và timer của Server điều khiển.
+
+Nếu Client mất ACK và gửi lại cùng `requestId` với cùng nội dung, cơ chế replay của Game giúp trả lại ACK đã xử lý trong phạm vi cache còn lưu. Answer và luật “mỗi người một đáp án hợp lệ cho mỗi câu” vẫn được Server kiểm tra; retry không tạo thêm điểm. Chi tiết tranh chấp và timeout được giải thích tiếp ở mục 7.
+
+### 6.6. Đồng bộ và lưu trữ khác nhau thế nào?
+
+Server giữ queue, timer, thông tin kết nối và cache phục vụ trận đang chạy trong bộ nhớ; MySQL giữ dữ liệu cần lưu lâu dài. Client nhận snapshot có trạng thái trận, `revision`, thời gian Server và deadline để dựng màn hình. `revision` giúp Client nhận biết bản cập nhật mới và tránh dùng trạng thái cũ ghi đè trạng thái mới.
+
+Khi reconnect, Client xin snapshot hiện tại rồi tiếp tục nhận sự kiện; không tự khôi phục trận bằng dữ liệu còn trên màn hình. Phục hồi kết nối của một Client khác với khởi động lại Server: code hiện tại có cleanup các trận bị bỏ dở lúc Server khởi động, không tự chạy tiếp trận cũ từ timer đã mất. Dữ liệu đã lưu và History phục vụ việc xem lại theo trạng thái lưu trong MySQL.
 
 ## 7. Vì sao nhiều người vẫn thấy cùng một trận?
 
