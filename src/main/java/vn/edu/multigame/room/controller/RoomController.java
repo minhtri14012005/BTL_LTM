@@ -43,6 +43,13 @@ public class RoomController {
     public ResponseEntity<RoomResponse> open(Authentication auth,@PathVariable long id,@RequestBody String body,jakarta.servlet.http.HttpServletRequest http) { return transition(auth,id,body,true,http); }
     @PostMapping(value="/{id}/close",consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RoomResponse> close(Authentication auth,@PathVariable long id,@RequestBody String body,jakarta.servlet.http.HttpServletRequest http) { return transition(auth,id,body,false,http); }
+    @DeleteMapping(value="/{id}",consumes=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RoomResponse> delete(Authentication auth,@PathVariable long id,@RequestBody String body,jakarta.servlet.http.HttpServletRequest http) {
+        var request=decoder.read(body,RoomRevisionRequest.class); long uid=users.requireActiveUser(auth).getId();
+        var receipt=operations.execute(auth,id,request.requestId(),"DELETE_ROOM",Map.of("revision",request.revision()),null,
+                sessions.validation(http.getSession(false),uid),()->rooms.delete(uid,id,request.revision()),(r,replay)->{});
+        return response(HttpStatus.OK,receipt.snapshot());
+    }
     private ResponseEntity<RoomResponse> transition(Authentication auth,long id,String body,boolean open,jakarta.servlet.http.HttpServletRequest http) {
         var request=decoder.read(body,RoomRevisionRequest.class); long uid=users.requireActiveUser(auth).getId();
         var receipt=operations.execute(auth,id,request.requestId(),open?"OPEN_ROOM":"CLOSE_ROOM",Map.of("revision",request.revision()),null,

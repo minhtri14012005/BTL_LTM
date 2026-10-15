@@ -12,6 +12,29 @@ import static org.mockito.Mockito.*;
 
 /** Actual cookie/HTTP/raw WS/MySQL; controlled queue/clock and faults after SQL, no substitute DB. */
 class GameHistoryCancelIT extends GameNetworkFixture {
+    @Test void deletedRoomKeepsFinishedGameAndAcceptedUnscoredHistoryForFormerMembers() throws Exception {
+        var f=fixture();var host=new Wire(f.host());var player=new Wire(f.roster().getFirst());long game=start(f);
+        var activeRoom=rooms.get(f.host().id(),f.room().id());
+        assertThat(host.client.call("DELETE","/api/rooms/"+activeRoom.id(),Map.of("requestId",UUID.randomUUID().toString(),"revision",activeRoom.revision())).statusCode()).isEqualTo(409);
+        assertThat(player.client.call("DELETE","/api/rooms/"+activeRoom.id(),Map.of("requestId",UUID.randomUUID().toString(),"revision",activeRoom.revision())).statusCode()).isEqualTo(409);
+        open(game,1);accepted(player.response(command("ANSWER",game,1,Map.of("option","D"))));
+        var cancelResponse=host.client.call("POST","/api/games/"+game+"/cancel",Map.of("requestId",UUID.randomUUID().toString()));
+        assertThat(cancelResponse.statusCode()).isEqualTo(200);
+        var before=json.readTree(player.client.call("GET",history(game),null).body());
+        var room=rooms.get(f.host().id(),f.room().id());
+        var deleted=host.client.call("DELETE","/api/rooms/"+room.id(),Map.of("requestId",UUID.randomUUID().toString(),"revision",room.revision()));
+        assertThat(deleted.statusCode()).as(deleted.body()).isEqualTo(200);
+        assertThat(host.client.call("GET","/api/rooms/"+room.id(),null).statusCode()).isEqualTo(403);
+        assertThat(player.client.call("GET","/api/rooms/"+room.id(),null).statusCode()).isEqualTo(403);
+        var afterResponse=player.client.call("GET",history(game),null);assertThat(afterResponse.statusCode()).isEqualTo(200);
+        var after=json.readTree(afterResponse.body());
+        assertThat(after.path("questions")).isEqualTo(before.path("questions"));
+        assertThat(after.path("finalSnapshot").path("members")).isEqualTo(before.path("finalSnapshot").path("members"));
+        assertThat(after.path("questions").get(0).path("answers").toString()).contains("ACCEPTED_UNSCORED");
+        assertThat(host.client.call("GET",history(game),null).statusCode()).isEqualTo(200);
+        assertThat(jdbc.queryForObject("select count(*) from game_member where game_session_id=?",Integer.class,game)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("select count(*) from room_member where room_id=? and status='JOINED'",Integer.class,room.id())).isZero();
+    }
     com.fasterxml.jackson.databind.node.ObjectNode cancel(long game) {return envelope("CANCEL_GAME","GAME",game,null,Map.of());}
     String history(long game) {return "/api/games/history/"+game;}
     void released(long game,long room) {

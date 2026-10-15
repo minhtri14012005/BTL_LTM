@@ -5,8 +5,33 @@ export async function roomList(app,page=0) {
   const result=await app.api.request("GET",`/api/rooms?page=${page}&size=12`);
   return h("section",{},heading("Phòng của tôi","Các phòng bạn đang là thành viên.",link("Tạo phòng","rooms/new","button")),
     h("div",{className:"actions"},link("Nhập mã phòng","join","button secondary")),
-    result.items.length?h("div",{className:"card-grid"},result.items.map(r=>h("article",{className:"card"},h("span",{className:"badge"},app.statusLabel(r.status)),h("h2",{},link(r.name,`room/${r.id}`)),h("p",{className:"muted"},`${r.members.filter(m=>m.participation==="PLAYER").length}/${r.maxPlayers} người chơi · ${r.hostUserId===app.user.id?"Bạn là Host":"Thành viên"}`),link("Mở phòng",`room/${r.id}`,"button secondary")))):notice("Chưa có phòng nào."),
+    result.items.length?h("div",{className:"card-grid"},result.items.map(r=>roomCard(app,r,result.items.length===1&&page>0?page-1:page))):notice("Chưa có phòng nào."),
     h("div",{className:"pagination"},page>0?link("← Trang trước",`rooms?page=${page-1}`,"button secondary"):null,h("span",{},`Trang ${page+1}`),(page+1)*result.size<result.totalElements?link("Trang sau →",`rooms?page=${page+1}`,"button secondary"):null));
+}
+function roomCard(app,room,page) {
+  const host=room.hostUserId===app.user.id;
+  const card=h("article",{className:"card room-list-card","data-room-id":room.id});
+  const confirm=h("div",{className:"room-delete-confirm",hidden:true},h("p",{},host?
+    "Xóa phòng này? Phòng sẽ đóng và được gỡ khỏi danh sách của tất cả thành viên. Lịch sử trận vẫn được giữ.":
+    "Rời và xóa phòng này khỏi danh sách của bạn? Phòng của những người khác và lịch sử trận vẫn được giữ."));
+  let request;
+  confirm.append(h("div",{className:"actions"},button("Giữ phòng",()=>confirm.hidden=true,{className:"secondary"}),
+    button("Xác nhận xóa",()=>action(app,card,()=>{
+      if(!request)request={requestId:uuid(),revision:room.revision};
+      return app.api.request("DELETE",`/api/rooms/${room.id}`,request);
+    },()=>{
+      app.rooms.delete(room.id);app.flash=host?"Đã xóa phòng. Lịch sử trận được giữ lại.":"Đã rời và xóa phòng khỏi danh sách của bạn.";
+      app.navigate(`rooms?page=${page}`);
+    }),{className:"danger",id:`confirm-delete-room-${room.id}`})));
+  const trash=button("",()=>confirm.hidden=!confirm.hidden,{className:"room-trash",id:`delete-room-${room.id}`,
+    "aria-label":`Xóa phòng ${room.name}`,title:room.status==="ACTIVE"?"Không thể xóa khi trận đang chạy":"Xóa phòng",disabled:room.status==="ACTIVE"});
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  for(const [key,value]of Object.entries({viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:"currentColor","stroke-width":1.8,"stroke-linecap":"round","stroke-linejoin":"round","aria-hidden":"true"}))svg.setAttribute(key,String(value));
+  const path=document.createElementNS(svg.namespaceURI,"path");path.setAttribute("d","M3 6h18 M9 6V4h6v2 M5 6l1 14h12l1-14 M10 10v6 M14 10v6");svg.append(path);trash.append(svg);
+  card.append(h("div",{className:"card-top"},h("span",{className:"badge"},app.statusLabel(room.status)),trash),
+    h("h2",{},link(room.name,`room/${room.id}`)),h("p",{className:"muted"},`${room.members.filter(m=>m.participation==="PLAYER").length}/${room.maxPlayers} người chơi · ${host?"Bạn là Host":"Thành viên"}`),
+    link("Mở phòng",`room/${room.id}`,"button secondary"),confirm);
+  return card;
 }
 export async function roomEditor(app,id,chosen) {
   const room=id?await app.api.request("GET",`/api/rooms/${id}`):null;

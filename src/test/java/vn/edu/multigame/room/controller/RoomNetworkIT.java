@@ -33,7 +33,7 @@ class RoomNetworkIT {
     List<Client> clients=new ArrayList<>(); List<Socket> sockets=new ArrayList<>();
     List<String> usernames=new ArrayList<>(); List<Long> rooms=new ArrayList<>(),quizzes=new ArrayList<>();
     @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.ValueSource(strings={"CREATE_ROOM","EDIT_ROOM","OPEN_ROOM","CLOSE_ROOM"})
+    @org.junit.jupiter.params.provider.ValueSource(strings={"CREATE_ROOM","EDIT_ROOM","OPEN_ROOM","CLOSE_ROOM","DELETE_ROOM"})
     void queuedRestMutationCannotUseRevokedLogin(String type) throws Exception {
         var author=login();var host=login();long quiz=quiz(author,"PUBLIC");
         JsonNode original=type.equals("CREATE_ROOM")?null:create(host,quiz,"PLAYER",3);
@@ -55,7 +55,7 @@ class RoomNetworkIT {
             try {
                 assertThat(held.await(5,TimeUnit.SECONDS)).isTrue();
                 var pending=host.http.sendAsync(HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).header("Content-Type","application/json")
-                        .header("X-CSRF-TOKEN",host.csrf).method(type.equals("EDIT_ROOM")?"PUT":"POST",HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build(),HttpResponse.BodyHandlers.ofString());
+                        .header("X-CSRF-TOKEN",host.csrf).method(type.equals("EDIT_ROOM")?"PUT":type.equals("DELETE_ROOM")?"DELETE":"POST",HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build(),HttpResponse.BodyHandlers.ofString());
                 assertThat(arrived.await(5,TimeUnit.SECONDS)).isTrue();
                 assertThat(host.request("POST","/api/auth/logout",null,true).statusCode()).isEqualTo(204);
                 release.countDown();holder.get(5,TimeUnit.SECONDS);var response=pending.get(10,TimeUnit.SECONDS);
@@ -167,6 +167,49 @@ class RoomNetworkIT {
         error(host.request("POST","/api/rooms",Map.of("requestId",request.get("requestId"),"config",config(q,"SPECTATOR",3)),true),409,"INVALID_REQUEST_ID");
         Client anonymous=new Client();clients.add(anonymous);error(anonymous.request("GET","/api/rooms",null,false),401,"UNAUTHENTICATED");
         assertThat(second.toString()).doesNotContain("correctAnswer","options","Secret correct", "password");
+    }
+    @Test void deletingIdleRoomsRetainsRowsAndEnforcesRightsRevisionCsrfAndReplay() throws Exception {
+        Client author=login(),host=login(),outsider=login();
+        for(boolean closed:List.of(false,true)) {
+            JsonNode room=create(host,quiz(author,"PUBLIC"),"PLAYER",3);long rid=room.path("id").asLong();
+            if(closed)room=json.readTree(host.request("POST","/api/rooms/"+rid+"/close",Map.of("requestId",id(),"revision",0),true).body());
+            var body=Map.of("requestId",id(),"revision",room.path("revision").asLong());
+            error(outsider.request("DELETE","/api/rooms/"+rid,body,true),403,"FORBIDDEN");
+            error(host.request("DELETE","/api/rooms/"+rid,body,false),403,"CSRF_INVALID");
+            error(host.request("DELETE","/api/rooms/"+rid,Map.of("requestId",id(),"revision",99),true),409,"REVISION_CONFLICT");
+            var first=host.request("DELETE","/api/rooms/"+rid,body,true);
+            assertThat(first.statusCode()).as(first.body()).isEqualTo(200);
+            assertThat(host.request("DELETE","/api/rooms/"+rid,body,true).body()).isEqualTo(first.body());
+            assertThat(jdbc.queryForObject("select status from room where id=?",String.class,rid)).isEqualTo("CLOSED");
+            assertThat(jdbc.queryForObject("select status from room_member where room_id=? and user_id=?",String.class,rid,host.uid)).isEqualTo("LEFT");
+            assertThat(json.readTree(host.request("GET","/api/rooms",null,false).body()).path("items")).isEmpty();
+            error(host.request("GET","/api/rooms/"+rid,null,false),403,"FORBIDDEN");
+        }
+    }
+    @Test void memberDeleteLeavesOnlyCallerHostDeleteRevokesEveryoneAndActiveIsBlocked() throws Exception {
+        Client author=login(),host=login(),player=login();
+        JsonNode room=open(host,create(host,quiz(author,"PUBLIC"),"PLAYER",3));long rid=room.path("id").asLong();
+        Socket p=new Socket(player),h=new Socket(host);h.ack(command("SUBSCRIBE_ROOM",rid,id(),Map.of()));
+        var joined=p.ack(join(room,id(),"PLAYER")).path("payload");
+        assertThat(h.next("ROOM_UPDATED").path("payload").path("members").size()).isEqualTo(2);
+        var body=Map.of("requestId",id(),"revision",joined.path("revision").asLong());
+        var left=player.request("DELETE","/api/rooms/"+rid,body,true);assertThat(left.statusCode()).isEqualTo(200);
+        assertThat(player.request("DELETE","/api/rooms/"+rid,body,true).body()).isEqualTo(left.body());
+        assertThat(p.next("ROOM_ACCESS_REVOKED").path("payload").path("reason").asText()).isEqualTo("NOT_A_MEMBER");
+        assertThat(h.next("ROOM_UPDATED").path("payload").path("members").size()).isEqualTo(1);
+        assertThat(json.readTree(player.request("GET","/api/rooms",null,false).body()).path("items")).isEmpty();
+        assertThat(jdbc.queryForObject("select status from room where id=?",String.class,rid)).isEqualTo("WAITING");
+        // Rejoin is still possible after a member-only delete, with a new requestId.
+        p.drain();h.drain();joined=p.ack(join(room,id(),"PLAYER")).path("payload");
+        jdbc.update("update room set status='ACTIVE' where id=?",rid);
+        error(host.request("DELETE","/api/rooms/"+rid,Map.of("requestId",id(),"revision",joined.path("revision").asLong()),true),409,"INVALID_STATE");
+        error(player.request("DELETE","/api/rooms/"+rid,Map.of("requestId",id(),"revision",joined.path("revision").asLong()),true),409,"INVALID_STATE");
+        assertThat(jdbc.queryForObject("select count(*) from room_member where room_id=? and status='JOINED'",Integer.class,rid)).isEqualTo(2);
+        jdbc.update("update room set status='WAITING' where id=?",rid);p.drain();h.drain();
+        assertThat(host.request("DELETE","/api/rooms/"+rid,Map.of("requestId",id(),"revision",joined.path("revision").asLong()),true).statusCode()).isEqualTo(200);
+        p.next("ROOM_ACCESS_REVOKED");h.next("ROOM_ACCESS_REVOKED");
+        assertThat(jdbc.queryForObject("select count(*) from room_member where room_id=? and status='JOINED'",Integer.class,rid)).isZero();
+        error(player.request("GET","/api/rooms/by-code/"+room.path("roomCode").asText(),null,false),404,"ROOM_NOT_FOUND");
     }
     @Test void joinBroadcastLeaveRejoinRemoveAndSnapshotArePrivateToJoinedMembers() throws Exception {
         Client author=login(),host=login(),player=login(),outsider=login();JsonNode room=open(host,create(host,quiz(author,"PUBLIC"),"PLAYER",3));long rid=room.get("id").asLong();

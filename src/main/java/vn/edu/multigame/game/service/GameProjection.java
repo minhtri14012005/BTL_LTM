@@ -60,7 +60,7 @@ public class GameProjection {
         return new CommittedGame(new GameSnapshot(game.getId(),game.getRoomId(),game.getQuizId(),game.getQuizAuthorUserId(),game.getQuizTitleSnapshot(),game.getStatus(),game.getPhase(),game.getCurrentQuestionIndex(),game.getQuestionCount(),
                 game.getRevision(),0,null,null,game.getStatus()==GameStatus.FINISHED?"FINISHED":"INITIALIZING",false,game.getEndReason(),winners,
                 game.getConfigSnapshot(),roster,question,results,null,game.getSchemaVersion(),game.getV2ConfigSnapshot(),stageViews,v2?game.getCurrentStageIndex():null,stageViews.stream().filter(s -> s.orderIndex()==game.getCurrentStageIndex()).findFirst().orElse(null),List.of()),privatePlayers,
-                game.getStatus()==GameStatus.FINISHED?rooms.get(roster.stream().filter(m -> m.role()==MemberRole.HOST).findFirst().orElseThrow().userId(),game.getRoomId()):null);
+                game.getStatus()==GameStatus.FINISHED?rooms.getRetainedForHost(roster.stream().filter(m -> m.role()==MemberRole.HOST).findFirst().orElseThrow().userId(),game.getRoomId()):null);
     }
     public GameSnapshot.Result result(Answer a,PlayerSession p) {
         var effects=a.getResultSnapshot();

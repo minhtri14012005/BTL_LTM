@@ -2,7 +2,7 @@ import {releasedClues} from "./clues.js";
 import {h,button,link,notice,heading} from "./dom.js";
 import {gameCommand,permissions,acceptSnapshot,applyReceipt,countdown,effects,outcomes,endReasons,gameMode} from "./game-state.js";
 
-import {arrangementAnswer,correctArrangement,isArrangement,permutation} from "./arrangement.js";
+import {arrangementAnswer,vietnameseAnswer,correctArrangement,isArrangement,permutation} from "./arrangement.js";
 import {songVideo} from "./video.js";
 import {MODE_LABELS} from "./core.js";
 export function gameTitle(s){return s.quizTitleSnapshot || (s.stages?.length?s.stages.map(stage=>stage.title).join(" → "):"Trận nhiều màn");}
@@ -36,6 +36,8 @@ export async function gamePage(app,id) {
   app.gamePresentation??=new Map();
   const memory=app.gamePresentation.get(id)||{leaderboard:true,actions:new Set(),results:new Set()};
   app.gamePresentation.set(id,memory);
+  // In-memory draft only; bind it to the player, game, question and exact pieces.
+  const draftKey=s=>JSON.stringify([app.user.id,id,s?.questionIndex,s?.question?.payload?.pieces]);
   let state=app.games.get(id)||null,selected=null,textDraft="",arrangementDraft=[],pending=null,working=false,synced=false,reconnecting=false,feedback=null,sampled=performance.now(),clock=null,disposed=false,toast=null,toastUntil=0,animateIndex=null,videoPlayer=null;
   const controller={id,dispose(){disposed=true;clearInterval(clock);videoPlayer?.dispose();},update(){render();},receive(m){
     if(m.target?.kind!=="GAME" || m.target.id!==id || m.kind!=="EVENT")return;
@@ -99,6 +101,7 @@ export async function gamePage(app,id) {
   }
   function render(){
     if(disposed || app.gameController!==controller)return;
+    const scrollLeft=root.querySelector("#sentence-row")?.scrollLeft||0;
     if(!state){root.replaceChildren(notice("Đang lấy trạng thái trận…"));return;}
     const arrangementFocus=root.contains(document.activeElement) && document.activeElement.closest("#arrangement-answer")?document.activeElement.id:null;
     const focus=root.contains(document.activeElement) && document.activeElement.id==="answer-text"?{start:document.activeElement.selectionStart,end:document.activeElement.selectionEnd}:null;
@@ -154,13 +157,26 @@ export async function gamePage(app,id) {
         if(p?.alreadyAnswered)question.append(h("p",{className:"muted",id:"answer-accepted"},"Đã gửi đáp án. Đang chờ kết quả…"));
       }
       } else if(isArrangement(gameMode(s))){
-        const items=s.question.payload?.pieces||s.question.payload?.items||[],ids=p?.submittedAnswer?.itemIds??arrangementDraft;
+        const items=s.question.payload?.pieces||s.question.payload?.items||[];
         const result=s.results.find(r=>r.userId===app.user.id);
-        question.append(arrangementAnswer(items,ids,policy.answer,next=>{arrangementDraft=next;render();}));
-        if(gameMode(s)==="VIETNAMESE_PUZZLE")question.append(h("p",{id:"joined-pieces",className:"piece-text"},ids.map(id=>items.find(v=>v.id===id)?.text||"").join("")));
+        const vua=gameMode(s)==="VIETNAMESE_PUZZLE",editable=policy.answer && (!vua || remaining()>0);
+        if(vua && !p?.alreadyAnswered){
+          if(memory.vietnameseDraft?.key===draftKey(s))arrangementDraft=[...memory.vietnameseDraft.ids];
+          else {arrangementDraft=[];memory.vietnameseDraft={key:draftKey(s),ids:[]};}
+        }
+        const draftIds=p?.submittedAnswer?.itemIds??arrangementDraft;
+        const onChange=next=>{
+          if(vua && (!permissions(state,app.user.id,app.transport.status==="ready"&&synced,!!pending||working).answer || remaining()<=0 || draftKey(state)!==draftKey(s)))return;
+          arrangementDraft=[...next];
+          if(vua)memory.vietnameseDraft={key:draftKey(s),ids:[...next]};
+          render();
+          if(vua){const row=root.querySelector("#sentence-row");if(row)row.scrollLeft=row.scrollWidth;}
+        };
+        question.append((vua?vietnameseAnswer:arrangementAnswer)(items,draftIds,editable,onChange));
+        if(vua)question.append(h("p",{id:"joined-pieces",className:"piece-text"},draftIds.map(id=>items.find(v=>v.id===id)?.text||"").join("")));
         if(s.phase==="QUESTION_OPEN" && p?.state==="PLAYING"){
           if(p.alreadyAnswered)question.append(h("p",{id:"answer-accepted",className:"muted"},"Đã gửi đáp án. Đang chờ kết quả…"));
-          else question.append(button("Gửi đáp án",()=>begin("ANSWER",{itemIds:arrangementDraft}),{id:"submit-answer",disabled:!policy.answer||!permutation(items,arrangementDraft)}));
+          else question.append(button(vua?"Nộp đáp án":"Gửi đáp án",()=>{if(vua && (!permissions(state,app.user.id,app.transport.status==="ready"&&synced,!!pending||working).answer || remaining()<=0))return;begin("ANSWER",{itemIds:arrangementDraft});},{id:"submit-answer",disabled:!editable||!permutation(items,arrangementDraft)}));
         }
         if(result)question.append(notice(outcomes[result.outcome],result.outcome==="CORRECT"?"success":result.outcome==="WRONG"?"error":"info"));
         if(s.question.payload?.correctOrder)question.append(h("p",{id:"correct-arrangement"},gameMode(s)==="VIETNAMESE_PUZZLE"?"Đáp án: "+(s.question.payload.acceptedAnswers||[correctArrangement(s.question).join("")]).join(" / "):"Thứ tự đúng: "+correctArrangement(s.question).join(" → ")));
@@ -188,10 +204,12 @@ export async function gamePage(app,id) {
     if(toast && performance.now()<toastUntil)toasts.append(notice(toast.text,toast.kind));
     const main=h("div",{className:"game-main"},final?finalSummary(s):null,final?null:question,actionFeedback);
     root.replaceChildren(heading(gameTitle(s),"Trận #"+id+(s.stage?` · Màn ${s.stageIndex}/${s.stages.length} · ${MODE_LABELS[s.stage.mode]}`:""),link("Home","home","button secondary")),controls,h("div",{className:"game-layout"+(!memory.leaderboard?" board-hidden":"")},main,board),toasts);
+    if(gameMode(s)==="VIETNAMESE_PUZZLE"){const row=root.querySelector("#sentence-row");if(row)row.scrollLeft=scrollLeft;}
     if(focus){const answer=root.querySelector("#answer-text");if(answer && !answer.disabled){answer.focus({preventScroll:true});answer.setSelectionRange(focus.start,focus.end);}}
     if(arrangementFocus){
       let n=document.getElementById(arrangementFocus);
       if(!n || n.disabled){const match=arrangementFocus.match(/^(piece|remove|up|down)-(.+)$/);if(match)n=document.getElementById((match[1]==="remove"?"piece-":"remove-")+match[2]);}
+      if((!n || n.disabled) && gameMode(s)==="VIETNAMESE_PUZZLE")n=root.querySelector("#arrangement-answer .piece-bank button:not(:disabled)")||root.querySelector("#sentence-row");
       if(n && root.contains(n)&&!n.disabled)n.focus({preventScroll:true});
     }
     tick(false);
@@ -200,6 +218,7 @@ export async function gamePage(app,id) {
     if(disposed || !state)return;
     if(allowRender && root.dataset.presenting==="true" && !presenting()){render();return;}
     const node=root.querySelector("#game-countdown"),ms=remaining();
+    if(gameMode(state)==="VIETNAMESE_PUZZLE" && ms===0)root.querySelectorAll("#arrangement-answer button,#submit-answer").forEach(b=>{b.disabled=true;});
     videoPlayer?.sync();
     if(node)node.textContent=ms==null?"—":ms===0?"Chờ chuyển câu":(ms/1000).toFixed(1)+" s";
     if(toast && performance.now()>=toastUntil){toast=null;root.querySelector("#game-toasts")?.replaceChildren();}

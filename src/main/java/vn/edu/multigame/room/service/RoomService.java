@@ -40,6 +40,11 @@ public class RoomService {
     public RoomResponse get(long userId, long id) {
         Room room=room(id, false); joined(userId, room); return snapshot(room);
     }
+    /** Internal final-game projection: retained Host identity survives manual
+     * Room deletion. REST access still requires JOINED; History checks GameMember. */
+    public RoomResponse getRetainedForHost(long hostUserId, long id) {
+        Room room=room(id,false); host(hostUserId,room); return snapshot(room);
+    }
     public RoomListResponse list(long userId, int page, int size) {
         if(page<0 || size<1 || size>100) throw RoomFailure.invalid();
         var found=rooms.findJoined(userId, PageRequest.of(page,size));
@@ -56,7 +61,7 @@ public class RoomService {
         switch(type) {
             case "EDIT_ROOM", "OPEN_ROOM", "CLOSE_ROOM", "REMOVE_MEMBER", "START_GAME" -> host(userId,room);
             case "JOIN_ROOM" -> { if(!room.getRoomCode().equals(code)) throw RoomFailure.missing(); }
-            case "LEAVE_ROOM" -> { if(members.findByRoomIdAndUserId(id,userId).isEmpty()) throw RoomFailure.forbidden(); }
+            case "LEAVE_ROOM", "DELETE_ROOM" -> { if(members.findByRoomIdAndUserId(id,userId).isEmpty()) throw RoomFailure.forbidden(); }
             case "SUBSCRIBE_ROOM" -> joined(userId,room);
             default -> throw RoomFailure.invalid();
         }
@@ -101,6 +106,26 @@ public class RoomService {
         Room room=room(id,true); host(userId,room); mutable(room); revision(room,revision);
         // Retain the final membership roster and Host authority; CLOSED is terminal.
         room.setStatus(RoomStatus.CLOSED); return changed(room,revision);
+    }
+    /** Remove an idle Room from My Rooms without deleting Game/History foreign keys.
+     * Host closes it for everyone; a member leaves only their own membership.
+     * Called inside the same Room boundary as Start, so roster cannot race Start. */
+    @Transactional(timeout=5)
+    public RoomMutation delete(long userId, long id, long revision) {
+        Room room=room(id,true);
+        RoomMember caller=joined(userId,room);
+        if(room.getStatus()==RoomStatus.ACTIVE || games.findByRoomIdAndStatus(id,GameStatus.ACTIVE).isPresent())
+            throw RoomFailure.conflict("INVALID_STATE");
+        revision(room,revision);
+        long now=System.currentTimeMillis();
+        if(room.getHostUserId()==userId) {
+            room.setStatus(RoomStatus.CLOSED);
+            for(RoomMember member:members.findByRoomIdAndStatus(id,MembershipStatus.JOINED))
+                member.leave(Math.max(now,member.getJoinedAtMs()));
+        } else {
+            caller.leave(Math.max(now,caller.getJoinedAtMs()));
+        }
+        return changed(room,revision);
     }
     @Transactional(timeout=5)
     public RoomMutation join(long userId, long id, String code, Participation participation) {

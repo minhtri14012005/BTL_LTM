@@ -52,7 +52,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, "/api/quizzes/*").authenticated();
                 access.requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/*/open", "/api/rooms/*/close", "/api/rooms/*/start").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/rooms/*").authenticated();
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/*").authenticated();
                 access.requestMatchers(HttpMethod.GET,"/api/games/*/snapshot").authenticated();
                 access.requestMatchers(HttpMethod.GET,"/api/games/history","/api/games/history/*").authenticated()
                         .requestMatchers(HttpMethod.POST,"/api/games/*/cancel").authenticated();

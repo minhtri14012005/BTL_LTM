@@ -26,6 +26,11 @@ UNIT=r'''(async()=>{
  check('editor rejects incomplete/duplicate/unknown canonical IDs',()=>bad(()=>c.quizValues('V','PUBLIC',[{...q,correctOrder:['a','b']}],'VIETNAMESE_PUZZLE'))&&bad(()=>c.quizValues('V','PUBLIC',[{...q,correctOrder:['a','a','b']}],'VIETNAMESE_PUZZLE'))&&bad(()=>c.quizValues('V','PUBLIC',[{...q,correctOrder:['a','s','fake']}],'VIETNAMESE_PUZZLE')));
  const editor=a.arrangementEditor(q,'VIETNAMESE_PUZZLE'),row=document.createElement('div');row.append(editor);check('editor roundtrip retains IDs and space pieces',()=>JSON.stringify(a.readArrangement(row,'VIETNAMESE_PUZZLE'))===JSON.stringify({pieces:items,correctOrder:ids}));
  let changed;const controls=a.arrangementAnswer(items,['a'],true,n=>changed=n);controls.querySelector('[data-piece-id=b]').click();check('choosing repeated piece adds its distinct ID',()=>JSON.stringify(changed)===JSON.stringify(['a','b']));
+ const words=a.vietnameseAnswer(items,['b','s'],true,n=>changed=n);
+ words.querySelector('#undo-arrangement').click();check('Vietnamese undo removes last appended ID',()=>JSON.stringify(changed)===JSON.stringify(['b']));
+ words.querySelector('#reset-arrangement').click();check('Vietnamese reset clears draft only',()=>changed.length===0);
+ check('Vietnamese preserves repeated IDs and literal text',()=>words.querySelector('[data-piece-id=a]').textContent==='ha'&&words.querySelector('[data-item-id=s] .piece-text').textContent===' ');
+ const locked=a.vietnameseAnswer(items,['b'],false,n=>{throw Error('locked edit');});locked.querySelector('#undo-arrangement').click();locked.querySelector('#reset-arrangement').click();check('Vietnamese locked controls are disabled',()=>[...locked.querySelectorAll('button')].every(b=>b.disabled));
  const frame=g.gameCommand('ANSWER',7,2,{itemIds:ids});ids.reverse();check('pending retry owns an immutable copied permutation',()=>JSON.stringify(frame.payload.itemIds)===JSON.stringify(['a','s','b'])&&Object.isFrozen(frame.payload.itemIds));
  const p={userId:1,state:'PLAYING',score:0,remainingSpins:0,starAvailable:false,starSelected:false,currentSpin:null,alreadyAnswered:false,submittedAnswer:null};
  const s={gameSessionId:7,roomId:1,schemaVersion:2,revision:2,status:'ACTIVE',runtimeState:'READY',phase:'QUESTION_OPEN',stageIndex:1,stage:{mode:'VIETNAMESE_PUZZLE'},stages:[{mode:'VIETNAMESE_PUZZLE',title:'V'}],questionIndex:1,questionCount:2,readyPlayers:[],serverTimeMs:1000,deadlineEpochMs:9000,player:p,members:[{userId:1,participation:'PLAYER',role:'HOST',displayName:'H',rank:1,score:0,totalCorrectAnswerTimeMs:0}],winners:[],hasOfficialWinner:false,results:[],question:{mode:'VIETNAMESE_PUZZLE',content:'Ghép',options:{},payload:{pieces:items}}};
@@ -79,18 +84,34 @@ def smoke(cdp,origin,report):
   phase(host,index,'QUESTION_OPEN');mode='VIETNAMESE_PUZZLE' if index<=3 else 'ORDERING';local=(index-2) if index<=3 else (index-4);canonical=orders[mode][local]
   before=snapshot(players[0],gid);assert not any(k in before['question']['payload'] for k in ['correctOrder','acceptedAnswers','matchingPolicy']);assert not players[0].eval("!!document.querySelector('#use-spin')||!!document.querySelector('#use-star')")
   if index==2:
-   assert players[0].eval("document.querySelector('#submit-answer').disabled");players[0].eval('gameSocket.close()');players[0].wait("document.querySelector('#connection-status')?.dataset.state==='offline'");host.wait("parseFloat(document.querySelector('#game-countdown').textContent)<9");players[0].click('#reconnect-room');players[0].wait("document.querySelector('#connection-status')?.dataset.state==='ready'&&!document.querySelector('[data-piece-id]').disabled");after=snapshot(players[0],gid);assert after['deadlineEpochMs']==before['deadlineEpochMs'] and after['remainingMs']<before['remainingMs'] and after['question']['payload']==before['question']['payload'];players[0].eval("wire.dropType='ANSWER'")
+   assert players[0].eval("document.querySelector('#submit-answer').disabled")
+   players[0].click('[data-piece-id="'+canonical[0]+'"]')
+   players[0].eval('gameSocket.close()');players[0].wait("document.querySelector('#connection-status')?.dataset.state==='offline'");host.wait("parseFloat(document.querySelector('#game-countdown').textContent)<9");players[0].click('#reconnect-room');players[0].wait("document.querySelector('#connection-status')?.dataset.state==='ready'&&!document.querySelector('[data-piece-id]').disabled");after=snapshot(players[0],gid);assert after['deadlineEpochMs']==before['deadlineEpochMs'] and after['remainingMs']<before['remainingMs'] and after['question']['payload']==before['question']['payload']
+   assert players[0].eval("document.querySelectorAll('#sentence-row [data-item-id]').length===1")
+   players[0].click('#reset-arrangement');assert not players[0].eval("wire.commands.some(m=>m.type==='ANSWER'&&m.questionIndex===2)");players[0].eval("wire.dropType='ANSWER'")
   for pi,t in enumerate(players):
    if index==5 and pi==2:continue
    ids=canonical
    if mode=='VIETNAMESE_PUZZLE' and pi==0:ids=[canonical[2],canonical[1],canonical[0]]
    elif mode=='VIETNAMESE_PUZZLE' and index==2 and pi==2:ids=[canonical[0],canonical[2],canonical[1]]
    elif mode=='ORDERING' and index==4 and pi==1:ids=[canonical[1],canonical[0],canonical[2]]
-   for ident in ids:t.click('[data-piece-id="'+ident+'"]')
+   for ident in ids:
+    if mode=='VIETNAMESE_PUZZLE' and pi==0:
+     t.eval('document.querySelector("#sentence-row").scrollIntoView({block:"center"})')
+     pos=t.eval('(id=>{const a=document.getElementById("piece-"+id).getBoundingClientRect(),b=document.querySelector("#sentence-row").getBoundingClientRect();return {x:a.x+a.width/2,y:a.y+a.height/2,toX:b.x+b.width/2,toY:b.y+b.height/2}})('+json.dumps(ident)+')')
+     cdp.call('Input.dispatchMouseEvent',dict(type='mousePressed',x=pos['x'],y=pos['y'],button='left',clickCount=1),t.session)
+     for step in range(1,6):cdp.call('Input.dispatchMouseEvent',dict(type='mouseMoved',x=pos['x']+(pos['toX']-pos['x'])*step/5,y=pos['y']+(pos['toY']-pos['y'])*step/5,button='left',buttons=1),t.session)
+     cdp.call('Input.dispatchMouseEvent',dict(type='mouseReleased',x=pos['toX'],y=pos['toY'],button='left',clickCount=1),t.session)
+     assert t.eval('!!document.querySelector('+json.dumps('[data-item-id="'+ident+'"]')+')')
+    else:t.click('[data-piece-id="'+ident+'"]')
    assert not t.eval("document.querySelector('#submit-answer').disabled")
    if pi==0 and index==3:
-    # Keyboard controls are genuine focusable buttons. Move twice restores submission order.
-    first=ids[0];cdp.call('Page.bringToFront',{},t.session);cdp.call('Emulation.setFocusEmulationEnabled',{'enabled':True},t.session);t.eval(f"document.querySelector('#down-{first}').focus()");cdp.call('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','text':'\r','unmodifiedText':'\r','windowsVirtualKeyCode':13},t.session);cdp.call('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13},t.session);t.click('#up-'+first)
+    # Undo multiple appends and reset without sending an Answer.
+    t.click('#undo-arrangement');t.click('#undo-arrangement');assert t.eval("document.querySelectorAll('#sentence-row [data-item-id]').length===1")
+    for ident in ids[1:]:t.click('[data-piece-id="'+ident+'"]')
+    t.click('#reset-arrangement');assert t.eval("document.querySelectorAll('#sentence-row [data-item-id]').length===0&&document.querySelectorAll('[data-piece-id]').length===3")
+    for ident in ids:t.click('[data-piece-id="'+ident+'"]')
+    assert not t.eval("wire.commands.some(m=>m.type==='ANSWER'&&m.questionIndex===3)")
    t.click('#submit-answer')
    if not(index==2 and pi==0) and not(pi==2 and index<5):t.wait("!!document.querySelector('#answer-accepted')")
   if index==2:
