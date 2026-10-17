@@ -73,6 +73,21 @@ class AuthNetworkIT {
         for (String username : createdUsers) jdbc.update("DELETE FROM app_user WHERE username = ?", username);
         clients.forEach(c -> c.http.close());
     }
+    @Test void featureModulesAndStylesArePublicWithoutOpeningProtectedApiRoutes() throws Exception {
+        var anonymous=client();
+        var staticRoot=java.nio.file.Path.of("src/main/resources/static");
+        try(var assets=java.nio.file.Files.walk(staticRoot)) {
+            for(var asset:assets.filter(p -> p.toString().endsWith(".js") || p.toString().endsWith(".css")).toList()) {
+                String path="/"+staticRoot.relativize(asset).toString().replace('\\','/');
+                var response=anonymous.get(path);
+                assertThat(response.statusCode()).as(path).isEqualTo(200);
+                assertThat(response.body()).as(path).isEqualTo(java.nio.file.Files.readString(asset));
+            }
+        }
+        assertThat(anonymous.get("/api/rooms").statusCode()).isEqualTo(401);
+        assertThat(anonymous.get("/api/auth/me").statusCode()).isEqualTo(401);
+        assertThat(anonymous.get("/js/features/admin/private.json").statusCode()).isEqualTo(401);
+    }
     @Test void registerHashLoginSessionRotationIdentityAndLogout() throws Exception {
         Client client = client(); client.csrf(); String anonymousSession = client.sessionId(); String oldToken = client.token;
         String name = username(); long userId = register(client, name.toUpperCase(Locale.ROOT));

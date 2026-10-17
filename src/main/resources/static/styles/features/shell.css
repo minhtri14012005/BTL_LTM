@@ -1,0 +1,22 @@
+#sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-width); background: var(--surface-inset); border-right: 1px solid var(--border); padding: var(--space-6) var(--space-5); display: flex; flex-direction: column; overflow-y: auto; }
+.brand { font-size: 1.05rem; font-weight: 750; color: var(--text); margin-bottom: var(--space-7); line-height: 1.4; }
+.nav-label { color: var(--muted); margin: 0 10px 10px; }
+nav { display: flex; flex-direction: column; gap: 6px; }
+nav a { color: var(--muted); border-radius: var(--radius-sm); padding: 12px; min-height: 44px; }
+nav a:hover, nav a:focus-visible { background: var(--surface-raised); color: var(--text); text-decoration: none; }
+.account-info { margin-top: auto; border-top: 1px solid var(--border); padding-top: var(--space-5); display: flex; flex-direction: column; gap: 5px; }
+.account-info small { color: var(--muted); }
+.account-info button { margin-top: var(--space-3); }
+.connection { font-size: .8rem; color: var(--warning); }
+.connection[data-state="ready"] { color: var(--success); }
+#connection-banner:empty { display: none; }
+#connection-banner { margin-bottom: var(--space-5); }
+@media (max-width: 760px) {
+  #sidebar { position: static; width: auto; padding: var(--space-4); border-right: 0; border-bottom: 1px solid var(--border); }
+  .brand { margin-bottom: var(--space-3); }
+  nav { flex-direction: row; flex-wrap: wrap; gap: 0; }
+  nav a { padding: 8px 10px; }
+  .nav-label { display: none; }
+  .account-info { margin-top: var(--space-3); padding-top: var(--space-3); flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .account-info button { margin: 0 0 0 auto; }
+}

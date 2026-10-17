@@ -7,7 +7,7 @@ spec=importlib.util.spec_from_file_location('arrangement_tests',ROOT/'scripts/te
 a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a)
 old=a.old;browser=a.browser
 UNIT=r'''(async()=>{
- const c=await import('/client/core.js'),ui=await import('/client/game.js');const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")])),ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
  const ref='sha256:'+'a'.repeat(64),q={content:'Nhìn hình đoán cụm từ',acceptedAnswers:['bắt cá'],imageRef:ref};
  check('IMAGE_WORD is playable with text aliases and immutable image ref',()=>{const v=c.quizValues('Hình','PRIVATE',[q],'IMAGE_WORD');return v.questions[0].imageRef===ref&&v.questions[0].acceptedAnswers[0]==='bắt cá'&&!('options'in v.questions[0])&&!('correctAnswer'in v.questions[0]);});
  check('IMAGE_WORD rejects absent/malformed image and empty aliases',()=>bad(()=>c.quizValues('Hình','PUBLIC',[{...q,imageRef:null}],'IMAGE_WORD'))&&bad(()=>c.quizValues('Hình','PUBLIC',[{...q,imageRef:'https://example.test/'}],'IMAGE_WORD'))&&bad(()=>c.quizValues('Hình','PUBLIC',[{...q,acceptedAnswers:[]}],'IMAGE_WORD')));
@@ -77,7 +77,8 @@ def smoke(cdp,origin,report):
  result=host.eval("wire.messages.find(m=>m.type==='QUESTION_RESULT'&&m.questionIndex===2).payload");assert [next(r for r in result['results'] if r['userId']==u['id'])['scoreDelta'] for t,u in people[1:]]==[10,10,0]
  passed('Lost text Answer ACK replay after Close/reconnect keeps UUID/text and one Answer; aliases +10, missing Vietnamese accents WRONG0')
  phase(host,3,'QUESTION_OPEN');phase(players[0],3,'QUESTION_OPEN');before=snapshot(players[0],gid)
- blob=(ROOT/'data/quiz-images'/str(image)/(refs[1][7:]+'.png')).resolve();assert blob.is_relative_to((ROOT/'data/quiz-images'/str(image)).resolve()) and blob.is_file();backup=blob.with_name(blob.name+'.task21-owned-backup');assert not backup.exists()
+ image_root=Path(report['imageDirectory']).resolve()
+ blob=(image_root/str(image)/(refs[1][7:]+'.png')).resolve();assert blob.is_relative_to((image_root/str(image)).resolve()) and blob.is_file();backup=blob.with_name(blob.name+'.task21-owned-backup');assert not backup.exists()
  report['mediaFailureFixture']={'quizId':image,'imageRef':refs[1],'originalRestored':False}
  blob.rename(backup)
  try:
@@ -105,7 +106,7 @@ def smoke(cdp,origin,report):
  for t,u in people:cdp.call('Target.closeTarget',{'targetId':t.target})
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--origin',default='http://127.0.0.1:8087');p.add_argument('--port',type=int,default=9224);p.add_argument('--smoke',action='store_true');args=p.parse_args();report={'task':21,'status':'RUNNING','unit':[],'smoke':[],'origin':args.origin,'clients':4,'quizIds':[],'roomIds':[],'gameIds':[]}
+ p=argparse.ArgumentParser();p.add_argument('--origin',default='http://127.0.0.1:8087');p.add_argument('--port',type=int,default=9224);p.add_argument('--smoke',action='store_true');p.add_argument('--image-directory',default=str(ROOT/'data/quiz-images'));args=p.parse_args();report={'task':21,'status':'RUNNING','unit':[],'smoke':[],'origin':args.origin,'imageDirectory':args.image_directory,'clients':4,'quizIds':[],'roomIds':[],'gameIds':[]}
  try:
   cdp=browser.CDP(args.port);report['browser']=cdp.version;t=cdp.tab(args.origin);report['unit']=t.eval(old.legacy.UNIT)+t.eval(old.UNIT)+t.eval(a.mm.UNIT)+t.eval(a.UNIT)+t.eval(UNIT);cdp.call('Target.closeTarget',{'targetId':t.target})
   if args.smoke:smoke(cdp,args.origin,report)

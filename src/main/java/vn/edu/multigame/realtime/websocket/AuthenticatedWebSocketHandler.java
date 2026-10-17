@@ -30,35 +30,38 @@ public class AuthenticatedWebSocketHandler extends AbstractWebSocketHandler {
         sockets.requireCurrent(socket);
         var authentication = socket.getPrincipal() instanceof Authentication auth ? auth : null;
         var user = users.requireActiveUser(authentication);
+        if(adminChannel(socket))users.requireAdmin(authentication);
         sessions.requireValid(sessionId(socket), user.getId());
         return user;
     }
+    private boolean adminChannel(WebSocketSession socket){return socket.getUri()!=null && socket.getUri().getPath().endsWith("/ws/admin");}
     @Override public void afterConnectionEstablished(WebSocketSession socket) throws Exception {
         socket.setTextMessageSizeLimit(8192); socket.setBinaryMessageSizeLimit(8192);
         try {
             var authentication=socket.getPrincipal() instanceof Authentication auth?auth:null;
             var initial=users.requireActiveUser(authentication);
+            if(adminChannel(socket))users.requireAdmin(authentication);
             sessions.requireValid(sessionId(socket),initial.getId());
             long generation=sockets.add(sessionId(socket),socket,initial.getId());
             // Recheck after registration: logout could occur between handshake and connection establishment.
             var user = validate(socket);
             sockets.connected(socket);
             if (socket.isOpen()) sockets.send(socket,AuthReady.of(user.getId(), user.getUsername(),generation));
-        } catch (AuthFailure failure) { socket.close(new CloseStatus(4001, "SESSION_EXPIRED")); }
+        } catch (AuthFailure failure) { socket.close(new CloseStatus(4001, failure.socketReason())); }
         catch(vn.edu.multigame.realtime.connection.SocketReplaced failure) { socket.close(new CloseStatus(4002,"SESSION_REPLACED")); }
         catch (DataAccessException failure) { socket.close(new CloseStatus(1011, "AUTH_UNAVAILABLE")); }
     }
     @Override protected void handleTextMessage(WebSocketSession socket, TextMessage message) throws Exception {
-        try { validate(socket); waiting.text(socket,message.getPayload(),()->validate(socket)); }
+        try { validate(socket);if(adminChannel(socket)){socket.close(new CloseStatus(1008,"READ_ONLY_ADMIN"));return;}waiting.text(socket,message.getPayload(),()->validate(socket)); }
         catch(WaitingRoomCommandParser.Unsupported e) { socket.close(new CloseStatus(1008,"UNSUPPORTED_MESSAGE")); }
-        catch(AuthFailure e) { socket.close(new CloseStatus(4001,"SESSION_EXPIRED")); }
+        catch(AuthFailure e) { socket.close(new CloseStatus(4001,e.socketReason())); }
         catch(vn.edu.multigame.realtime.connection.SocketReplaced e) { socket.close(new CloseStatus(4002,"SESSION_REPLACED")); }
         catch(DataAccessException e) { socket.close(new CloseStatus(1011,"AUTH_UNAVAILABLE")); }
     }
     @Override protected void handleBinaryMessage(WebSocketSession socket, BinaryMessage message) throws Exception { unsupported(socket); }
     private void unsupported(WebSocketSession socket) throws Exception {
         try { validate(socket); socket.close(new CloseStatus(1008, "UNSUPPORTED_MESSAGE")); }
-        catch (AuthFailure failure) { socket.close(new CloseStatus(4001, "SESSION_EXPIRED")); }
+        catch (AuthFailure failure) { socket.close(new CloseStatus(4001, failure.socketReason())); }
         catch(vn.edu.multigame.realtime.connection.SocketReplaced failure) { socket.close(new CloseStatus(4002,"SESSION_REPLACED")); }
         catch (DataAccessException failure) { socket.close(new CloseStatus(1011, "AUTH_UNAVAILABLE")); }
     }

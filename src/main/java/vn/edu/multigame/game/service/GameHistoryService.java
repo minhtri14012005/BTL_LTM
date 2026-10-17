@@ -21,9 +21,11 @@ public class GameHistoryService {
     private final GameQuestionRepository questions;
     private final AnswerRepository answers;
     private final GameProjection projection;
+    private final QuestionParticipationStore participation;
     public GameHistoryService(GameSessionRepository games,GameMemberRepository members,PlayerSessionRepository players,
-            GameQuestionRepository questions,AnswerRepository answers,GameProjection projection) {
+            GameQuestionRepository questions,AnswerRepository answers,GameProjection projection,QuestionParticipationStore participation) {
         this.games=games;this.members=members;this.players=players;this.questions=questions;this.answers=answers;this.projection=projection;
+        this.participation=participation;
     }
     public GameHistoryPage list(long userId,int page,int size) {
         if(page<0 || size<1 || size>100 || (long)page*size>Integer.MAX_VALUE) throw new GameFailure(HttpStatus.BAD_REQUEST,"INVALID_REQUEST");
@@ -54,6 +56,6 @@ public class GameHistoryService {
             return new GameHistoryDetail.Question(q.getId(),q.getOrderIndex(),q.getContent(),GameProjection.options(q),
                     GameProjection.imageRef(q),q.getScoredAtMs()==null?null:q.getCorrectOption(),q.getQuestionDurationMs(),q.getOpenedAtMs(),q.getDeadlineAtMs(),q.getScoredAtMs(),entries,q.getMode(),q.getStageQuestionIndex(),GameProjection.publicPayload(q,q.getScoredAtMs()!=null));
         }).toList();
-        return new GameHistoryDetail(game.getStartedAtMs(),game.getFinishedAtMs(),committed.publicView().contextual(System.currentTimeMillis(),null,null,"FINISHED",false,committed.players().get(userId)),timeline);
+        return new GameHistoryDetail(game.getStartedAtMs(),game.getFinishedAtMs(),committed.publicView().contextual(System.currentTimeMillis(),null,null,"FINISHED",false,committed.players().get(userId)),timeline,participation.decisions(gameId),participation.restrictions(gameId));
     }
 }

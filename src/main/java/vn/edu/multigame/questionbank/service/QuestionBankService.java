@@ -31,10 +31,11 @@ public class QuestionBankService {
     private final QuestionImageStore images;
     private final QuestionVideoStore videos;
     private final EntityManager entities;
+    private final vn.edu.multigame.game.service.GameAccessPolicy gameAccess;
     public QuestionBankService(QuizRepository quizzes, QuestionRepository questions, AuthService users,
-            QuestionBankAccessPolicy policy, QuestionImageStore images, QuestionVideoStore videos, EntityManager entities) {
+            QuestionBankAccessPolicy policy, QuestionImageStore images, QuestionVideoStore videos, EntityManager entities,vn.edu.multigame.game.service.GameAccessPolicy gameAccess) {
         this.quizzes = quizzes; this.questions = questions; this.users = users; this.policy = policy; this.images = images;
-        this.entities = entities; this.videos=videos;
+        this.entities = entities; this.videos=videos;this.gameAccess=gameAccess;
     }
     public QuestionBankListResponse list(Authentication auth, int page, int size) {
         return list(auth,page,size,QuestionBankScope.VISIBLE,null);
@@ -111,6 +112,7 @@ public class QuestionBankService {
     }
     public byte[] image(Authentication auth, long id, String hash, Long gameSessionId) {
         long userId = users.requireActiveUser(auth).getId();
+        if(gameSessionId!=null)requireGameMedia(gameSessionId,userId);
         Quiz quiz = quizzes.findById(id).orElseThrow(QuestionBankFailure::notFound); // Deleted Quiz is retained for history images.
         String reference = "sha256:" + hash;
         if (!hash.matches("[0-9a-f]{64}")) throw invalidRequest();
@@ -129,8 +131,12 @@ public class QuestionBankService {
     public org.springframework.core.io.Resource draftVideo(Authentication auth,String hash){requireHash(hash);return videos.readDraft(users.requireActiveUser(auth).getId(),"sha256:"+hash);}
     public org.springframework.core.io.Resource video(Authentication auth,long id,String hash,Long gameId) {
         long userId=users.requireActiveUser(auth).getId();requireHash(hash);Quiz quiz=quizzes.findById(id).orElseThrow(QuestionBankFailure::notFound);
+        if(gameId!=null)requireGameMedia(gameId,userId);
         if(userId!=quiz.getOwnerUserId() && (gameId==null || questions.countReleasedVideoForMember(id,gameId,userId,"sha256:"+hash)==0))throw QuestionBankFailure.forbidden();
         return videos.read(id,"sha256:"+hash);
+    }
+    private void requireGameMedia(long game,long user){
+        try{gameAccess.requireMediaAllowed(game,user);}catch(vn.edu.multigame.game.service.GameFailure denied){throw QuestionBankFailure.forbidden();}
     }
     private void requireHash(String hash){if(hash==null || !hash.matches("[0-9a-f]{64}"))throw invalidRequest();}
     private Quiz active(long id, boolean lock) {

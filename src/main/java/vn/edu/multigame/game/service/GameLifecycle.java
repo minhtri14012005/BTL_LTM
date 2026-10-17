@@ -42,6 +42,7 @@ public final class GameLifecycle {
     private long token;
     private java.util.List<Long> hintOffsets=java.util.List.of();
     private final Set<Long> ready=new java.util.HashSet<>();
+    private Set<Long> phaseParticipants=Set.of();
     public static final long RESULT_DURATION_MS = 1500L;
     private final GameTransactions transactions;
     private final Control control;
@@ -84,7 +85,8 @@ public final class GameLifecycle {
     public void continueStage(long userId,int index,long receivedAt,CompletableFuture<GameSnapshot> reply) {
         var before=view;
         try {
-            if(!before.data().players().containsKey(userId)) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
+            transactions.requireAccess(id(),userId);
+            if(!phaseParticipants.contains(userId)) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
             if(!v2() || !before.mode().equals("READY") || before.window()==null || before.window().phase()!=Phase.INTRO || before.window().questionIndex()!=index) throw GameFailure.conflict("INVALID_STATE");
             if(!before.window().accepts(receivedAt)) throw GameFailure.conflict("INTRO_CLOSED");
             if(ready.contains(userId)) throw GameFailure.conflict("ALREADY_READY");
@@ -92,7 +94,7 @@ public final class GameLifecycle {
                 ready.add(userId);
                 var marked=new CommittedGame(committed.publicView().withReady(ready.stream().sorted().toList()),committed.players(),committed.terminalRoom());
                 view=new View(marked,before.window(),"READY",false);reply.complete(snapshot(userId));emit("INTRO_UPDATED");
-                if(ready.containsAll(committed.players().keySet())) beginQuestion(index);
+                if(ready.containsAll(phaseParticipants)) beginQuestion(index);
             },1,reply);
         } catch(GameFailure failure) {reply.completeExceptionally(failure);}
     }
@@ -104,10 +106,9 @@ public final class GameLifecycle {
             var now=control.now();
             return PhaseWindow.open(index,phase,++token,now.monotonicMs(),now.epochMs(),duration);
         }),opened -> {
-            ready.clear();hintOffsets=opened.hintOffsets();view=new View(opened.game(),opened.window(),"READY",false);
+            ready.clear();phaseParticipants=opened.participants();hintOffsets=opened.hintOffsets();view=new View(opened.game(),opened.window(),"READY",false);
             if(phase==Phase.QUESTION_OPEN) {
-                Set<Long> eligible=opened.game().players().values().stream().filter(p -> p.state()==PlayerState.PLAYING)
-                        .map(GameSnapshot.Player::userId).collect(java.util.stream.Collectors.toUnmodifiableSet());
+                Set<Long> eligible=phaseParticipants;
                 if(v2()) {
                     firstOfflineQuestion.replaceAll((user,first) -> first==0?index:first);
                     eligible=eligible.stream().filter(user -> !firstOfflineQuestion.containsKey(user) || firstOfflineQuestion.get(user)==index)
@@ -151,6 +152,7 @@ public final class GameLifecycle {
     public void actionTyped(GameplayAction action,long userId,int index,Option option,vn.edu.multigame.game.dto.TypedAnswer typed,long receivedAtMs,CompletableFuture<GameSnapshot> reply) {
         try {
             var current=view;
+            transactions.requireAccess(id(),userId);
             var player=current.data().players().get(userId);
             if(player==null || player.state()!=PlayerState.PLAYING) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
             if(action==GameplayAction.ANSWER) { answerTyped(userId,index,option,typed,receivedAtMs,reply); return; }
@@ -180,6 +182,7 @@ public final class GameLifecycle {
         answerTyped(userId,index,option,null,receivedAtMs,reply);
     }
     public void answerTyped(long userId,int index,Option option,vn.edu.multigame.game.dto.TypedAnswer typed,long receivedAtMs,CompletableFuture<GameSnapshot> reply) {
+        try{transactions.requireAccess(id(),userId);}catch(GameFailure failure){reply.completeExceptionally(failure);return;}
         var before=view;
         if(!before.mode().equals("READY") || before.window()==null || before.window().phase()!=Phase.QUESTION_OPEN
                 || before.window().questionIndex()!=index || !before.window().accepts(receivedAtMs) || gate.isClosed()) {
@@ -205,9 +208,23 @@ public final class GameLifecycle {
         int index=view.data().publicView().questionIndex();
         attempt(() -> transactions.transition(id(),index,Phase.QUESTION_OPEN,Phase.QUESTION_CLOSED),closed -> {
             view=new View(closed,null,"READY",false); emit("QUESTION_CLOSED");
-            attempt(() -> transactions.transition(id(),index,Phase.QUESTION_CLOSED,Phase.SCORING),scoring -> {
+            control.enqueue(()->startScoring(index));
+        },1,null);
+    }
+    private boolean canContinueScoring(int index,Phase phase){
+        var current=view;return current.data().publicView().status()==GameStatus.ACTIVE && !current.mode().equals("UNAVAILABLE")
+                && current.data().publicView().questionIndex()==index && current.data().publicView().phase()==phase;
+    }
+    private void startScoring(int index){
+        if(!canContinueScoring(index,Phase.QUESTION_CLOSED))return;
+        attempt(() -> transactions.transition(id(),index,Phase.QUESTION_CLOSED,Phase.SCORING),scoring -> {
                 view=new View(scoring,null,"READY",false); emit("SCORING_STARTED");
-                attempt(() -> transactions.score(id(),index,control.now().epochMs()),result -> {
+                control.enqueue(()->scoreClosedQuestion(index));
+        },1,null);
+    }
+    private void scoreClosedQuestion(int index){
+        if(!canContinueScoring(index,Phase.SCORING))return;
+        attempt(() -> transactions.score(id(),index,control.now().epochMs()),result -> {
                     // Presentation window starts only after the scoring proxy has committed.
                     var now=control.now();
                     var resultWindow=PhaseWindow.open(index,Phase.RESULT,++token,now.monotonicMs(),now.epochMs(),RESULT_DURATION_MS);
@@ -218,8 +235,6 @@ public final class GameLifecycle {
                     if(result.publicView().status()==GameStatus.FINISHED) { control.retire(); emit("GAME_END"); }
                     else control.arm(resultWindow);
                 },1,null);
-            },1,null);
-        },1,null);
     }
     private <T> void attempt(Supplier<T> operation,Consumer<T> committed,int attempt,CompletableFuture<?> reply) {
         T result;
@@ -276,9 +291,21 @@ public final class GameLifecycle {
         catch(RuntimeException failure) { LOG.log(System.Logger.Level.ERROR,"Runtime error notification failed"); }
     }
     public GameSnapshot snapshot(long userId) {
+        transactions.requireAccess(id(),userId);
         View current=view;
         if(!current.data().hasMember(userId)) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
         return contextual(current,current.data().players().get(userId));
+    }
+    /** Kick never changes a frozen gate/ready set, deadline, score or presentation mode. */
+    public void restrictionCommitted(CommittedGame committed){
+        var current=view;view=new View(new CommittedGame(committed.publicView().withReady(ready.stream().sorted().toList()),committed.players(),committed.terminalRoom()),current.window(),current.mode(),current.cleanupPending());
+    }
+    public void requireRestrictionReady(){
+        var current=view;
+        if(current.mode().equals("UNAVAILABLE"))throw GameFailure.unavailable();
+        // A not-yet-committed Answer/resource retry must resolve before Kick.
+        if(current.mode().equals("RETRYING") && current.data().publicView().phase()!=Phase.QUESTION_CLOSED && current.data().publicView().phase()!=Phase.SCORING)
+            throw GameFailure.conflict("GAME_OPERATION_PENDING");
     }
     private GameSnapshot contextual(View current,GameSnapshot.Player self) {
         var now=control.now(); var window=current.window();

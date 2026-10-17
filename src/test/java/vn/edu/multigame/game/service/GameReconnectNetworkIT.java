@@ -260,6 +260,9 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
     void executingAnswerCommitsOnceEvenWhenAckSocketIsReplaced() throws Exception {
         var f = fixture();
         var old = new Wire(f.roster().getFirst());
+        // Login now shares the User commit fence with Answer. Prepare the
+        // second HTTP identity before blocking Answer, then replace only WS.
+        var standby = new Client(f.roster().getFirst());
         long id = start(f);
         var opened = open(id, 1);
         var entered = new CountDownLatch(1);
@@ -276,7 +279,7 @@ class GameReconnectNetworkIT extends GameNetworkFixture {
         old.send(answer);
         try {
             await(entered);
-            var fresh = new Wire(f.roster().getFirst());
+            var fresh = new Wire(standby);
             assertThat(old.closed.get(5, TimeUnit.SECONDS)).isEqualTo(4002);
             release.countDown();
             var state = reconnect(fresh, id).path("payload");

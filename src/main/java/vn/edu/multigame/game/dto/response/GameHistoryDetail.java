@@ -2,7 +2,10 @@ package vn.edu.multigame.game.dto.response;
 import java.util.*;
 import vn.edu.multigame.game.enums.*;
 import vn.edu.multigame.quiz.enums.Option;
-public record GameHistoryDetail(long startedAtMs,long finishedAtMs,GameSnapshot finalSnapshot,List<Question> questions) {
+public record GameHistoryDetail(long startedAtMs,long finishedAtMs,GameSnapshot finalSnapshot,List<Question> questions,List<Decision> decisions,List<Restriction> restrictions) {
+    public GameHistoryDetail(long startedAtMs,long finishedAtMs,GameSnapshot finalSnapshot,List<Question> questions){this(startedAtMs,finishedAtMs,finalSnapshot,questions,List.of(),List.of());}
+    public record Decision(long userId,int questionIndex,String action,SpinEffect spinEffect,int remainingSpins,boolean starAvailable,boolean starSelected,long committedAtMs) {}
+    public record Restriction(long userId,String kind,long effectiveAtMs) {}
     public record Question(long gameQuestionId,int questionIndex,String content,Map<Option,String> options,String imageRef,
             Option correctAnswer,long questionDurationMs,long openedAtMs,long deadlineAtMs,Long scoredAtMs,List<Answer> answers,vn.edu.multigame.game.enums.GameMode mode,Integer stageQuestionIndex,Map<String,Object> payload) {
         public Question(long gameQuestionId,int questionIndex,String content,Map<Option,String> options,String imageRef,Option correctAnswer,long questionDurationMs,long openedAtMs,long deadlineAtMs,Long scoredAtMs,List<Answer> answers) {

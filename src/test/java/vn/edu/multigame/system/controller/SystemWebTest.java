@@ -33,9 +33,16 @@ class SystemWebTest {
         assertThat(page.body()).contains("<html lang=\"vi\">", "<title>MultiGame</title>", "<script type=\"module\" src=\"/app.js\">");
         assertThat(get("/app.js").statusCode()).isEqualTo(200);
         assertThat(get("/styles.css").statusCode()).isEqualTo(200);
-        for (String module : new String[]{"core", "api", "transport", "dom", "account", "question-banks", "rooms"}) {
-            assertThat(get("/client/" + module + ".js").statusCode()).isEqualTo(200);
+        var staticRoot=java.nio.file.Path.of("src/main/resources/static");
+        try(var assets=java.nio.file.Files.walk(staticRoot)) {
+            for(var asset:assets.filter(p -> p.toString().endsWith(".js") || p.toString().endsWith(".css")).toList()) {
+                String path="/"+staticRoot.relativize(asset).toString().replace('\\','/');
+                var response=get(path);
+                assertThat(response.statusCode()).as(path).isEqualTo(200);
+                assertThat(response.body()).as(path).isEqualTo(java.nio.file.Files.readString(asset));
+            }
         }
+        assertThat(get("/client/core.js").statusCode()).isEqualTo(403);
         HttpResponse<String> status = get("/api/system/status");
         assertThat(status.statusCode()).isEqualTo(200);
         assertThat(status.body()).contains("\"status\":\"NOT_CONFIGURED\"", "\"gameplay\":\"NOT_IMPLEMENTED\"");

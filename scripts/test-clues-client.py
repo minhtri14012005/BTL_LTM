@@ -14,7 +14,7 @@ spec.loader.exec_module(base)
 browser = base.browser
 
 UNIT = r'''(async()=>{
- const c=await import('/client/core.js'),cl=await import('/client/clues.js'),g=await import('/client/game-state.js'),ui=await import('/client/game.js');
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")])),cl=Object.assign({},...await Promise.all([import("/js/features/questionbank/clue-editor.js"),import("/js/features/game/clues.js")])),g=await import("/js/features/game/state.js"),ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));
  const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n)},bad=f=>{try{f();return false}catch{return true}};
  const q={content:'Dấu vết',acceptedAnswers:['Bắt cá'],hints:[{offsetMs:0,text:'Một'},{offsetMs:3000,text:'Hai'}]};
  check('CLUES enabled as seventh playable mode',()=>c.PLAYABLE_MODES.length===7&&c.PLAYABLE_MODES.includes('CLUES'));

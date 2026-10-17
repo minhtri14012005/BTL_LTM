@@ -13,7 +13,7 @@ import vn.edu.multigame.auth.service.AuthService;
 @Component
 @Profile("mysql")
 public class AuthSessionRegistry {
-    private record Binding(HttpSession session, long userId) {}
+    private record Binding(HttpSession session, long userId,long epoch) {}
     private final ConcurrentHashMap<String, Binding> sessions = new ConcurrentHashMap<>();
     private final ApplicationEventPublisher events;
     private final int timeoutSeconds;
@@ -25,7 +25,9 @@ public class AuthSessionRegistry {
     }
     public void register(HttpSession session, long userId) {
         session.setMaxInactiveInterval(timeoutSeconds);
-        sessions.put(session.getId(), new Binding(session, userId));
+        var context=session.getAttribute(org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        long epoch=context instanceof org.springframework.security.core.context.SecurityContext c && c.getAuthentication()!=null && c.getAuthentication().getPrincipal() instanceof AuthPrincipal p?p.authEpoch():0;
+        sessions.put(session.getId(), new Binding(session, userId,epoch));
     }
     public void requireValid(String id, long userId) {
         Binding binding = id == null ? null : sessions.get(id);
@@ -62,6 +64,10 @@ public class AuthSessionRegistry {
                 if(id.equals(removed.session().getId()))removed.session().invalidate();
             }catch(IllegalStateException alreadyInvalid){/* Container expiry. */}
         });
+    }
+    /** Only pre-ban epochs, never a session issued after UNBAN/expiry. No network wait. */
+    public void revokeThrough(long user,long cutoff,String reason) {
+        sessions.forEach((id,b)->{if(b.userId()==user && b.epoch()<cutoff)revoke(id,reason);});
     }
     @Scheduled(fixedDelay = 1000)
     public void expireIdleSessions() {

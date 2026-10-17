@@ -22,6 +22,9 @@ import vn.edu.multigame.game.enums.GameStatus;
 /** Persistence use-cases; callers serialize each Room through the shared realtime boundary. */
 @Service @Profile("mysql") @Transactional(readOnly = true)
 public class RoomService {
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.auth.service.AccountAccessPolicy accounts;
+    private void requireAccount(long user){accounts.requireLocked(user);}
+
     private final RoomRepository rooms;
     private final RoomMemberRepository members;
     private final QuizRepository quizzes;
@@ -66,11 +69,12 @@ public class RoomService {
             default -> throw RoomFailure.invalid();
         }
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation create(long userId, RoomConfigRequest config) {
         var validated=plan(config);
         var selected=config.stages()==null?List.of(usableQuiz(userId,config.quizId())):selectedSets(userId,validated);
         participation(userId,selected,config.hostParticipation());
+        requireAccount(userId);
         Room room=new Room(); room.setHostUserId(userId); room.setRoomCode(code()); room.setStatus(RoomStatus.DRAFT);
         room.setCreatedAtMs(System.currentTimeMillis()); apply(room,config); room=rooms.saveAndFlush(room);
         savePlan(room,config);
@@ -78,12 +82,13 @@ public class RoomService {
         host.setParticipation(config.hostParticipation()); host.setStatus(MembershipStatus.JOINED); host.setJoinedAtMs(room.getCreatedAtMs());
         members.saveAndFlush(host); return new RoomMutation(snapshot(room),false);
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation edit(long userId, long id, long revision, RoomConfigRequest config) {
         Room room=room(id,true); host(userId,room); mutable(room); revision(room,revision);
         var validated=plan(config);
         var selected=config.stages()==null?List.of(usableQuiz(userId,config.quizId())):selectedSets(userId,validated);
         var roster=members.findByRoomIdAndStatus(id,MembershipStatus.JOINED);
+        requireAccount(userId);
         long players=0;
         for(RoomMember member:roster) {
             Participation participation=member.getUserId()==userId ? config.hostParticipation():member.getParticipation();
@@ -95,28 +100,30 @@ public class RoomService {
         rooms.flush(); savePlan(room,config);
         return changed(room,revision);
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation open(long userId, long id, long revision) {
         Room room=room(id,true); host(userId,room); mutable(room); revision(room,revision);
         if(room.getStatus()!=RoomStatus.DRAFT) throw RoomFailure.conflict("INVALID_STATE");
-        selectedSets(room); room.setStatus(RoomStatus.WAITING); return changed(room,revision);
+        selectedSets(room); requireAccount(userId); room.setStatus(RoomStatus.WAITING); return changed(room,revision);
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation close(long userId, long id, long revision) {
         Room room=room(id,true); host(userId,room); mutable(room); revision(room,revision);
         // Retain the final membership roster and Host authority; CLOSED is terminal.
+        requireAccount(userId);
         room.setStatus(RoomStatus.CLOSED); return changed(room,revision);
     }
     /** Remove an idle Room from My Rooms without deleting Game/History foreign keys.
      * Host closes it for everyone; a member leaves only their own membership.
      * Called inside the same Room boundary as Start, so roster cannot race Start. */
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation delete(long userId, long id, long revision) {
         Room room=room(id,true);
         RoomMember caller=joined(userId,room);
         if(room.getStatus()==RoomStatus.ACTIVE || games.findByRoomIdAndStatus(id,GameStatus.ACTIVE).isPresent())
             throw RoomFailure.conflict("INVALID_STATE");
         revision(room,revision);
+        requireAccount(userId);
         long now=System.currentTimeMillis();
         if(room.getHostUserId()==userId) {
             room.setStatus(RoomStatus.CLOSED);
@@ -127,11 +134,12 @@ public class RoomService {
         }
         return changed(room,revision);
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation join(long userId, long id, String code, Participation participation) {
         Room room=room(id,true);
         if(!room.getRoomCode().equals(code)) throw RoomFailure.missing();
         waiting(room); participation(userId,selectedSets(room),participation);
+        requireAccount(userId);
         RoomMember member=members.findByRoomIdAndUserId(id,userId).orElse(null);
         var roster=members.findByRoomIdAndStatus(id,MembershipStatus.JOINED);
         boolean current=member!=null && member.getStatus()==MembershipStatus.JOINED;
@@ -142,19 +150,24 @@ public class RoomService {
         long now=System.currentTimeMillis();
         if(member==null) {
             member=new RoomMember(); member.setRoomId(id); member.setUserId(userId); member.setStatus(MembershipStatus.JOINED); member.setJoinedAtMs(now);
-        } else if(!current) member.rejoin(Math.max(now,member.getLeftAtMs()));
+        } else if(!current) {
+            if(member.getMembershipGeneration()==Long.MAX_VALUE)throw RoomFailure.conflict("MEMBERSHIP_GENERATION_EXHAUSTED");
+            member.rejoin(Math.max(now,member.getLeftAtMs()));
+        }
         member.setParticipation(participation); members.saveAndFlush(member); return changed(room,room.getRevision());
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation leave(long userId, long id) {
         Room room=room(id,true); waiting(room);
+        requireAccount(userId);
         if(room.getHostUserId()==userId) throw RoomFailure.conflict("HOST_CANNOT_LEAVE");
         RoomMember member=joined(userId,room); member.leave(Math.max(System.currentTimeMillis(),member.getJoinedAtMs()));
         return changed(room,room.getRevision());
     }
-    @Transactional(timeout=5)
+    @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public RoomMutation remove(long userId, long id, long targetUserId) {
         Room room=room(id,true); host(userId,room); waiting(room);
+        requireAccount(userId);
         if(room.getHostUserId()==targetUserId) throw RoomFailure.conflict("HOST_CANNOT_LEAVE");
         RoomMember member=joined(targetUserId,room); member.leave(Math.max(System.currentTimeMillis(),member.getJoinedAtMs()));
         return changed(room,room.getRevision());

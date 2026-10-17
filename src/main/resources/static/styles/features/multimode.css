@@ -1,0 +1,11 @@
+/* Question-bank authoring layouts; gameplay belongs to game-modes.css. */
+.catalogue-filters .field { margin: 0; min-width: 180px; }
+.arrangement-editor-row { display: flex; gap: .5rem; align-items: end; flex-wrap: wrap; margin: .7rem 0; }
+.arrangement-editor-row .field { flex: 1; min-width: 10rem; }
+.video-preview { max-width: 640px; }
+.clue-editor { display: grid; grid-template-columns: minmax(100px,150px) minmax(0,1fr) auto; gap: 12px; align-items: end; margin: 16px 0; }
+@media (max-width: 760px) {
+  .catalogue-filters { align-items: stretch; }
+  .clue-editor { grid-template-columns: minmax(0,1fr); }
+  .clue-editor button { justify-self: start; }
+}

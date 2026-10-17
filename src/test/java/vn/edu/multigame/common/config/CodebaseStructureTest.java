@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Frozen ownership/pure-engine boundaries without adding an architecture framework. */
 class CodebaseStructureTest {
-    private static final Set<String> FEATURES=Set.of("auth","common","game","questionbank","quiz","realtime","room","system","user");
+    private static final Set<String> FEATURES=Set.of("achievements","leaderboard","admin","auth","common","game","questionbank","quiz","realtime","room","system","user");
     private List<Path> javaFiles(String root) throws Exception {
         try(var files=Files.walk(Path.of(root))) {return files.filter(p -> p.toString().endsWith(".java")).toList();}
     }

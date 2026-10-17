@@ -35,6 +35,8 @@ public class AuthenticatedSocketRegistry {
     private final ObjectMapper json;
     private final AuthSessionRegistry sessions;
     private final AuthService users;
+    private final vn.edu.multigame.game.service.GameAccessPolicy gameAccess;
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.auth.service.AccountAccessPolicy accountAccess;
     private final ExecutorService writers=Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("socket-writer-",0).factory());
     private final ScheduledThreadPoolExecutor watchdog=new ScheduledThreadPoolExecutor(1,runnable->{
         var thread=new Thread(runnable,"socket-send-watchdog");thread.setDaemon(true);return thread;
@@ -56,8 +58,8 @@ public class AuthenticatedSocketRegistry {
     private void presence(long userId,boolean connected) {
         presenceListeners.forEach(listener -> listener.accept(new PresenceChange(userId,connected)));
     }
-    public AuthenticatedSocketRegistry(ObjectMapper json,AuthSessionRegistry sessions,AuthService users) {
-        this.json=json; this.sessions=sessions; this.users=users;
+    public AuthenticatedSocketRegistry(ObjectMapper json,AuthSessionRegistry sessions,AuthService users,vn.edu.multigame.game.service.GameAccessPolicy gameAccess) {
+        this.json=json; this.sessions=sessions; this.users=users;this.gameAccess=gameAccess;
         watchdog.setRemoveOnCancelPolicy(true);
         watchdog.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     }
@@ -156,10 +158,39 @@ public class AuthenticatedSocketRegistry {
     public void send(WebSocketSession socket,Object message) {
         Binding binding=bindings.get(socket.getId()); if(binding==null) return;
         if(active.get(binding.userId())!=binding) return;
-        try { binding.sender().send(new TextMessage(json.writeValueAsString(message))); }
+        try {
+            var auth=socket.getPrincipal() instanceof Authentication a?a:null;
+            users.requireActiveUser(auth);sessions.requireValid(binding.sessionId(),binding.userId());
+            Long game=gameScope(message);
+            if(game!=null && gameAccess.restricted(game,binding.userId()))return;
+            binding.sender().send(new TextMessage(json.writeValueAsString(message)),()->{
+                if(active.get(binding.userId())!=binding)return false;
+                try{
+                    users.requireActiveUser(socket.getPrincipal() instanceof Authentication a?a:null);
+                    sessions.requireValid(binding.sessionId(),binding.userId());
+                    if(accountAccess!=null && socket.getPrincipal() instanceof Authentication a && a.getPrincipal() instanceof vn.edu.multigame.auth.security.AuthPrincipal p && !accountAccess.beginSend(binding.userId(),p.authEpoch()))return false;
+                }catch(AuthFailure expired){close(socket,new CloseStatus(4001,expired.socketReason()));return false;}
+                catch(org.springframework.dao.DataAccessException unavailable){close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));return false;}
+                return game==null || gameAccess.beginSend(game,binding.userId());
+            });
+        }
+        catch(AuthFailure failure){close(socket,new CloseStatus(4001,failure.socketReason()));}
         catch(IOException | RuntimeException failure) {
             binding.sender().abort(new CloseStatus(1011,"SEND_UNAVAILABLE"));
         }
+    }
+    private Long gameScope(Object message){
+        if(message instanceof vn.edu.multigame.realtime.message.event.GameEvent e)return e.target().id();
+        if(message instanceof vn.edu.multigame.realtime.message.common.ReconnectAck a)return a.target().id();
+        if(message instanceof vn.edu.multigame.realtime.message.common.GameAck a)return a.target().id();
+        return null;
+    }
+    /** Security notice is a control frame: it contains no snapshot or private reason.
+     * Run synchronously after Kick commit in the Game turn; enqueue only, never I/O. */
+    public void gameRestricted(long game,long room,long user){
+        var binding=active.get(user);if(binding==null)return;
+        send(binding.outbound(),new vn.edu.multigame.realtime.message.event.GameAccessRevoked(1,"EVENT","GAME_ACCESS_REVOKED",vn.edu.multigame.realtime.message.common.GameTarget.of(game),"GAME_KICKED",System.currentTimeMillis()));
+        binding.rooms().remove(room);
     }
     @EventListener
     public void roomChanged(RoomChanged changed) {
@@ -176,7 +207,7 @@ public class AuthenticatedSocketRegistry {
                         room.revision(),now,joined?room:Map.of("reason","NOT_A_MEMBER")));
                 if(!joined || room.status()==RoomStatus.CLOSED) binding.rooms().remove(room.id());
             } catch(AuthFailure e) {
-                close(socket,new CloseStatus(4001,"SESSION_EXPIRED"));
+                close(socket,new CloseStatus(4001,e.socketReason()));
             } catch(org.springframework.dao.DataAccessException e) {
                 close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));
             }
@@ -192,11 +223,12 @@ public class AuthenticatedSocketRegistry {
                 var user=users.requireActiveUser(socket.getPrincipal() instanceof Authentication auth?auth:null);
                 sessions.requireValid(binding.sessionId(),user.getId());
                 if(game.members().stream().noneMatch(m -> m.userId()==user.getId())) continue;
+                if(gameAccess.restricted(game.gameSessionId(),user.getId()))continue;
                 send(socket,new vn.edu.multigame.realtime.message.event.GameEvent(1,"EVENT",changed.type(),
                         vn.edu.multigame.realtime.message.common.GameTarget.of(game.gameSessionId()),game.questionIndex()>0?game.questionIndex():null,
                         eventId,game.revision(),game.serverTimeMs(),game.forPlayer(changed.players().get(user.getId()))));
             } catch(AuthFailure failure) {
-                close(socket,new CloseStatus(4001,"SESSION_EXPIRED"));
+                close(socket,new CloseStatus(4001,failure.socketReason()));
             } catch(org.springframework.dao.DataAccessException failure) {
                 close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));
             }

@@ -48,6 +48,8 @@ import static org.mockito.Mockito.*;
     "spring.datasource.url=jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/quizz_task2_test?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000"
 }) @ActiveProfiles("mysql") @Import(GameLifecycleFixture.Config.class)
 abstract class GameLifecycleFixture {
+    @MockitoSpyBean vn.edu.multigame.achievements.service.AwardReconciler awardReconciler;
+    @BeforeEach void pauseAwardBackground(){doNothing().when(awardReconciler).reconcile();}
     static class Clock implements ServerClock {
         final long epoch=System.currentTimeMillis(); final AtomicLong mono=new AtomicLong();
         public Sample sample() { long t=mono.get(); return new Sample(t,epoch+t); }
@@ -157,7 +159,8 @@ abstract class GameLifecycleFixture {
     @AfterEach void cleanup() {
         reset(players,transactions,runtime);
         for(long id:installed) { try { runtime.interrupt(id).get(10,TimeUnit.SECONDS); } catch(Exception ignored) {} }
-        for(long id:gameIds) { transactions.interrupt(id,Math.max(System.currentTimeMillis(),clock.sample().epochMs())); jdbc.update("delete from answer where game_session_id=?",id); jdbc.update("delete from game_question where game_session_id=?",id); jdbc.update("delete from game_stage where game_session_id=?",id); jdbc.update("delete from player_session where game_session_id=?",id); jdbc.update("delete from game_member where game_session_id=?",id); jdbc.update("delete from game_session where id=?",id); }
+        for(long id:userIds) { jdbc.update("delete from account_effect_intent where user_id=?",id);jdbc.update("delete from admin_account_action where target_user_id=? or admin_user_id=?",id,id);jdbc.update("delete from admin_orphan_close_action where host_user_id=? or admin_user_id=?",id,id); }
+        for(long id:gameIds) { transactions.interrupt(id,Math.max(System.currentTimeMillis(),clock.sample().epochMs())); jdbc.update("delete from achievement_award where game_session_id=?",id);jdbc.update("delete from game_award_participant where game_session_id=?",id);jdbc.update("delete from game_award_decision where game_session_id=?",id);jdbc.update("delete from game_participation_restriction where game_session_id=?",id);jdbc.update("delete from admin_kick_action where game_session_id=?",id);jdbc.update("delete from game_decision_action where game_session_id=?",id);jdbc.update("delete from game_question_participation where game_session_id=?",id);jdbc.update("delete from answer where game_session_id=?",id); jdbc.update("delete from game_question where game_session_id=?",id); jdbc.update("delete from game_stage where game_session_id=?",id); jdbc.update("delete from player_session where game_session_id=?",id); jdbc.update("delete from game_member where game_session_id=?",id); jdbc.update("delete from game_session where id=?",id); }
         for(long id:roomIds) { jdbc.update("delete from room_stage where room_id=?",id); jdbc.update("delete from room_member where room_id=?",id); jdbc.update("delete from room where id=?",id); }
         for(long id:quizIds) { jdbc.update("delete from question where quiz_id=?",id); jdbc.update("delete from quiz where id=?",id); }
         for(long id:userIds) jdbc.update("delete from app_user where id=?",id);
@@ -168,7 +171,8 @@ abstract class GameLifecycleFixture {
     class Client implements AutoCloseable {
         final Account account; final CookieManager cookies=new CookieManager(null,CookiePolicy.ACCEPT_ALL);
         final HttpClient http=HttpClient.newBuilder().cookieHandler(cookies).connectTimeout(Duration.ofSeconds(3)).build(); String csrf;
-        Client(Account account) throws Exception { this.account=account; clients.add(this); token(); assertThat(call("POST","/api/auth/login",Map.of("username",account.name(),"password",PASSWORD)).statusCode()).isEqualTo(200); token(); }
+        Client(Account account) throws Exception {this(account,PASSWORD);}
+        Client(Account account,String password) throws Exception { this.account=account; clients.add(this); token(); assertThat(call("POST","/api/auth/login",Map.of("username",account.name(),"password",password)).statusCode()).isEqualTo(200); token(); }
         void token() throws Exception { csrf=json.readTree(call("GET","/api/auth/csrf",null).body()).get("token").asText(); }
         HttpResponse<String> call(String method,String path,Object body) throws Exception {
             var builder=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).timeout(Duration.ofSeconds(15));

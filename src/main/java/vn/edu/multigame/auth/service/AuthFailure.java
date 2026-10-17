@@ -12,4 +12,5 @@ public class AuthFailure extends RuntimeException {
     }
     public HttpStatus status() { return status; }
     public String code() { return code; }
+    public String socketReason() { return code.equals("UNAUTHENTICATED")?"SESSION_EXPIRED":code; }
 }

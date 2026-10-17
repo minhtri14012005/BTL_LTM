@@ -34,6 +34,11 @@ public class GameMember extends IdentityEntity {
     @Column(name = "display_name_snapshot", nullable = false, updatable = false, length = 100)
     private String displayNameSnapshot;
 
+    @Column(name="membership_generation",nullable=false,updatable=false)
+    private long membershipGeneration=1;
+    public long getMembershipGeneration(){return membershipGeneration;}
+    public void setMembershipGeneration(long value){membershipGeneration=value;}
+
     public GameMember() {}
 
     public Long getGameSessionId() { return gameSessionId; }

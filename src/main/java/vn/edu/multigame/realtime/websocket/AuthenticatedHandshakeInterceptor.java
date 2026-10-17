@@ -38,6 +38,7 @@ public class AuthenticatedHandshakeInterceptor implements HandshakeInterceptor {
         try {
             Authentication authentication = servlet.getPrincipal() instanceof Authentication auth ? auth : null;
             var user = users.requireActiveUser(authentication);
+            if(servlet.getServletRequest().getRequestURI().equals(servlet.getServletRequest().getContextPath()+"/ws/admin"))users.requireAdmin(authentication);
             var session = servlet.getServletRequest().getSession(false);
             if (session == null) throw AuthService.unauthorized();
             sessions.requireValid(session.getId(), user.getId());

@@ -9,13 +9,13 @@ spec=importlib.util.spec_from_file_location('multimode_tests',ROOT/'scripts/test
 mm=importlib.util.module_from_spec(spec);spec.loader.exec_module(mm)
 old=mm.old;browser=mm.browser
 UNIT=r'''(async()=>{
- const c=await import('/client/core.js'),a=await import('/client/arrangement.js'),g=await import('/client/game-state.js'),ui=await import('/client/game.js'),hist=await import('/client/history.js');
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")])),a=Object.assign({},...await Promise.all([import("/js/features/game/arrangement.js"),import("/js/features/questionbank/arrangement-editor.js")])),g=await import("/js/features/game/state.js"),ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")])),hist=await import("/js/features/results/history.js");
  const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
  const items=[{id:'a',text:'ha'},{id:'s',text:' '},{id:'b',text:'ha'}],ids=['a','s','b'];
  check('seven actual playable modes',()=>c.PLAYABLE_MODES.length===7&&c.PLAYABLE_MODES.includes('VIETNAMESE_PUZZLE')&&c.PLAYABLE_MODES.includes('ORDERING'));
  check('permutation validates IDs rather than repeated labels',()=>a.permutation(items,ids)&&a.permutation(items,['b','s','a'])&&!a.permutation(items,['a','a','b'])&&!a.permutation(items,['a','s'])&&!a.permutation(items,['a','s','fake']));
  check('move preserves one occurrence of every item',()=>JSON.stringify(a.move(ids,2,-1))===JSON.stringify(['a','b','s'])&&a.permutation(items,a.move(ids,0,1)));
- const {roomEditor}=await import('/client/rooms.js');
+ const {roomEditor}=Object.assign({},...await Promise.all([import("/js/features/lobby/rooms.js"),import("/js/features/room/editor.js"),import("/js/features/room/page.js")]));
  const roomForm=await roomEditor({user:{id:1},api:{request:async()=>({items:[{id:100,ownerUserId:1,mode:'QUIZ',title:'Q',questionCount:1},{id:101,ownerUserId:1,mode:'VIETNAMESE_PUZZLE',title:'V',questionCount:2},{id:102,ownerUserId:1,mode:'ORDERING',title:'O',questionCount:2}],totalElements:3})}},null,100);
  roomForm.querySelector('#add-stage').click();const stage=roomForm.querySelector('.stage-editor:last-child'),kind=stage.querySelector('[name=stageMode]');kind.value='VIETNAMESE_PUZZLE';kind.dispatchEvent(new Event('change'));
  check('changing stage mode creates actual source options',()=>stage.querySelector('[name=quizId]').value==='101'&&stage.querySelector('[name=quizId]').options.length===1);

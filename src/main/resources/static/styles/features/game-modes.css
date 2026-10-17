@@ -1,0 +1,36 @@
+/* Mode renderers and media. Authoring editor layouts remain in multimode.css. */
+#answer-text.answer-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+#answer-text.answer-wrong { background: var(--danger-bg); border: 2px solid var(--danger-border); color: var(--danger); }
+#correct-text { font-weight: 650; overflow-wrap: anywhere; }
+.spin-pool { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: .85rem; margin-top: var(--space-4); }
+.arrangement-answer { min-width: 0; }
+.arrangement-progress { color: var(--accent); font-size: .85rem; font-weight: 650; }
+.vietnamese-answer h3 { margin-top: var(--space-4); }
+.vietnamese-answer .word-tile { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 240px; min-width: 48px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.vietnamese-answer button.word-tile { touch-action: none; user-select: none; cursor: grab; }
+.vietnamese-answer button.word-tile:disabled { cursor: not-allowed; }
+.sentence-row { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-2); overflow-x: auto; max-width: 100%; min-height: 88px; padding: 14px; border: 2px dashed var(--border-strong); border-radius: var(--radius); background: var(--surface-inset); overscroll-behavior-x: contain; }
+.sentence-row .placed-word { flex: 0 0 auto; display: flex; gap: var(--space-2); align-items: center; background: var(--surface-raised); }
+.sentence-row.drop-active { border-color: var(--accent); background: var(--success-bg); }
+.sentence-placeholder { white-space: normal; }
+.word-drag-ghost { position: fixed; z-index: 100; pointer-events: none; transform: translate(-50%,-50%); max-width: 240px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--accent); color: var(--accent-ink); box-shadow: 0 4px 16px var(--shadow-color); }
+.piece-bank { display: flex; gap: var(--space-2); flex-wrap: wrap; padding: var(--space-4); background: var(--surface-inset); border: 1px solid var(--border); border-radius: var(--radius); min-height: 76px; }
+.piece-bank button, .piece-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.arranged-items { list-style: none; padding: 0; margin: var(--space-4) 0; }
+.arranged-items li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-3); margin-bottom: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-inset); }
+.arranged-items .piece-text { flex: 1; min-width: 5rem; }
+.arrangement-answer button { min-height: 44px; min-width: 44px; }
+.song-video { display: block; width: 100%; max-height: 50vh; object-fit: contain; background: var(--media-bg); border-radius: var(--radius); }
+.song-player { display: grid; gap: var(--space-3); border: 1px solid var(--border); padding: var(--space-3); border-radius: var(--radius); background: var(--surface-inset); margin: var(--space-4) 0; }
+.song-player .video-actions { margin: 0; }
+.song-player #video-status { margin: 0; font-size: .85rem; }
+.song-player[data-media-state="blocked"] { border-color: var(--warning); }
+.song-player[data-media-state="error"] { border-color: var(--danger-border); }
+.released-clues { padding: var(--space-4); background: var(--surface-inset); border: 1px solid var(--border); border-radius: var(--radius); margin: var(--space-4) 0; }
+.released-clues ol { list-style: none; padding: 0; margin: var(--space-4) 0 0; }
+.released-clues li { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.released-clues li > div { flex: 1; min-width: 0; }
+.released-clues p { white-space: pre-wrap; margin: var(--space-1) 0 0; }
+.released-clues small { color: var(--muted); }
+.clue-number { flex: 0 0 28px; height: 28px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-sm); }
+@media (max-width: 480px) { .song-player { padding: var(--space-2); } .released-clues { padding: var(--space-3); } }

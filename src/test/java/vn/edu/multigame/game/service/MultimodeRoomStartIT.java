@@ -61,7 +61,7 @@ class MultimodeRoomStartIT {
                     && jdbc.queryForObject("select revision from room where id=?",Long.class,change.snapshot().id())==change.snapshot().revision());
             }
         });
-        assertThat(jdbc.queryForObject("select max(cast(version as unsigned)) from flyway_schema_history where success=1",Integer.class)).isEqualTo(7);
+        assertThat(jdbc.queryForObject("select max(cast(version as unsigned)) from flyway_schema_history where success=1",Integer.class)).isEqualTo(13);
     }
     String setting(Properties p,String key,String fallback){return Optional.ofNullable(System.getenv(key)).orElse(p.getProperty(key,fallback));}
     @AfterAll void closeServer() {

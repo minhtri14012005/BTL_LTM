@@ -61,6 +61,11 @@ public class GameQuestion extends IdentityEntity {
     @Column(name = "scored_at_ms")
     private Long scoredAtMs;
 
+    @Column(name="participation_captured",nullable=false)
+    private boolean participationCaptured;
+    public boolean isParticipationCaptured(){return participationCaptured;}
+    public void setParticipationCaptured(boolean value){participationCaptured=value;}
+
     @Column(name = "schema_version", nullable = false, updatable = false)
     private Integer schemaVersion = 1;
 

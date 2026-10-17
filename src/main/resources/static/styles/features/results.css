@@ -1,0 +1,55 @@
+/* Committed Result/History presentation; no award allocation or client ranking. */
+.history-page { display: grid; gap: var(--space-5); }
+.history-page > .page-heading { margin-bottom: 0; }
+.history-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-5); }
+.history-card { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); min-width: 0; }
+.history-card .card-top { width: 100%; }
+.history-card h2 { font-size: 1.2rem; overflow-wrap: anywhere; }
+.history-card p, .history-card h2 { margin: 0; }
+.history-card > .button { margin-top: auto; }
+.result-badge { white-space: normal; }
+.result-badge.is-completed { background: var(--success-bg); color: var(--success); }
+.result-badge.is-unofficial { background: var(--surface-inset); color: var(--muted); }
+.final-summary { border-top: 4px solid var(--accent); }
+.final-summary > h2 { font-size: clamp(1.4rem,2.5vw,2rem); }
+.final-summary .eyebrow { margin: 0; }
+.result-top { margin: var(--space-5) 0; }
+.result-top h3, .own-result-stats h3 { font-size: 1rem; }
+.result-top-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,180px),1fr)); gap: var(--space-3); }
+.result-top-card { display: grid; gap: var(--space-2); align-content: start; min-width: 0; padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-inset); }
+.result-top-card.is-self { border-color: var(--accent); }
+.result-top-card h4 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
+.result-top-card .badge { justify-self: start; }
+.result-rank { color: var(--accent); font-size: 1.5rem; font-weight: 750; }
+.own-result-stats { padding: var(--space-4); margin: var(--space-5) 0; background: var(--surface-inset); border-radius: var(--radius); border: 1px solid var(--border); }
+.own-stats-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-4); margin: 0; }
+.own-stats-grid div { display: grid; gap: var(--space-2); border: 0; padding: 0; min-width: 0; }
+.own-stats-grid dt { font-size: .8rem; }
+.own-stats-grid dd { text-align: left; font-size: 1.2rem; color: var(--accent); overflow-wrap: anywhere; }
+.result-room-return { border-top: 1px solid var(--border); padding-top: var(--space-4); margin-top: var(--space-5); }
+.result-room-return > p { font-size: .85rem; }
+.history-dates { font-size: .85rem; }
+.mode-breakdown h2 { font-size: 1.2rem; }
+.mode-breakdown > p { font-size: .85rem; }
+.breakdown-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.breakdown-table th, .breakdown-table td { text-align: left; border-bottom: 1px solid var(--border); padding: var(--space-3); }
+.history-timeline { display: grid; gap: var(--space-4); }
+.history-timeline > h2 { margin: 0; font-size: 1.3rem; }
+.history-question { min-width: 0; }
+.history-question > h2 { white-space: pre-wrap; font-size: 1.2rem; overflow-wrap: anywhere; }
+.answer-timeline { padding: var(--space-4) 0; border-top: 1px solid var(--border); }
+.answer-timeline.is-self { border-left: 3px solid var(--accent); padding-left: var(--space-3); }
+.answer-timeline h3 { font-size: 1rem; margin: 0; }
+.answer-timeline .card { background: var(--surface-inset); margin: var(--space-2) 0; padding: var(--space-4); }
+.submitted-answer { white-space: pre-wrap; overflow-wrap: anywhere; }
+.result-row { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.history-page > .card .standings td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .history-grid { grid-template-columns: minmax(0,1fr); }
+  .own-stats-grid { grid-template-columns: minmax(0,1fr); gap: var(--space-3); }
+  .own-stats-grid div { grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; }
+  .own-stats-grid dd { text-align: right; font-size: 1.05rem; }
+  .result-top-grid { grid-template-columns: minmax(0,1fr); }
+  .breakdown-table { font-size: .8rem; }
+  .breakdown-table th, .breakdown-table td { padding: var(--space-2); }
+}

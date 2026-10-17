@@ -8,7 +8,7 @@ spec=importlib.util.spec_from_file_location('image_tests',ROOT/'scripts/test-ima
 base=importlib.util.module_from_spec(spec);spec.loader.exec_module(base)
 a=base.a;old=base.old;browser=base.browser
 UNIT=r'''(async()=>{
- const c=await import('/client/core.js'),v=await import('/client/video.js'),ui=await import('/client/game.js');const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")])),v=await import("/js/features/game/video.js"),ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
  const ref='sha256:'+'a'.repeat(64),q={content:'Nghe clip',acceptedAnswers:['Bắt cá','Đánh bắt cá'],mediaRef:ref};
  check('SONG authoring uses aliases/mediaRef, no options/image/correctAnswer',()=>{const s=c.quizValues('Song','PRIVATE',[q],'SONG');return s.questions[0].mediaRef===ref && !('imageRef' in s.questions[0])&&!('options' in s.questions[0])&&!('correctAnswer' in s.questions[0]);});
  check('SONG requires local SHA ref and nonempty aliases',()=>bad(()=>c.quizValues('Song','PRIVATE',[{...q,mediaRef:null}],'SONG'))&&bad(()=>c.quizValues('Song','PRIVATE',[{...q,mediaRef:'https://outside.test/clip'}],'SONG'))&&bad(()=>c.quizValues('Song','PRIVATE',[{...q,acceptedAnswers:[]}],'SONG')));
@@ -86,7 +86,8 @@ def smoke(cdp,origin,report):
  result=host.eval("wire.messages.find(m=>m.type==='QUESTION_RESULT'&&m.questionIndex===2).payload");assert [next(r for r in result['results'] if r['userId']==u['id'])['scoreDelta'] for t,u in people[1:]]==[10,10,0]
  passed('Disconnect at5sec/reload at15sec of25sec: same deadline/playhead≈15/remaining≈10; lost Answer ACK same UUID replay after close')
  phase(host,3,'QUESTION_OPEN');phase(players[0],3,'QUESTION_OPEN');q3=snapshot(players[0],gid)
- blob=(ROOT/'data/quiz-videos'/str(song)/(refs[1][7:]+'.mp4')).resolve();assert blob.is_relative_to((ROOT/'data/quiz-videos'/str(song)).resolve()) and blob.is_file();backup=blob.with_name(blob.name+'.task22-owned-backup');assert not backup.exists();blob.rename(backup)
+ video_root=Path(report['videoDirectory']).resolve()
+ blob=(video_root/str(song)/(refs[1][7:]+'.mp4')).resolve();assert blob.is_relative_to((video_root/str(song)).resolve()) and blob.is_file();backup=blob.with_name(blob.name+'.task22-owned-backup');assert not backup.exists();blob.rename(backup)
  report['mediaFailureFixture']={'quizId':song,'mediaRef':refs[1],'originalRestored':False}
  try:
   assert players[0].eval(f"fetch('/api/quizzes/{song}/videos/{refs[1][7:]}?gameSessionId={gid}').then(r=>r.status)")==404
@@ -112,7 +113,7 @@ def smoke(cdp,origin,report):
  for t,u in people:cdp.call('Target.closeTarget',{'targetId':t.target})
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--origin',default='http://127.0.0.1:8087');p.add_argument('--port',type=int,default=9224);p.add_argument('--smoke',action='store_true');args=p.parse_args();report={'task':22,'status':'RUNNING','unit':[],'smoke':[],'origin':args.origin,'clients':4,'quizIds':[],'roomIds':[],'gameIds':[]}
+ p=argparse.ArgumentParser();p.add_argument('--origin',default='http://127.0.0.1:8087');p.add_argument('--port',type=int,default=9224);p.add_argument('--smoke',action='store_true');p.add_argument('--video-directory',default=str(ROOT/'data/quiz-videos'));args=p.parse_args();report={'task':22,'status':'RUNNING','unit':[],'smoke':[],'origin':args.origin,'videoDirectory':args.video_directory,'clients':4,'quizIds':[],'roomIds':[],'gameIds':[]}
  try:
   cdp=browser.CDP(args.port);report['browser']=cdp.version;t=cdp.tab(args.origin);report['unit']=t.eval(old.legacy.UNIT)+t.eval(old.UNIT)+t.eval(a.mm.UNIT)+t.eval(a.UNIT)+t.eval(base.UNIT)+t.eval(UNIT);cdp.call('Target.closeTarget',{'targetId':t.target})
   if args.smoke:smoke(cdp,args.origin,report)

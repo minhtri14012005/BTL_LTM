@@ -13,7 +13,7 @@ legacy=importlib.util.module_from_spec(spec);spec.loader.exec_module(legacy)
 browser=legacy.browser
 
 UNIT=r'''(async()=>{
- const g=await import('/client/game-state.js');const ui=await import('/client/game.js');
+ const g=await import("/js/features/game/state.js");const ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));
  const done=[];const check=(n,f)=>{if(!f())throw Error(n);done.push(n);};
  const p={userId:1,state:'PLAYING',remainingSpins:1,currentSpin:null,starSelected:false,starAvailable:true,alreadyAnswered:false};
  const s={gameSessionId:7,roomId:2,revision:4,questionIndex:1,status:'ACTIVE',runtimeState:'READY',phase:'DECISION',player:p,members:[{userId:1,role:'HOST',participation:'PLAYER',displayName:'Host',rank:1,score:20,totalAnswerTimeMs:0,playerState:'PLAYING'}],winners:[],hasOfficialWinner:false};
@@ -79,8 +79,11 @@ def smoke(cdp,origin,report):
     quiz=int(author.eval("location.hash.split('/')[2]"));report['quizIds'].append(quiz)
     fixture=ROOT/'target/update-image.png';legacy.png(fixture);author.upload('.question-editor [name=image]',fixture);author.submit('#quiz-form');author.wait("!!document.querySelector('.question-preview img')")
     def start(host,roster,spectator):
-        host.route(f'rooms/new?quiz={quiz}','#room-form');host.fill({'name':prefix+' room '+str(len(report['roomIds'])),'maxPlayers':'3','seconds':'2.5','hostParticipation':'SPECTATOR' if spectator else 'PLAYER'});host.submit('#room-form');host.wait("!!document.querySelector('#open-room')")
-        room=int(host.eval("location.hash.split('/')[2]"));report['roomIds'].append(room);host.click('#open-room');host.wait("!!document.querySelector('#start-game')")
+        # This suite verifies Quiz v1 resources/elimination. The current create UI makes v2 plans.
+        config={'quizId':quiz,'name':prefix+' legacy room '+str(len(report['roomIds'])),'maxPlayers':3,'questionDurationMs':2500,'hostParticipation':'SPECTATOR' if spectator else 'PLAYER'}
+        saved=host.eval('(async()=>{const c=await fetch("/api/auth/csrf").then(r=>r.json());const {uuid}=await import("/js/core/protocol.js");const r=await fetch("/api/rooms",{method:"POST",headers:{[c.headerName]:c.token,"Content-Type":"application/json"},body:JSON.stringify({requestId:uuid(),config:'+json.dumps(config)+'})});if(!r.ok)throw Error(await r.text());return r.json();})()')
+        assert saved['configVersion']==1
+        room=saved['id'];report['roomIds'].append(room);host.route(f'room/{room}','#open-room');host.click('#open-room');host.wait("!!document.querySelector('#start-game')")
         code=host.eval("document.querySelector('#room-code').textContent")
         for t in roster:
             if t is host:continue

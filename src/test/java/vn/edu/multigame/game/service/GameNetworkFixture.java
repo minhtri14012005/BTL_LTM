@@ -28,8 +28,10 @@ abstract class GameNetworkFixture extends GameLifecycleFixture {
         final List<JsonNode> messages=new CopyOnWriteArrayList<>();
         final CompletableFuture<Integer> closed=new CompletableFuture<>();
         final WebSocket socket;
-        Wire(Account user) throws Exception {
-            client=new Client(user); wires.add(this);
+        Wire(Account user) throws Exception {this(user,null);}
+        Wire(Client authenticated) throws Exception {this(authenticated.account,authenticated);}
+        private Wire(Account user,Client authenticated) throws Exception {
+            client=authenticated==null?new Client(user):authenticated; wires.add(this);
             socket=client.http.newWebSocketBuilder().header("Origin","http://localhost:8080")
                     .buildAsync(URI.create("ws://127.0.0.1:"+port+"/ws"),new WebSocket.Listener() {
                         final StringBuilder buffer=new StringBuilder();

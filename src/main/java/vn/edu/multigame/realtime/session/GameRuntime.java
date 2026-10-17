@@ -201,6 +201,20 @@ public class GameRuntime {
         return data.publicView().contextual(clock.sample().epochMs(),null,null,"FINISHED",false,data.players().get(authenticatedUserId));
     }
     public boolean installed(long id) {return nodes.containsKey(id);}
+    public record AdministrativeResult<T>(T response,CommittedGame changed,Runnable afterCommit) {
+        public AdministrativeResult(T response,CommittedGame changed){this(response,changed,()->{});}
+    }
+    /** Privileged operations still enter the exact Game sequencer used by Answer/Close. */
+    public <T> CompletableFuture<T> administrative(long id,java.util.function.Supplier<AdministrativeResult<T>> operation){
+        var reply=new CompletableFuture<T>();
+        try{var node=node(id);submit(node,ignored->{try{
+            node.lifecycle.requireRestrictionReady();
+            var committed=operation.get();if(committed.changed()!=null)node.lifecycle.restrictionCommitted(committed.changed());
+            try{committed.afterCommit().run();}catch(RuntimeException notificationFailure){System.getLogger(GameRuntime.class.getName()).log(System.Logger.Level.WARNING,"Committed administrative effect notification unavailable");}
+            reply.complete(committed.response());
+        }catch(RuntimeException failure){reply.completeExceptionally(failure);}}).whenComplete((ignored,failure)->{if(failure!=null)reply.completeExceptionally(failure);});}
+        catch(RuntimeException failure){reply.completeExceptionally(failure);}return reply;
+    }
     private Node node(long id) { Node node=nodes.get(id); if(node==null) throw GameFailure.unavailable(); return node; }
     private CompletableFuture<Void> submit(Node node,Consumer<Ingress<Job>> operation) { return queue.submit(node.key,new Job(operation)).processed(); }
     @Scheduled(fixedDelay=60_000) public void cleanup() {

@@ -18,7 +18,8 @@ final class SocketOutbound {
     private final Executor writers;
     private final ScheduledExecutorService watchdog;
     private final Consumer<CloseStatus> detached;
-    private final ArrayDeque<TextMessage> pending=new ArrayDeque<>();
+    private record Envelope(TextMessage message,java.util.function.BooleanSupplier beginSend) {}
+    private final ArrayDeque<Envelope> pending=new ArrayDeque<>();
     private int retainedBytes;
     private boolean running,stopped,finishing;
     private TextMessage inFlight;
@@ -31,13 +32,16 @@ final class SocketOutbound {
         this.socket=socket;this.writers=writers;this.watchdog=watchdog;this.detached=detached;
     }
     void send(TextMessage message) {
+        send(message,()->true);
+    }
+    void send(TextMessage message,java.util.function.BooleanSupplier beginSend) {
         CloseStatus failure=null;
         synchronized(this) {
             if(stopped || finishing)return;
             if(message.getPayloadLength()>BYTE_LIMIT-retainedBytes || pending.size()+(inFlight==null?0:1)>=MESSAGE_LIMIT)
                 failure=new CloseStatus(1011,"SEND_BUFFER_LIMIT");
             else {
-                pending.addLast(message);retainedBytes+=message.getPayloadLength();
+                pending.addLast(new Envelope(message,beginSend));retainedBytes+=message.getPayloadLength();
                 try {start();}catch(RuntimeException rejected){failure=new CloseStatus(1011,"SEND_UNAVAILABLE");}
             }
         }
@@ -52,7 +56,7 @@ final class SocketOutbound {
             finishing=true;closeAfter=status;
             if(terminal.getPayloadLength()>BYTE_LIMIT-retainedBytes)failure=new CloseStatus(1011,"SEND_BUFFER_LIMIT");
             else {
-                pending.addLast(terminal);retainedBytes+=terminal.getPayloadLength();
+                pending.addLast(new Envelope(terminal,()->true));retainedBytes+=terminal.getPayloadLength();
                 try {start();}catch(RuntimeException rejected){failure=new CloseStatus(1011,"SEND_UNAVAILABLE");}
             }
         }
@@ -64,11 +68,12 @@ final class SocketOutbound {
     private void drain() {
         while(true) {
             TextMessage message;
+            Envelope envelope;
             CloseStatus terminal=null;
             boolean rejected=false;
             synchronized(this) {
                 if(stopped){running=false;return;}
-                message=pending.pollFirst();
+                envelope=pending.pollFirst();message=envelope==null?null:envelope.message();
                 if(message==null) {
                     running=false;writer=null;
                     if(finishing){stopped=true;terminal=closeAfter;}
@@ -82,7 +87,7 @@ final class SocketOutbound {
             if(message==null){if(terminal!=null)closeAndComplete(terminal);return;}
             try {
                 if(!socket.isOpen())throw new IOException("Socket closed");
-                socket.sendMessage(message);
+                if(envelope.beginSend().getAsBoolean())socket.sendMessage(message);
             } catch(IOException | RuntimeException failure){abort(new CloseStatus(1011,"SEND_UNAVAILABLE"));return;}
             synchronized(this) {
                 if(stopped)return;

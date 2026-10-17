@@ -16,7 +16,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         this.handler = handler; this.authentication = authentication; this.origins = origins;
     }
     @Override public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(handler, "/ws").addInterceptors(authentication)
+        registry.addHandler(handler, "/ws", "/ws/admin").addInterceptors(authentication)
                 .setAllowedOrigins(origins.allowedOrigins().toArray(String[]::new));
     }
 }

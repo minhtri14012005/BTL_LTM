@@ -14,7 +14,7 @@ spec=importlib.util.spec_from_file_location('game_tests',ROOT/'scripts/test-game
 old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
 browser=old.browser
 UNIT=r'''(async()=>{
- const c=await import('/client/core.js'),g=await import('/client/game-state.js'),ui=await import('/client/game.js');
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")])),g=await import("/js/features/game/state.js"),ui=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));
  const done=[],check=(n,f)=>{if(!f())throw Error(n);done.push(n);},bad=f=>{try{f();return false;}catch{return true;}};
  const q={content:'Có chân?',acceptedAnswers:['cái bàn','bàn']};
  check('RIDDLE editor request excludes Quiz fields',()=>{const x=c.quizValues('R','PRIVATE',[q],'RIDDLE');return x.mode==='RIDDLE'&&x.questions[0].acceptedAnswers.length===2&&!('options'in x.questions[0])&&!('correctAnswer'in x.questions[0]);});
@@ -22,7 +22,7 @@ UNIT=r'''(async()=>{
  const data={name:'Room',maxPlayers:'3',hostParticipation:'SPECTATOR'},stages=[{mode:'QUIZ',quizId:2,questionCount:10,seconds:3},{mode:'RIDDLE',quizId:3,questionCount:2,seconds:8}];
  check('ordered stage plan and ms duration',()=>{const x=c.roomValues(data,stages);return x.stages[1].mode==='RIDDLE'&&x.stages[1].questionDurationMs===8000&&!('quizId'in x);});
  check('duplicate modes, total count, bad duration rejected',()=>bad(()=>c.roomValues(data,[stages[0],stages[0]]))&&bad(()=>c.roomValues(data,stages.map(s=>({...s,questionCount:30}))))&&bad(()=>c.roomValues(data,[{...stages[0],seconds:0}])));
- const {roomEditor}=await import('/client/rooms.js');
+ const {roomEditor}=Object.assign({},...await Promise.all([import("/js/features/lobby/rooms.js"),import("/js/features/room/editor.js"),import("/js/features/room/page.js")]));
  const oldRoom={id:3,hostUserId:1,status:'DRAFT',configVersion:1,stages:[],quizId:2,name:'Legacy',maxPlayers:3,questionDurationMs:5000,members:[{host:true,participation:'SPECTATOR'}]};
  const legacyEditor=await roomEditor({user:{id:1},api:{request:async(method,path)=>path.includes('rooms')?oldRoom:{items:[{id:2,mode:'QUIZ',ownerUserId:1,title:'Old',questionCount:10}],totalElements:1}}},3);
  check('legacy Room editor retains v1 config without null text',()=>!legacyEditor.querySelector('[name=stageMode]')&&!legacyEditor.querySelector('[name=questionCount]')&&!legacyEditor.textContent.includes('null')&&legacyEditor.querySelector('[name=seconds]').value==='5');

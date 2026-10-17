@@ -25,10 +25,12 @@ import org.springframework.security.web.csrf.CsrfException;
 public class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, Environment environment, AuthErrorWriter errors,
-            ObjectProvider<SecurityContextRepository> contexts, ObjectProvider<CsrfTokenRepository> csrf) throws Exception {
+            ObjectProvider<SecurityContextRepository> contexts, ObjectProvider<CsrfTokenRepository> csrf,
+            ObjectProvider<vn.edu.multigame.auth.service.AuthService> users,ObjectProvider<AuthSessionRegistry> sessions) throws Exception {
         boolean mysql = environment.acceptsProfiles(Profiles.of("mysql"));
         http.cors(corsConfig -> {});
         if (mysql) {
+            http.addFilterAfter(new AccountRequestFilter(users.getObject(),sessions.getObject(),errors),org.springframework.security.web.context.SecurityContextHolderFilter.class);
             http.securityContext(context -> context.securityContextRepository(contexts.getObject()).requireExplicitSave(true))
                     .csrf(config -> config.csrfTokenRepository(csrf.getObject()))
                     .requestCache(cache -> cache.disable())
@@ -39,9 +41,14 @@ public class SecurityConfiguration {
                                     exception instanceof CsrfException ? "CSRF_INVALID" : "FORBIDDEN", "Request không được phép.")));
         }
         http.authorizeHttpRequests(access -> {
-            access.requestMatchers(HttpMethod.GET, "/", "/index.html", "/styles.css", "/app.js", "/client/*.js",
+            access.requestMatchers(HttpMethod.GET, "/", "/index.html", "/styles.css", "/app.js",
+                    "/js/core/*.js", "/js/shared/*.js", "/js/features/*/*.js",
+                    "/styles/*.css", "/styles/components/*.css", "/styles/features/*.css",
                     "/api/system/status", "/api/system/ready").permitAll().requestMatchers("/error").permitAll();
             if (mysql) {
+                access.requestMatchers(HttpMethod.POST,"/api/admin/games/*/kick","/api/admin/users/*/temporary-ban","/api/admin/users/*/ban","/api/admin/users/*/unban","/api/admin/rooms/*/close-orphan").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/admin/**","/admin","/admin/**","/ws/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**","/admin","/admin/**","/ws/admin").denyAll();
                 access.requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me", "/ws").authenticated()
@@ -55,6 +62,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/*").authenticated();
                 access.requestMatchers(HttpMethod.GET,"/api/games/*/snapshot").authenticated();
+                access.requestMatchers(HttpMethod.GET,"/api/games/*/awards","/api/awards/policy").authenticated();
+                access.requestMatchers(HttpMethod.GET,"/api/profiles/me","/api/profiles/me/awards","/api/profiles/*","/api/leaderboard").authenticated();
                 access.requestMatchers(HttpMethod.GET,"/api/games/history","/api/games/history/*").authenticated()
                         .requestMatchers(HttpMethod.POST,"/api/games/*/cancel").authenticated();
             }

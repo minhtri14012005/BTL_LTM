@@ -49,12 +49,13 @@ public class AuthController {
         }
         AuthService.validatePassword(body.password());
         Authentication authenticated = manager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(body.username(), body.password()));
-        UserResponse user = UserResponse.from(users.requireActiveUser(authenticated));
+        UserResponse user = users.completeLogin(authenticated,()->{
         strategy.onAuthentication(authenticated, request, response);
         var context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authenticated); SecurityContextHolder.setContext(context);
         contexts.saveContext(context, request, response);
-        sessions.register(request.getSession(), user.id());
+        sessions.register(request.getSession(), ((AuthPrincipal)authenticated.getPrincipal()).userId());
+        });
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(user);
     }
     @GetMapping("/me")

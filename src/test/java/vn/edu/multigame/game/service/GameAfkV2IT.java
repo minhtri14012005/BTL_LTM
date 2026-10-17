@@ -56,6 +56,8 @@ class GameAfkV2IT extends GameNetworkFixture {
         assertThat(jdbc.queryForObject("select a.answer_status from answer a join player_session p on p.id=a.player_session_id join game_question q on q.id=a.game_question_id where a.game_session_id=? and q.order_index=? and p.user_id=?",String.class,id,index,user)).isEqualTo("NO_ANSWER");
     }
     void scoredOnce(long id,int index) {
+        assertThat(jdbc.queryForObject("select count(*) from game_question_participation s join game_question q on q.id=s.game_question_id where s.game_session_id=? and q.order_index=?",Integer.class,id,index)).as("Durable scoring set stays independent from the smaller AFK wait set").isEqualTo(4);
+        assertThat(jdbc.queryForObject("select participation_captured from game_question where game_session_id=? and order_index=?",Boolean.class,id,index)).isTrue();
         assertThat(observer.seen.stream().filter(e->e.snapshot().gameSessionId()==id && e.snapshot().questionIndex()==index)
                 .map(GameLifecycleEvent::type).toList()).containsSubsequence("QUESTION_START","QUESTION_CLOSED","SCORING_STARTED","QUESTION_RESULT");
         assertThat(observer.seen.stream().filter(e->e.type().equals("QUESTION_RESULT") && e.snapshot().gameSessionId()==id && e.snapshot().questionIndex()==index)).hasSize(1);

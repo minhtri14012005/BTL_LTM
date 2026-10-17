@@ -13,7 +13,7 @@ spec=importlib.util.spec_from_file_location('browser',ROOT/'scripts/browser-cdp.
 browser=importlib.util.module_from_spec(spec);spec.loader.exec_module(browser)
 
 SETUP=r'''(async()=>{
- const {gamePage}=await import('/client/game.js');
+ const {gamePage}=Object.assign({},...await Promise.all([import("/js/features/results/view.js"),import("/js/features/game/page.js")]));
  const pieces=Array.from({length:12},(_,i)=>({id:'w'+i,text:i===0||i===1?'Tiếng Việt ':i===2?' ':'Từ '+i+' '}));
  const s={gameSessionId:8123,roomId:1,schemaVersion:2,revision:1,status:'ACTIVE',runtimeState:'READY',phase:'QUESTION_OPEN',stageIndex:1,stage:{mode:'VIETNAMESE_PUZZLE'},stages:[{mode:'VIETNAMESE_PUZZLE',title:'Ghép câu'}],questionIndex:1,questionCount:2,readyPlayers:[],serverTimeMs:1000,deadlineEpochMs:61000,player:{userId:1,state:'PLAYING',score:0,remainingSpins:0,starAvailable:false,alreadyAnswered:false},members:[],winners:[],hasOfficialWinner:false,results:[],question:{mode:'VIETNAMESE_PUZZLE',content:'Kiểm tra bản nháp',payload:{pieces}}};
  const t={s,frames:[],gamePage};

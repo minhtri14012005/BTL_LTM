@@ -38,6 +38,22 @@ class SocketOutboundTest {
     }
     void await(CountDownLatch latch)throws Exception {assertThat(latch.await(3,TimeUnit.SECONDS)).isTrue();}
 
+    @Test void kickDropsQueuedGameXAndPreservesGameYFifoWithoutWaitingForInflightNetwork()throws Exception{
+        var kicked=new java.util.concurrent.atomic.AtomicBoolean();blockOn("X-started-before-fence");
+        outbound.send(new TextMessage("X-started-before-fence"),()->!kicked.get());await(entered);
+        outbound.send(new TextMessage("X-pending-1"),()->!kicked.get());outbound.send(new TextMessage("Y-1"),()->true);
+        outbound.send(new TextMessage("X-pending-2"),()->!kicked.get());outbound.send(new TextMessage("Y-2"),()->true);
+        // The network latch is still closed when the fence takes effect.
+        kicked.set(true);assertThat(release.getCount()).isEqualTo(1);release.countDown();
+        verify(socket,timeout(3000)).sendMessage(new TextMessage("Y-2"));assertThat(sent).containsExactly("X-started-before-fence","Y-1","Y-2");assertThat(detached).isEmpty();
+    }
+    @Test void dequeuedIsNotYetSendStartedAndGuardStillDropsAfterFence()throws Exception{
+        var guardEntered=new CountDownLatch(1);var guardRelease=new CountDownLatch(1);var kicked=new java.util.concurrent.atomic.AtomicBoolean();
+        outbound.send(new TextMessage("X-dequeued"),()->{guardEntered.countDown();try{if(!guardRelease.await(3,TimeUnit.SECONDS))throw new AssertionError("Guard barrier timed out");}catch(InterruptedException e){throw new AssertionError(e);}return !kicked.get();});
+        try{await(guardEntered);outbound.send(new TextMessage("Y-after"),()->true);kicked.set(true);guardRelease.countDown();verify(socket,timeout(3000)).sendMessage(new TextMessage("Y-after"));assertThat(sent).containsExactly("Y-after");}
+        finally{guardRelease.countDown();}
+    }
+
     @Test void blockedWriterPreservesAckAndEventOrderWithoutConcurrentSends() throws Exception {
         blockOn("ACK");outbound.send(new TextMessage("ACK"));await(entered);
         outbound.send(new TextMessage("QUESTION_CLOSED"));outbound.send(new TextMessage("SCORING_STARTED"));outbound.send(new TextMessage("QUESTION_RESULT"));

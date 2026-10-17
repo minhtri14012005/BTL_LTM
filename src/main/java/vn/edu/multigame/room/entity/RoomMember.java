@@ -34,6 +34,10 @@ public class RoomMember extends IdentityEntity {
     @Column(name = "left_at_ms")
     private Long leftAtMs;
 
+    @Column(name="membership_generation",nullable=false)
+    private long membershipGeneration=1;
+    public long getMembershipGeneration(){return membershipGeneration;}
+
     public RoomMember() {}
 
     public Long getRoomId() { return roomId; }
@@ -67,6 +71,7 @@ public class RoomMember extends IdentityEntity {
         if (status != MembershipStatus.LEFT || leftAtMs == null || atMs < leftAtMs) {
             throw new IllegalStateException("Membership cannot rejoin at this time");
         }
+        membershipGeneration=Math.incrementExact(membershipGeneration);
         status = MembershipStatus.JOINED;
         joinedAtMs = atMs;
         leftAtMs = null;

@@ -14,6 +14,15 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "game_session")
 public class GameSession extends IdentityEntity {
+    @Column(name="game_type",nullable=false,updatable=false,length=24)
+    private String gameType="NORMAL";
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name="award_policy_snapshot",updatable=false)
+    private vn.edu.multigame.achievements.model.ApprovedAwardPolicy awardPolicySnapshot;
+    public String getGameType(){return gameType;}
+    public void setGameType(String value){gameType=value;}
+    public vn.edu.multigame.achievements.model.ApprovedAwardPolicy getAwardPolicySnapshot(){return awardPolicySnapshot;}
+    public void setAwardPolicySnapshot(vn.edu.multigame.achievements.model.ApprovedAwardPolicy value){awardPolicySnapshot=value;}
     @Column(name = "room_id", nullable = false, updatable = false)
     private Long roomId;
 

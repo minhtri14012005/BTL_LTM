@@ -33,7 +33,7 @@ class AuthenticatedSocketRegistryTest {
         assertThat(transitions).extracting(AuthenticatedSocketRegistry.PresenceChange::connected).containsExactly(true,false);
     }
     final AuthService users=mock(AuthService.class);
-    final AuthenticatedSocketRegistry registry=new AuthenticatedSocketRegistry(new ObjectMapper(),mock(AuthSessionRegistry.class),users);
+    final AuthenticatedSocketRegistry registry=new AuthenticatedSocketRegistry(new ObjectMapper(),mock(AuthSessionRegistry.class),users,mock(vn.edu.multigame.game.service.GameAccessPolicy.class));
     WebSocketSession socket(String id) {
         var socket=mock(WebSocketSession.class);when(socket.getId()).thenReturn(id);when(socket.isOpen()).thenReturn(true);
         when(socket.getAttributes()).thenReturn(new ConcurrentHashMap<>());return socket;

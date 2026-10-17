@@ -2,11 +2,22 @@ package vn.edu.multigame.user.entity;
 
 import jakarta.persistence.*;
 import vn.edu.multigame.common.util.IdentityEntity;
+import vn.edu.multigame.user.enums.UserRole;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** Scalar foreign keys: the migration enforces links; no cascading ORM deletes. */
 @Entity
 @Table(name = "app_user")
 public class UserAccount extends IdentityEntity {
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "role", nullable = false, length = 16)
+    private UserRole role = UserRole.USER;
+
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole value) { role = value; }
+
     @Column(name = "username", nullable = false, length = 64)
     private String username;
 
@@ -21,6 +32,10 @@ public class UserAccount extends IdentityEntity {
 
     @Column(name = "deleted_at_ms")
     private Long deletedAtMs;
+
+    @Column(name = "auth_epoch", nullable = false, updatable = false)
+    private long authEpoch;
+    public long getAuthEpoch() { return authEpoch; }
 
     public UserAccount() {}
 

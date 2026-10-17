@@ -19,6 +19,11 @@ def build():
                 raise ValueError(f"Missing module: {path.name} -> {imported}")
         if "\ufffd" in content:
             raise ValueError(f"Invalid UTF-8: {path}")
+    for path in SOURCE.rglob("*.css"):
+        for imported in re.findall(r'@import\s+url\(["\']([^"\']+)["\']\)', path.read_text(encoding="utf-8")):
+            dependency = SOURCE / imported.lstrip("/") if imported.startswith("/") else path.parent / imported
+            if not dependency.is_file():
+                raise ValueError(f"Missing stylesheet: {path.name} -> {imported}")
     for path in files:
         if path.is_file():
             destination = DEST / path.relative_to(SOURCE)

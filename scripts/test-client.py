@@ -16,7 +16,7 @@ browser=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(browser)
 
 UNIT=r'''(async()=>{
- const c=await import('/client/core.js');const d=await import('/client/dom.js');const {Api}=await import('/client/api.js');const {Transport}=await import('/client/transport.js');
+ const c=Object.assign({},...await Promise.all([import("/js/shared/mode-labels.js"),import("/js/core/protocol.js"),import("/js/features/room/state.js"),import("/js/features/questionbank/validation.js"),import("/js/features/auth/validation.js"),import("/js/features/room/validation.js")]));const d=await import("/js/shared/dom.js");const {Api}=await import("/js/core/api.js");const {Transport}=await import("/js/core/transport.js");
  const done=[];const check=(name,fn)=>{fn();done.push(name);};const ok=x=>{if(!x)throw Error('Assertion failed');};const bad=fn=>{let threw=false;try{fn();}catch{threw=true;}ok(threw);};
  check('uuid works with getRandomValues alone',()=>ok(/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(c.uuid({getRandomValues:b=>b.fill(2)}))));
  check('canonical room envelope',()=>{const x=c.command('JOIN_ROOM',7,{roomCode:'ABCDEFGH2345',participation:'PLAYER'},'id');ok(x.v===1&&x.kind==='COMMAND'&&x.target.kind==='ROOM'&&x.target.id===7&&x.questionIndex===null&&x.requestId==='id');});
@@ -101,8 +101,8 @@ def smoke(cdp,origin,report):
     listing=p.eval("fetch('/api/quizzes?size=100').then(r=>r.json())")
     assert all(q['id']!=private_id for q in listing['items'])
     p.route('quizzes','.card-grid');p.wait("document.body.innerText.includes('edited public')");assert not p.eval("document.body.innerText.includes('"+prefix+" private')")
-    author.route('quizzes','.card-grid');author.wait("document.body.innerText.includes('"+prefix+" private')")
-    passed('Quiz List renders PUBLIC metadata plus PRIVATE only for Owner')
+    author.route('quizzes?scope=MINE','.card-grid');author.wait("document.body.innerText.includes('"+prefix+" private')")
+    passed('SHARED catalogue excludes PRIVATE; Owner MINE catalogue includes own PRIVATE')
     author.route('quiz/'+str(private_id),'#delete-quiz');author.click('#delete-quiz');author.click('#confirm-delete-quiz')
     author.wait("location.hash==='#/quizzes' && document.body.innerText.includes('Đã xóa bộ câu hỏi')")
     assert author.eval(f"fetch('/api/quizzes/{private_id}').then(r=>r.status)")==404

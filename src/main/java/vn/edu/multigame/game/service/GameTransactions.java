@@ -27,9 +27,12 @@ import vn.edu.multigame.user.repository.UserRepository;
 /** Only persistence/orchestration. All returned copied data must wait for this transaction proxy to commit. */
 @Service @Profile("mysql") @Transactional(timeout=5,isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 public class GameTransactions {
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.achievements.repository.AwardRepository awards;
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.auth.service.AccountAccessPolicy accounts;
+    private void requireAccount(long user){accounts.requireLocked(user);}
+
     public record Started(RoomMutation room,CommittedGame game) {}
-    public record Opened(CommittedGame game,PhaseWindow window,List<Long> hintOffsets) {
-        public Opened(CommittedGame game,PhaseWindow window) {this(game,window,List.of());}
+    public record Opened(CommittedGame game,PhaseWindow window,List<Long> hintOffsets,Set<Long> participants) {
     }
     private final RoomRepository rooms;
     private final RoomStageRepository roomStages;
@@ -48,16 +51,20 @@ public class GameTransactions {
     private final QuestionBankAccessPolicy quizPolicy;
     private final RoomService roomService;
     private final GameProjection projection;
+    private final GameAccessPolicy access;
+    private final QuestionParticipationStore participation;
     private final SecureRandom random=new SecureRandom();
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entities;
     public GameTransactions(RoomRepository rooms,RoomMemberRepository roomMembers,QuizRepository quizzes,QuestionRepository quizQuestions,
             UserRepository users,GameSessionRepository games,GameMemberRepository members,PlayerSessionRepository players,
             GameQuestionRepository questions,AnswerRepository answers,UserActiveGameRepository active,QuestionBankAccessPolicy quizPolicy,
-            RoomService roomService,GameProjection projection,RoomStageRepository roomStages,GameStageRepository gameStages,com.fasterxml.jackson.databind.ObjectMapper json) {
+            RoomService roomService,GameProjection projection,RoomStageRepository roomStages,GameStageRepository gameStages,com.fasterxml.jackson.databind.ObjectMapper json,
+            GameAccessPolicy access,QuestionParticipationStore participation) {
         this.rooms=rooms; this.roomMembers=roomMembers; this.quizzes=quizzes; this.quizQuestions=quizQuestions; this.users=users;
         this.games=games; this.members=members; this.players=players; this.questions=questions; this.answers=answers; this.active=active;
         this.quizPolicy=quizPolicy; this.roomService=roomService; this.projection=projection;
         this.roomStages=roomStages;this.gameStages=gameStages;this.json=json;
+        this.access=access;this.participation=participation;
     }
 
     public Started start(long userId,long roomId,long expectedRevision,int count,long epochMs) {
@@ -85,6 +92,7 @@ public class GameTransactions {
         Map<Long,UserAccount> accounts=new HashMap<>();
         for(var m:roster) {
             var account=users.findLockedById(m.getUserId()).filter(u -> u.getDeletedAtMs()==null).orElseThrow(() -> GameFailure.conflict("USER_UNAVAILABLE"));
+            this.accounts.requireLocked(account.getId());
             accounts.put(m.getUserId(),account);
             if(active.existsById(m.getUserId())) throw GameFailure.conflict("USER_ACTIVE_GAME");
             quizPolicy.requireParticipation(m.getUserId(),quiz.getOwnerUserId(),m.getParticipation());
@@ -99,7 +107,7 @@ public class GameTransactions {
         for(var m:roster) {
             GameMember gm=new GameMember(); gm.setGameSessionId(game.getId()); gm.setRoomId(roomId); gm.setUserId(m.getUserId());
             gm.setRole(m.getUserId()==userId?MemberRole.HOST:MemberRole.MEMBER); gm.setParticipation(m.getParticipation());
-            gm.setDisplayNameSnapshot(accounts.get(m.getUserId()).getDisplayName()); members.saveAndFlush(gm);
+            gm.setDisplayNameSnapshot(accounts.get(m.getUserId()).getDisplayName());gm.setMembershipGeneration(m.getMembershipGeneration()); members.saveAndFlush(gm);
             if(m.getParticipation()==Participation.PLAYER) {
                 PlayerSession p=new PlayerSession(); p.setGameSessionId(game.getId()); p.setUserId(m.getUserId()); p.setScore(config.initialScore());
                 p.setRemainingSpins(config.spinCredits()); p.setRemainingSpinPool(new ArrayList<>(List.of(SpinEffect.values()))); players.save(p);
@@ -153,6 +161,7 @@ public class GameTransactions {
         Map<Long,UserAccount> accounts=new HashMap<>();
         for(var m:roster) {
             var account=users.findLockedById(m.getUserId()).filter(u -> u.getDeletedAtMs()==null).orElseThrow(() -> GameFailure.conflict("USER_UNAVAILABLE"));
+            this.accounts.requireLocked(account.getId());
             accounts.put(m.getUserId(),account);
             if(active.existsById(m.getUserId())) throw GameFailure.conflict("USER_ACTIVE_GAME");
             for(var quiz:selected.values()) quizPolicy.requireParticipation(m.getUserId(),quiz.getOwnerUserId(),m.getParticipation());
@@ -160,12 +169,13 @@ public class GameTransactions {
         int quizCount=plan.stream().filter(s -> s.getMode()==vn.edu.multigame.game.enums.GameMode.QUIZ).mapToInt(vn.edu.multigame.room.entity.RoomStage::getQuestionCount).sum();
         var config=vn.edu.multigame.game.dto.MultimodeRulesSnapshot.forGame(total,quizCount);
         var game=new GameSession();game.setRoomId(roomId);game.setSchemaVersion(2);game.setRulesVersion(2);
+        game.setAwardPolicySnapshot(vn.edu.multigame.achievements.model.ApprovedAwardPolicy.active());
         game.setV2ConfigSnapshot(config);game.setQuestionCount(total);game.setStatus(GameStatus.ACTIVE);game.setPhase(Phase.INTRO);game.setStartedAtMs(epochMs);
         game=games.saveAndFlush(game);
         for(var m:roster) {
             var member=new GameMember();member.setGameSessionId(game.getId());member.setRoomId(roomId);member.setUserId(m.getUserId());
             member.setRole(m.getUserId()==userId?MemberRole.HOST:MemberRole.MEMBER);member.setParticipation(m.getParticipation());
-            member.setDisplayNameSnapshot(accounts.get(m.getUserId()).getDisplayName());members.saveAndFlush(member);
+            member.setDisplayNameSnapshot(accounts.get(m.getUserId()).getDisplayName());member.setMembershipGeneration(m.getMembershipGeneration());members.saveAndFlush(member);
             if(m.getParticipation()==Participation.PLAYER) {
                 var player=new PlayerSession();player.setGameSessionId(game.getId());player.setUserId(m.getUserId());player.setSchemaVersion(2);
                 player.setScore(0);player.setTotalCorrectAnswerTimeMs(0L);player.setRemainingSpins(config.spinCredits());player.setStarAvailable(config.starCredits()==1);
@@ -219,7 +229,8 @@ public class GameTransactions {
         for(var p:players.findByGameSessionId(gameId)) if(phase==Phase.DECISION && p.getPlayerState()==PlayerState.PLAYING) {
             p.setCurrentSpin(null); p.setStarSelected(false);
         }
-        // Fresh clock is sampled after acquiring DB locks/preparing state, not from the queued command.
+        var eligible=phasePlayers(game);
+        // Fresh clock is sampled after acquiring ALL phase User locks/preparing state.
         PhaseWindow window=opening.apply(phase==Phase.DECISION?game.getConfigSnapshot().decisionDurationMs():q.getQuestionDurationMs());
         if(window.openedEpochMs()<game.getStartedAtMs()) {
             long epoch=game.getStartedAtMs();
@@ -228,7 +239,8 @@ public class GameTransactions {
         }
         game.setPhase(phase); game.setCurrentQuestionIndex(index); game.setPhaseOpenedAtMs(window.openedEpochMs()); game.setPhaseDeadlineAtMs(window.deadlineEpochMs()); q.setPhase(phase);
         if(phase==Phase.QUESTION_OPEN) { q.setOpenedAtMs(window.openedEpochMs()); q.setDeadlineAtMs(window.deadlineEpochMs()); }
-        players.flush(); games.flush(); return new Opened(projection.copy(game),window);
+        if(phase==Phase.QUESTION_OPEN)capture(game,q,eligible);
+        players.flush();questions.flush();games.flush(); return opened(game,window,List.of(),eligible);
     }
 
     private Opened openMultimode(GameSession game,int index,Phase phase,LongFunction<PhaseWindow> opening) {
@@ -242,6 +254,7 @@ public class GameTransactions {
                 (expected==Phase.INTRO && index==game.getCurrentQuestionIndex()) || first && !stageFirst);
         if(!valid) throw GameFailure.conflict("INVALID_STATE");
         if(phase!=Phase.QUESTION_OPEN || expected!=Phase.DECISION) for(var p:players.findByGameSessionId(game.getId())) {p.setCurrentSpin(null);p.setStarSelected(false);}
+        var eligible=phasePlayers(game);
         long duration=phase==Phase.INTRO?game.getV2ConfigSnapshot().introDurationMs():phase==Phase.DECISION?game.getV2ConfigSnapshot().decisionDurationMs():q.getQuestionDurationMs();
         var window=opening.apply(duration);
         if(window.openedEpochMs()<game.getStartedAtMs()) {long epoch=game.getStartedAtMs();window=new PhaseWindow(index,phase,window.token(),window.openedAtMs(),window.deadlineMs(),epoch,Math.addExact(epoch,duration));}
@@ -254,8 +267,24 @@ public class GameTransactions {
             q.setOpenedAtMs(window.openedEpochMs());q.setDeadlineAtMs(window.deadlineEpochMs());
             q.setReleasedHintCount(!hints.isEmpty() && hints.getFirst()==0?1:0);
         }
-        players.flush();questions.flush();games.flush();return new Opened(projection.copy(game),window,hints);
+        if(phase==Phase.QUESTION_OPEN)capture(game,q,eligible);
+        players.flush();questions.flush();games.flush();return opened(game,window,hints,eligible);
     }
+    private List<PlayerSession> phasePlayers(GameSession game){
+        var rows=players.findByGameSessionId(game.getId());
+        rows.stream().map(PlayerSession::getUserId).sorted().forEach(users::findLockedById);
+        var restricted=access.restrictedUsers(game.getId());
+        return rows.stream().filter(p->p.getPlayerState()==PlayerState.PLAYING && !restricted.contains(p.getUserId())).toList();
+    }
+    private void capture(GameSession game,GameQuestion question,List<PlayerSession> eligible){
+        if(question.isParticipationCaptured())throw GameFailure.conflict("PARTICIPATION_ALREADY_CAPTURED");
+        questions.flush();participation.capture(game.getId(),question.getId(),question.getOpenedAtMs(),eligible);
+        question.setParticipationCaptured(true);
+    }
+    private Opened opened(GameSession game,PhaseWindow window,List<Long> hints,List<PlayerSession> eligible){
+        return new Opened(projection.copy(game),window,hints,eligible.stream().map(PlayerSession::getUserId).collect(java.util.stream.Collectors.toUnmodifiableSet()));
+    }
+    @Transactional(readOnly=true) public void requireAccess(long game,long user){access.requireAllowed(game,user);}
     /** Called only by the game actor; release cursor and revision commit together. */
     public CommittedGame releaseHints(long gameId,int index,int count,java.util.function.LongSupplier elapsedMs) {
         var game=locked(gameId);requireActive(game);
@@ -271,6 +300,8 @@ public class GameTransactions {
     }
     public CommittedGame ready(long gameId,long userId,int index) {
         var game=locked(gameId);requireActive(game);
+        requireAccount(userId);
+        access.requireAllowed(gameId,userId);
         if(game.getSchemaVersion()!=2 || game.getPhase()!=Phase.INTRO || game.getCurrentQuestionIndex()!=index) throw GameFailure.conflict("INVALID_STATE");
         if(players.findByGameSessionIdAndUserId(gameId,userId).isEmpty()) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
         bump(game);return projection.copy(game);
@@ -281,10 +312,13 @@ public class GameTransactions {
     }
     public CommittedGame acceptTyped(long gameId,long userId,int index,Option option,vn.edu.multigame.game.dto.TypedAnswer typed,long receivedEpochMs,long answerTimeMs) {
         GameSession game=locked(gameId); requireActive(game);
+        requireAccount(userId);
+        access.requireAllowed(gameId,userId);
         if(game.getPhase()!=Phase.QUESTION_OPEN || game.getCurrentQuestionIndex()!=index) throw GameFailure.conflict("QUESTION_CLOSED");
         GameQuestion q=question(gameId,index);
         PlayerSession p=players.findByGameSessionIdAndUserId(gameId,userId).filter(row -> row.getPlayerState()==PlayerState.PLAYING)
                 .orElseThrow(() -> new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN"));
+        if(!q.isParticipationCaptured() || !participation.players(q.getId()).contains(p.getId()))throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
         if(answerTimeMs<0 || answerTimeMs>=q.getQuestionDurationMs()
                 || receivedEpochMs!=Math.addExact(q.getOpenedAtMs(),answerTimeMs)) throw GameFailure.conflict("QUESTION_CLOSED");
         if(q.getMode()==vn.edu.multigame.game.enums.GameMode.QUIZ) {
@@ -317,6 +351,7 @@ public class GameTransactions {
             throw GameFailure.conflict("SPIN_NOT_AVAILABLE");
         var pool=new ArrayList<>(player.getRemainingSpinPool()); pool.remove(selected);
         player.setRemainingSpinPool(pool); player.setRemainingSpins(player.getRemainingSpins()-1); player.setCurrentSpin(selected);
+        participation.decision(gameId,index,"USE_SPIN",player,Math.max(System.currentTimeMillis(),game.getStartedAtMs()));
         players.flush(); bump(game); return projection.copy(game);
     }
     public CommittedGame useStar(long gameId,long userId,int index) {
@@ -324,10 +359,13 @@ public class GameTransactions {
         if(!player.getStarAvailable() || player.getStarSelected()) throw GameFailure.conflict("STAR_NOT_AVAILABLE");
         if(player.getCurrentSpin()==SpinEffect.HARDSHIP) throw GameFailure.conflict("STAR_FORBIDDEN_HARDSHIP");
         player.setStarAvailable(false); player.setStarSelected(true);
+        participation.decision(gameId,index,"USE_STAR",player,Math.max(System.currentTimeMillis(),game.getStartedAtMs()));
         players.flush(); bump(game); return projection.copy(game);
     }
     private PlayerSession decisionPlayer(GameSession game,long userId,int index) {
         requireActive(game);
+        requireAccount(userId);
+        access.requireAllowed(game.getId(),userId);
         if(game.getPhase()!=Phase.DECISION || game.getCurrentQuestionIndex()!=index) throw GameFailure.conflict("INVALID_STATE");
         if(question(game.getId(),index).getMode()!=vn.edu.multigame.game.enums.GameMode.QUIZ) throw GameFailure.conflict("RESOURCE_NOT_ALLOWED");
         return players.findByGameSessionIdAndUserId(game.getId(),userId).filter(p -> p.getPlayerState()==PlayerState.PLAYING)
@@ -345,7 +383,9 @@ public class GameTransactions {
         Map<Long,Answer> accepted=new HashMap<>(); answers.findByGameQuestionId(q.getId()).forEach(a -> accepted.put(a.getPlayerSessionId(),a));
         Map<Long,ScoringResult> calculated=new LinkedHashMap<>();
         long scoringAt=Math.max(epochMs,q.getOpenedAtMs());
-        for(var p:rows) if(p.getPlayerState()==PlayerState.PLAYING) {
+        if(!q.isParticipationCaptured())throw GameFailure.conflict("PARTICIPATION_NOT_CAPTURED");
+        var scoringSet=participation.players(q.getId());
+        for(var p:rows) if(scoringSet.contains(p.getId())) {
             var a=accepted.get(p.getId());
             AnswerStatus outcome=a==null?AnswerStatus.NO_ANSWER:correct(q,a)?AnswerStatus.CORRECT:AnswerStatus.WRONG;
             var before=new PlayerScore(p.getPlayerState(),p.getScore(),v2?p.getTotalCorrectAnswerTimeMs():p.getTotalAnswerTimeMs(),p.getWinStreak(),p.getLoseStreak(),p.getHasMomentum(),p.getHasRecovery());
@@ -391,6 +431,9 @@ public class GameTransactions {
 
     public CommittedGame cancel(long gameId,long userId,long epochMs) {
         GameSession game=locked(gameId);
+        members.findByGameSessionId(gameId).stream().map(GameMember::getUserId).sorted().forEach(users::findLockedById);
+        requireAccount(userId);
+        access.requireAllowed(gameId,userId);
         if(rooms.findById(game.getRoomId()).orElseThrow(RoomFailure::missing).getHostUserId()!=userId
                 || members.findByGameSessionIdAndUserId(gameId,userId).isEmpty()) throw RoomFailure.forbidden();
         requireActive(game);
@@ -409,6 +452,8 @@ public class GameTransactions {
     }
     @Transactional(readOnly=true)
     public CommittedGame read(long gameId,long userId) {
+        accounts.requireAvailable(userId);
+        access.requireAllowed(gameId,userId);
         if(members.findByGameSessionIdAndUserId(gameId,userId).isEmpty()) throw new GameFailure(HttpStatus.FORBIDDEN,"FORBIDDEN");
         return projection.copy(games.findById(gameId).orElseThrow(() -> new GameFailure(HttpStatus.NOT_FOUND,"GAME_NOT_FOUND")));
     }
@@ -430,6 +475,8 @@ public class GameTransactions {
         var room=rooms.findById(game.getRoomId()).orElseThrow();
         room.setStatus(RoomStatus.WAITING);
         room.setDecisionDurationMs(7000L);
+        games.flush(); // Result and durable award obligation commit together; no award computation on Game worker.
+        awards.seed(game,at);
     }
     private static boolean arrangement(vn.edu.multigame.game.enums.GameMode mode) {return mode==vn.edu.multigame.game.enums.GameMode.VIETNAMESE_PUZZLE || mode==vn.edu.multigame.game.enums.GameMode.ORDERING;}
     private static AnswerKind answerKind(vn.edu.multigame.game.enums.GameMode mode) {return mode==vn.edu.multigame.game.enums.GameMode.QUIZ?AnswerKind.OPTION:arrangement(mode)?AnswerKind.ARRANGEMENT:AnswerKind.TEXT;}

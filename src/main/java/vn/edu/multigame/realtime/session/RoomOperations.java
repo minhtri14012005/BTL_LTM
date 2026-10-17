@@ -26,7 +26,7 @@ public class RoomOperations {
     public RoomBoundary.Receipt create(Authentication auth,CreateRoomRequest request,Runnable validateConnection) {
         long uid=users.requireActiveUser(auth).getId();
         return boundary.mutate(RoomBoundary.Scope.create(uid),uid,request.requestId(),fingerprints.of("CREATE_ROOM","USER_CREATE_ROOM",uid,null,request.config()),
-                ()->{validateConnection.run();users.requireActiveUser(auth);},()->rooms.create(uid,request.config()),(receipt,replay)->{});
+                ()->{validateConnection.run();users.requireActiveUser(auth);},()->users.executeAs(auth,()->rooms.create(uid,request.config())),(receipt,replay)->{});
     }
     public RoomBoundary.Receipt execute(Authentication auth,long id,String requestId,String type,Object payload,String code,
             Runnable validateConnection,Supplier<RoomMutation> operation,BiConsumer<RoomBoundary.Receipt,Boolean> delivery) {
@@ -34,7 +34,7 @@ public class RoomOperations {
         rooms.authorizeReceipt(uid,id,type,code); // Do not allocate runtime scopes for unauthorized/nonexistent targets.
         return boundary.mutate(RoomBoundary.Scope.room(id),uid,requestId,fingerprints.of(type,"ROOM",id,null,payload),()->{
             validateConnection.run(); users.requireActiveUser(auth); rooms.authorizeReceipt(uid,id,type,code);
-        },operation,delivery);
+        },()->users.executeAs(auth,operation),delivery);
     }
     public RoomResponse get(Authentication auth,long id) {
         long uid=users.requireActiveUser(auth).getId(); rooms.authorizeReceipt(uid,id,"SUBSCRIBE_ROOM",null);
