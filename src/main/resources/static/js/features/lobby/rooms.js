@@ -33,6 +33,7 @@ export function roomCard(app,room,page,allowDelete=true) {
     h("p",{className:"eyebrow"},host?"PHÒNG BẠN TỔ CHỨC":"PHÒNG BẠN THAM GIA"),
     h("h2",{},link(room.name,`room/${room.id}`)),
     h("p",{className:"muted room-occupancy"},`${room.members.filter(m=>m.participation==="PLAYER").length}/${room.maxPlayers} người chơi · ${host?"Bạn là Host":"Thành viên"}`),
-    link("Mở phòng",`room/${room.id}`,"button secondary room-open"),allowDelete?confirm:null);
+    link("Mở phòng",`room/${room.id}`,"button secondary room-open"));
+  if(allowDelete)card.append(confirm);
   return card;
 }

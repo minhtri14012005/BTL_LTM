@@ -1,5 +1,6 @@
 .achievement-page { min-width: 0; }
 .achievement-tabs { display: flex; flex-direction: row; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.achievement-tabs .button[aria-current="page"] { color: var(--accent-ink); }
 .achievement-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
 .achievement-stats > div { display: block; padding: var(--space-5); margin-bottom: 0; }
 .achievement-stats dt { color: var(--muted); }
@@ -13,6 +14,29 @@
 .earned-awards { list-style: none; padding: 0; }
 .earned-awards li { display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
 .badge-list p { overflow-wrap: anywhere; }
+.achievement-stats dt { display: flex; align-items: center; gap: var(--space-2); }
+.achievement-stats dt .icon, .cup-count { color: #f4d387; }
+.achievement-emblem { --emblem-color: #a8d5ff; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 48px; height: 48px; border: 1px solid currentColor; border-radius: 14px; color: var(--emblem-color); background: var(--surface-raised); background: color-mix(in srgb, var(--emblem-color) 12%, var(--surface)); box-shadow: inset 0 1px 0 #ffffff12; }
+.achievement-emblem .icon { width: 27px; height: 27px; flex: none; }
+.achievement-emblem--cup { --emblem-color: #f4d387; }
+.achievement-emblem--fast { --emblem-color: #ffbe85; }
+.achievement-emblem--perfect { --emblem-color: #5ee2ba; }
+.achievement-emblem--multitalent { --emblem-color: #c5adff; }
+.achievement-emblem--comeback { --emblem-color: #91ccff; }
+.rank-mark, .cup-count { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 700; }
+.rank-mark { white-space: nowrap; }
+.rank-mark--1 { color: #f4d387; }
+.rank-mark--2 { color: #cedaeb; }
+.rank-mark--3 { color: #e9ae8c; }
+.rank-mark .icon { width: 24px; height: 24px; flex: none; }
+.profile-badge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: var(--space-3); }
+.profile-badge { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-inset); min-width: 0; }
+.profile-badge-details, .earned-award-details { min-width: 0; overflow-wrap: anywhere; }
+.profile-badge h3 { margin: 0 0 var(--space-2); font-size: 1rem; }
+.profile-badge p, .earned-award-details p { margin: var(--space-1) 0; }
+.badge-earned-count { font-weight: 700; }
+.badge-earned-date { font-size: .85rem; }
+.earned-awards li { flex-wrap: nowrap; align-items: flex-start; }
 @media (max-width: 760px) {
   .achievement-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .achievement-stats > div { padding: var(--space-4); }

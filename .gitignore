@@ -17,3 +17,5 @@ target/
 data/quiz-images/
 
 /data/quiz-videos/
+/config/application-local.properties
+/config/admin.local.psd1

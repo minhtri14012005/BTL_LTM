@@ -8,3 +8,12 @@
 .award-badges { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .award-badge { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); flex: 1 1 180px; min-width: 0; }
 .award-badge h3 { font-size: 1rem; }
+.award-ceremony { background: radial-gradient(ellipse at top right, #f4d3870d, transparent 65%), var(--surface); }
+.award-podium-card[data-award-rank="1"] { border-top: 3px solid #f4d387; }
+.award-podium-card[data-award-rank="2"] { border-top: 3px solid #cedaeb; }
+.award-podium-card[data-award-rank="3"] { border-top: 3px solid #e9ae8c; }
+.award-rank .icon { width: 32px; height: 32px; }
+.award-cup .achievement-emblem { width: 36px; height: 36px; border-radius: 10px; }
+.award-cup .achievement-emblem .icon { width: 22px; height: 22px; }
+.award-badge > .achievement-emblem { margin-bottom: var(--space-2); }
+.award-badge h3, .award-badge p { overflow-wrap: anywhere; }

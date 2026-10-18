@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "MultiGame - Run Server",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "vn.edu.multigame.MultigameApplication",
+            "projectName": "multigame",
+            "args": "--spring.profiles.active=mysql"
+        }
+    ],
+    "version": "0.2.0"
+}

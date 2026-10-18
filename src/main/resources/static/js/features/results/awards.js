@@ -1,7 +1,6 @@
 import {h,notice,button,link} from "/js/shared/dom.js";
 import {MODE_LABELS} from "/js/shared/mode-labels.js";
-import {icon} from "/js/shared/icons.js";
-import {awardLabel} from "/js/shared/achievement-ui.js";
+import {awardLabel,awardEmblem,rankMark} from "/js/shared/achievement-ui.js";
 
 /** Server decision states, never inferred from score/rank or a gameplay ACK. */
 export const AWARD_STATES=Object.freeze(["AWARDS_PENDING","AWARDS_NOT_QUALIFIED","AWARDS_DECIDED"]);
@@ -22,11 +21,11 @@ export function ceremonyView(data,selfId){
     ...(data.qualification?.reasonCodes||[]).map(code=>notice(reasons[code]||"Trận không đáp ứng chính sách xét thưởng.")),h("p",{className:"muted"},"Không cộng cúp hoặc số trận chính thức. Điểm và thứ hạng lịch sử không đổi."));
   const participants=data.participants||[],awards=data.awards||[],own=participants.find(p=>p.userId===selfId);
   const podium=participants.filter(p=>p.eligible && p.awardRank<=3).map(p=>h("article",{className:`award-podium-card${p.userId===selfId?" own":""}`,"data-award-rank":p.awardRank},
-    h("span",{className:"award-rank"},`#${p.awardRank}`),h("h3",{},p.displayNameSnapshot),h("p",{className:"muted"},`Hạng lịch sử #${p.historyRank}`),
-    ...awards.filter(a=>a.userId===p.userId&&a.type==="CUP"&&a.value===1).map(a=>h("p",{className:"award-cup","data-award-id":a.awardId},icon("trophy"),title(a)))));
+    h("div",{className:"award-rank"},rankMark(p.awardRank)),h("h3",{},p.displayNameSnapshot),h("p",{className:"muted"},`Hạng lịch sử #${p.historyRank}`),
+    ...awards.filter(a=>a.userId===p.userId&&a.type==="CUP"&&a.value===1).map(a=>h("p",{className:"award-cup","data-award-id":a.awardId},awardEmblem(a.type),title(a)))));
   return h("section",{className:"card award-ceremony","data-award-state":data.awardState},h("p",{className:"eyebrow"},"VINH DANH"),h("h2",{},"Thành tích đã được ghi nhận"),h("p",{className:"muted"},"Thứ hạng xét thưởng thuộc nhóm đủ điều kiện; thứ hạng thi đấu gốc vẫn được giữ."),
     h("div",{className:"award-podium"},podium),
-    h("div",{className:"award-badges"},awards.filter(a=>a.type!=="CUP").map(a=>{const p=participants.find(p=>p.userId===a.userId);return h("article",{className:`award-badge${a.userId===selfId?" own":""}`,"data-award-id":a.awardId},h("h3",{},title(a)),h("p",{},p?.displayNameSnapshot||"Người chơi"));})),
+    h("div",{className:"award-badges"},awards.filter(a=>a.type!=="CUP").map(a=>{const p=participants.find(p=>p.userId===a.userId);return h("article",{className:`award-badge${a.userId===selfId?" own":""}`,"data-award-id":a.awardId},awardEmblem(a.type),h("h3",{},title(a)),h("p",{},p?.displayNameSnapshot||"Người chơi"));})),
     own?notice(own.eligible?`Của bạn: +${own.officialGameDelta} trận chính thức · +${own.officialWinDelta} trận thắng.`:"Bạn không thuộc nhóm đủ điều kiện nhận thưởng trận này.",own.eligible?"success":"info"):null);
 }
 
