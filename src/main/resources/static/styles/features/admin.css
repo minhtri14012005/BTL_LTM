@@ -1,23 +1,59 @@
+/* G5 administration: scoped records and inline confirmation, no sanction policy. */
 .admin-page { display: grid; gap: var(--space-4); }
-.admin-page > .page-heading { margin-bottom: 0; }
+.admin-page > .page-heading { margin: 0; padding: var(--space-5); border: 1px solid var(--border-highlight); border-radius: var(--radius-lg); background: var(--hero-gradient); box-shadow: var(--shadow); }
 .admin-page > p { margin: 0; }
+.admin-access { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--gold); background: var(--gold-soft); }
 .admin-tabs { display: flex; flex-direction: row; flex-wrap: wrap; gap: var(--space-2); padding-bottom: var(--space-4); border-bottom: 1px solid var(--border); }
+.admin-tabs .button { font-size: .875rem; }
 .admin-page > .pagination { flex-direction: row; }
-.admin-tabs [aria-current="page"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
-.admin-data { min-width: 0; }
-.admin-kick-player { padding: var(--space-4) 0; border-bottom: 1px solid var(--border); }
-.admin-kick-player:last-child { border-bottom: 0; }
-.admin-kick-player .card-top p { margin-bottom: 0; }
+.admin-tabs [aria-current="page"] { color: var(--accent-ink); border-color: var(--accent); background: var(--primary-gradient); }
+.admin-data { min-width: 0; padding: var(--space-4); margin: 0; }
+.admin-table-scroll { max-width: 100%; overflow-x: auto; border-radius: var(--radius-sm); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.admin-table th, .admin-table td { text-align: left; padding: var(--space-4) var(--space-3); border-bottom: 1px solid var(--border); overflow-wrap: anywhere; max-width: 340px; vertical-align: top; }
+.admin-table th { color: var(--muted); font-size: .8125rem; font-weight: 500; background: var(--surface-inset); }
+.admin-table tbody tr:last-child td { border-bottom: 0; }
+.admin-table td:first-child { color: var(--accent); font-variant-numeric: tabular-nums; }
+.admin-table .button { font-size: .8125rem; }
+.admin-table td p { margin: 0 0 var(--space-3); }
+.admin-room-status { display: inline-flex; padding: var(--space-1) var(--space-2); background: var(--blue-soft); color: var(--info); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: .8125rem; }
+.admin-kick-panel { margin: 0; border-color: var(--border-highlight); background: radial-gradient(ellipse at 0 0,var(--glow-blue),transparent 60%),var(--panel-gradient); }
+.admin-kick-panel > h2 { font-size: 1.375rem; }
+.admin-kick-player { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); margin-top: var(--space-3); background: var(--surface-inset); }
+.admin-kick-player .card-top p { margin-bottom: 0; font-size: .875rem; }
 .admin-kick-player strong { overflow-wrap: anywhere; }
-.admin-kick-player .confirm-panel { margin-top: var(--space-3); }
+.admin-kick-player .confirm-panel { margin-top: var(--space-4); }
 .kick-feedback:empty { display: none; }
-.kick-feedback > p { margin-top: var(--space-3); }
-.admin-table-scroll { max-width: 100%; overflow-x: auto; }
-.admin-table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: .9rem; }
-.admin-table th, .admin-table td { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--border); overflow-wrap: anywhere; max-width: 300px; }
-.admin-table th { color: var(--muted); font-size: .8rem; }
-@media (max-width: 760px) { .admin-data { padding: var(--space-3); } }
-.admin-sanction, .admin-orphan-action { min-width:0; max-width:26rem; }
-.sanction-form { display:grid; gap:var(--space-3); }
-.admin-sanction input, .admin-sanction select { max-width:100%; min-width:0; }
-.sanction-status { overflow-wrap:anywhere; }
+.kick-feedback > p { margin: var(--space-3) 0 0; }
+.admin-sanction, .admin-orphan-action { min-width: 0; width: 100%; max-width: 28rem; }
+.sanction-form, .kick-form { display: grid; gap: var(--space-3); }
+.admin-sanction input, .admin-sanction select { max-width: 100%; min-width: 0; }
+.sanction-status { overflow-wrap: anywhere; color: var(--text-strong); }
+.admin-page .confirm-panel { padding: var(--space-4); border-left: 3px solid var(--danger); max-width: 100%; }
+.admin-page .confirm-message p { font-size: .9375rem; }
+.admin-page .confirm-panel form { margin-top: var(--space-4); }
+.admin-page .confirm-panel .field { margin: 0; }
+.admin-page .confirm-panel .notice { font-size: .8125rem; margin-block: var(--space-3); }
+.admin-page .field small { font-size: .8125rem; }
+.admin-sanction .confirm-panel, .admin-orphan-action .confirm-panel { margin-top: var(--space-4); }
+@media (max-width:1100px) {
+ .admin-data { padding: 0; border: 0; background: none; box-shadow: none; }
+ .admin-table-scroll { overflow: visible; }
+ .admin-table, .admin-table tbody { display: block; min-width: 0; width: 100%; }
+ .admin-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+ .admin-table tbody { display: grid; gap: var(--space-4); }
+ .admin-table tbody tr { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--panel-gradient); box-shadow: var(--shadow); }
+ .admin-table td { display: flex; flex-direction: column; min-width: 0; max-width: none; padding: 0; border: 0; white-space: normal; }
+ .admin-table td::before { content: attr(data-label); display: block; color: var(--muted); font-size: .8125rem; margin-bottom: var(--space-2); }
+ .admin-table td:nth-child(2), .admin-table td:last-child { grid-column: 1 / -1; }
+ .admin-table td:last-child { border-top: 1px solid var(--border); padding-top: var(--space-4); }
+ .admin-sanction, .admin-orphan-action { max-width: none; }
+}
+@media (max-width:760px) {
+ .admin-page > .page-heading { padding: var(--space-4); }
+ .admin-table tbody tr { padding: var(--space-4); }
+ .admin-kick-player { padding: var(--space-3); }
+ .admin-kick-player .card-top { gap: var(--space-3); }
+ .admin-page .confirm-panel { padding: var(--space-3); }
+}
+@media (prefers-reduced-motion:reduce) { .admin-page * { animation: none !important; transition: none !important; } }

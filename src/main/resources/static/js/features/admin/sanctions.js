@@ -19,7 +19,7 @@ export function sanctionControl(app,user){
   action.value=user.banned?"unban":"temporary-ban";
   const minutes=input("banMinutes",{id:`banMinutes-${user.id}`,type:"number",min:1,max:525600,step:1,value:60,required:true});
   const reason=input("banReason",{id:`banReason-${user.id}`,required:true,maxLength:240,placeholder:"Lý do quản trị"});
-  const submit=h("button",{type:"submit",className:"danger"},"Xác nhận"),confirm=confirmPanel(`Áp dụng chế tài cho @${user.username}?`);
+  const submit=h("button",{type:"submit",className:"danger"},"Xác nhận"),confirm=confirmPanel(`Áp dụng chế tài cho ${user.displayName} · @${user.username} (#${user.id})?`);
   const opener=button("Quản lý ban",()=>setConfirmation(confirm,true,opener),{className:"secondary","data-action":"sanction"});
   const form=h("form",{className:"sanction-form"},field("Thao tác",action),field("Thời lượng (phút)",minutes,"1–525600 phút; TEMP thay hạn bằng giờ Server + thời lượng mới."),field("Lý do",reason),submit);
   const updateDuration=()=>{minutes.disabled=action.value!=="temporary-ban";minutes.required=!minutes.disabled;};action.addEventListener("change",updateDuration);updateDuration();
@@ -46,7 +46,7 @@ export function sanctionControl(app,user){
 
 export function orphanControl(app,room,onClosed=()=>{}){
   const version=app.renderVersion,user=app.user.id;let request=null,working=false,closed=false;
-  const root=h("section",{className:"admin-orphan-action","data-room-id":room.id}),confirm=confirmPanel(`Đóng Room #${room.id} đang WAITING?`),feedback=h("div",{"aria-live":"polite"});
+  const root=h("section",{className:"admin-orphan-action","data-room-id":room.id}),confirm=confirmPanel(`Đóng phòng “${room.name}” (#${room.id}) đang WAITING?`),feedback=h("div",{"aria-live":"polite"});
   const opener=button("Đóng phòng bỏ lại",()=>setConfirmation(confirm,true,opener),{className:"danger secondary","data-action":"close-orphan"}),reason=input("orphanReason",{id:`orphanReason-${room.id}`,required:true,maxLength:240});
   const submit=h("button",{type:"submit",className:"danger"},"Xác nhận đóng"),form=h("form",{},field("Lý do",reason),submit);
   confirm.append(notice("Server chỉ đóng khi Host vẫn bị ban/không còn quyền và Room WAITING. Không kết thúc Game ACTIVE."),button("Hủy",()=>setConfirmation(confirm,false),{className:"secondary"}),form);

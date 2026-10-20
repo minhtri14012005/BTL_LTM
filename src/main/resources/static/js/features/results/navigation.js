@@ -16,8 +16,8 @@ export function roomReturn(app,roomId,isCurrent=()=>true) {
       const waiting=room.status==="WAITING",host=room.hostUserId===userId;
       const label=waiting?(host?"Chơi tiếp cùng phòng":"Quay lại phòng"):room.status==="DRAFT"?"Quay lại phòng nháp":room.status==="ACTIVE"?"Xem phòng đang diễn ra":"Xem phòng đã đóng";
       node.replaceChildren(h("h3",{},waiting?"Chuẩn bị trận tiếp theo":"Phòng hiện tại"),
-        h("p",{className:"muted",role:"status"},waiting?(host?"Phòng đang chờ và giữ thành viên. Kiểm tra người chơi, cấu hình rồi bắt đầu trận tiếp theo trong phòng.":"Phòng đang chờ. Quay lại để chuẩn bị, đổi vai trò hoặc rời phòng; Host quyết định bắt đầu trận tiếp theo."):room.status==="ACTIVE"?"Phòng hiện có trận khác đang diễn ra. Kết quả đang xem thuộc trận trước.":room.status==="CLOSED"?"Phòng đã đóng, không thể bắt đầu trận mới tại đây. Lịch sử và thành tích đã ghi vẫn được giữ.":"Phòng đang là bản nháp. Host cần mở phòng trước khi bắt đầu."),
-        waiting?h("p",{className:"muted"},"Mỗi trận mới có điểm, câu trả lời và tài nguyên riêng."):null,
+        h("details",{className:"result-room-guide"},h("summary",{},"Thông tin phòng · "+room.status),h("p",{className:"muted",role:"status"},waiting?(host?"Phòng đang chờ và giữ thành viên. Kiểm tra người chơi, cấu hình rồi bắt đầu trận tiếp theo trong phòng.":"Phòng đang chờ. Quay lại để chuẩn bị, đổi vai trò hoặc rời phòng; Host quyết định bắt đầu trận tiếp theo."):room.status==="ACTIVE"?"Phòng hiện có trận khác đang diễn ra. Kết quả đang xem thuộc trận trước.":room.status==="CLOSED"?"Phòng đã đóng, không thể bắt đầu trận mới tại đây. Lịch sử và thành tích đã ghi vẫn được giữ.":"Phòng đang là bản nháp. Host cần mở phòng trước khi bắt đầu."),
+        waiting?h("p",{className:"muted"},"Mỗi trận mới có điểm, câu trả lời và tài nguyên riêng."):null),
         h("div",{className:"actions"},link(label,`room/${roomId}`,waiting?"button":"button secondary"),
           waiting && host?link("Cấu hình trận tiếp",`room/${roomId}/edit`,"button secondary"):null,
           button("Cập nhật trạng thái",refresh,{className:"secondary"}),link("Về sảnh","home","button secondary")));

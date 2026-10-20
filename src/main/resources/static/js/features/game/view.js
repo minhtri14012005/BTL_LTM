@@ -20,13 +20,13 @@ export function modeHeader(s) {
   const completed=publishedResult(s)?Math.min(total,index+1):index;
   return h("section",{className:"card game-mode-header","aria-label":"Tiến trình trận đấu"},
     h("div",{className:"game-mode-title"},h("span",{className:"mode-emblem","aria-hidden":"true"},icon(icons[mode]||"help")),
-      h("div",{},h("p",{className:"eyebrow"},s.stage?`MÀN ${s.stageIndex}/${s.stages.length}`:"CHẾ ĐỘ CHƠI"),h("h2",{id:"game-mode-name"},MODE_LABELS[mode]||mode))),
+      h("div",{},h("p",{className:"eyebrow"},s.stage?`MÀN ${s.stageIndex}/${s.stages.length}`:"CHẾ ĐỘ CHƠI · LEGACY"),h("h2",{id:"game-mode-name"},MODE_LABELS[mode]||mode))),
     h("div",{className:"game-progress"},h("span",{},`Câu ${s.questionIndex}/${s.questionCount}`),
       h("progress",{max:total,value:completed,"aria-label":"Số câu đã công bố kết quả"})),
-    s.stages?.length>1?h("ol",{className:"game-stage-track","aria-label":"Thứ tự các màn"},s.stages.map((stage,i)=>h("li",{...(i+1===s.stageIndex?{"aria-current":"step"}:{} )},`${i+1}. ${MODE_LABELS[stage.mode]||stage.mode}`))):null);
+    s.stages?.length>1?h("details",{className:"game-stage-plan"},h("summary",{id:"game-stage-toggle"},"Kế hoạch trận · "+s.stages.length+" màn"),h("ol",{className:"game-stage-track","aria-label":"Thứ tự các màn"},s.stages.map((stage,i)=>h("li",{...(i+1===s.stageIndex?{"aria-current":"step"}:{} )},h("span",{className:"stage-step","aria-hidden":"true"},i+1),MODE_LABELS[stage.mode]||stage.mode)))):null);
 }
 export function timerPanel() {
-  return h("div",{className:"game-timer"},h("span",{className:"timer-caption"},"THỜI GIAN CÒN LẠI"),
+  return h("div",{className:"game-timer"},h("span",{className:"timer-caption"},icon("bolt"),"Còn lại"),
     h("span",{className:"countdown",id:"game-countdown",role:"timer","aria-live":"off","aria-label":"Thời gian còn lại"}),
     h("span",{className:"timer-source",id:"deadline-status"},"Theo thời gian trận"));
 }
@@ -34,11 +34,30 @@ export function interactionStatus(s,{ready,reconnecting,pending,working}) {
   let text;
   if(!ready)text=reconnecting?"Đang đồng bộ trạng thái trận…":"Chưa đồng bộ kết nối. Các thao tác đang tạm khóa; đáp án chưa được tự gửi lại.";
   else if(pending?.type==="ANSWER")text=working?"Đang gửi đáp án. Hãy chờ xác nhận…":"Chưa rõ đáp án đã được nhận hay chưa. Có thể thử lại đúng yêu cầu cũ để lấy xác nhận.";
-  else if(s.player?.alreadyAnswered)text="Đáp án đã được nhận. Chờ công bố kết quả; điểm chưa được dự đoán.";
   else if(s.phase==="QUESTION_CLOSED")text="Câu đã đóng. Đang chờ xử lý đáp án.";
   else if(s.phase==="SCORING")text="Đang chấm câu. Kết quả sẽ hiện khi trận công bố.";
-  else if(s.runtimeState==="READY" && s.phase==="QUESTION_OPEN")text=s.player?.state==="PLAYING"?"Chọn hoặc nhập đáp án rồi bấm gửi trước hạn câu.":"Bạn đang quan sát câu hỏi.";
+  else if(s.player?.alreadyAnswered && s.phase!=="QUESTION_OPEN" && !publishedResult(s))text="Đáp án đã được nhận. Chờ công bố kết quả.";
   return text?h("div",{id:"game-interaction-status",className:"game-interaction-status"},notice(text)):null;
+}
+/** Compact HUD, containing only the current viewer's server-published resources. */
+export function playerHud(s,effects) {
+  const p=s.player;
+  if(!p)return h("div",{id:"player-state",className:"player-strip"},h("span",{className:"player-role"},icon("search"),"Bạn đang quan sát"));
+  return h("div",{id:"player-state",className:"player-strip"},
+    h("span",{className:"player-points"},icon("bolt"),"Điểm",h("strong",{id:"player-score"},p.score)),
+    gameMode(s)==="QUIZ"?[
+      h("span",{},icon("target"),"Spin",h("strong",{id:"remaining-spins"},p.remainingSpins)),
+      h("span",{className:"player-star"},icon("sparkles"),"Hope Star",h("strong",{id:"star-available"},p.starAvailable?"Còn":"Đã dùng")),
+      h("small",{id:"current-decision"},"Spin: "+(effects[p.currentSpin]||"Không dùng")+" · Star: "+(p.starSelected?"đã chọn":"chưa chọn"))
+    ]:null,
+    p.state==="ELIMINATED"?h("span",{className:"player-role"},icon("info"),"Bạn đã bị loại · Đang quan sát"):null);
+}
+export function gameStandings(board) {
+  const title=board.querySelector("h2");title.prepend(icon("trophy"));
+  title.after(h("p",{className:"standings-caption"},"Trong trận · Theo thứ hạng Server"));
+  board.querySelectorAll("tbody tr").forEach(row=>{row.firstElementChild.classList.add("game-rank");row.firstElementChild.dataset.rank=row.firstElementChild.textContent;});
+  const scroll=board.querySelector(".table-scroll");scroll.id="game-standings-scroll";scroll.tabIndex=0;scroll.setAttribute("role","region");scroll.setAttribute("aria-label","Bảng điểm trong trận, gồm thứ hạng, người chơi, điểm và thời gian");
+  return board;
 }
 export function imagePanel(node) {
   if(!node || node.tagName!=="IMG")return node;

@@ -13,7 +13,15 @@ export function rankMark(rank){
   return h("span",{className:`rank-mark${top?` rank-mark--${rank}`:""}`},top?icon("medal"):null,h("span",{},`#${rank}`));
 }
 export function achievementStats(stats){
-  return h("dl",{className:"achievement-stats"},[["Cúp",stats.cups],["Trận chính thức",stats.officialGames],["Thắng",stats.officialWins],["Tỷ lệ thắng",percentage(stats.winRate)],["Câu đúng / tham gia",`${stats.correct} / ${stats.participated}`],["Độ chính xác",percentage(stats.accuracy)]].map(([label,value],index)=>h("div",{className:"card"},h("dt",{},index===0?icon("trophy"):null,label),h("dd",{},value))));
+  const metrics=[
+    ["cups","Cúp",stats.cups,"trophy"],
+    ["games","Trận chính thức",stats.officialGames,"gamepad"],
+    ["wins","Thắng",stats.officialWins,"medal"],
+    ["win-rate","Tỷ lệ thắng",percentage(stats.winRate),"sparkles"],
+    ["accuracy","Độ chính xác",percentage(stats.accuracy),"target"],
+    ["answers","Câu đúng / tham gia",`${stats.correct} / ${stats.participated}`,"check"]
+  ];
+  return h("dl",{className:"achievement-stats","aria-label":"Thống kê chính thức"},metrics.map(([key,label,value,mark],index)=>h("div",{className:`achievement-metric metric--${key}${index<3?" metric-primary":""}`,"data-stat":key},h("dt",{},icon(mark),label),h("dd",{},value))));
 }
 export function achievementTabs(current){
   return h("nav",{className:"achievement-tabs","aria-label":"Thành tích"},[["profile","Hồ sơ của tôi"],["leaderboard","Sảnh danh vọng"]].map(([path,label])=>{const item=link(label,path,`button ${current===path?"primary":"secondary"}`);if(current===path)item.setAttribute("aria-current","page");return item;}));

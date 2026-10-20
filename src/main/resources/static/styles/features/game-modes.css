@@ -1,4 +1,4 @@
-/* Mode renderers and media. Authoring editor layouts remain in multimode.css. */
+/* Media/clue renderers also serve History; live-only refinements are scoped below. */
 #answer-text.answer-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
 #answer-text.answer-wrong { background: var(--danger-bg); border: 2px solid var(--danger-border); color: var(--danger); }
 #correct-text { font-weight: 650; overflow-wrap: anywhere; }
@@ -33,4 +33,62 @@
 .released-clues p { white-space: pre-wrap; margin: var(--space-1) 0 0; }
 .released-clues small { color: var(--muted); }
 .clue-number { flex: 0 0 28px; height: 28px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border-radius: var(--radius-sm); }
-@media (max-width: 480px) { .song-player { padding: var(--space-2); } .released-clues { padding: var(--space-3); } }
+/* G4: answer workspaces. Original callback targets and literal tile text are unchanged. */
+#game-page .text-answer .field { gap: var(--space-2); padding: var(--space-4); background: var(--surface-inset); border: 1px solid var(--border); border-radius: var(--radius); }
+#game-page .text-answer .field > span { color: var(--text-strong); font-weight: 650; }
+#game-page .text-answer textarea { min-height: 112px; background: var(--surface); font-size: 1rem; line-height: 1.6; }
+#game-page .text-answer small { font-size: .8125rem; }
+#game-page .arrangement-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-5) 0 var(--space-2); }
+#game-page .arrangement-heading :is(h3,p) { margin: 0; }
+#game-page .arrangement-heading h3 { font-size: var(--text-lg); }
+#game-page .arrangement-progress { color: var(--accent); padding: var(--space-1) var(--space-2); border: 1px solid var(--border-highlight); border-radius: var(--radius-sm); background: var(--surface-inset); font-variant-numeric: tabular-nums; }
+#game-page .arrangement-help { color: var(--muted); font-size: .8125rem; }
+#game-page .ordering-workspace { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap: var(--space-4); align-items: start; }
+#game-page .ordering-workspace > section { min-width: 0; }
+#game-page .arrangement-answer h4 { font-size: .875rem; color: var(--muted); margin: var(--space-4) 0 var(--space-3); }
+#game-page .ordering-answer .piece-bank { flex-direction: column; padding: var(--space-2); background: var(--surface-inset); }
+#game-page .ordering-answer .piece-bank button { text-align: left; justify-content: flex-start; padding: var(--space-3); font-weight: 500; }
+#game-page .arranged-items { margin-top: 0; }
+#game-page .arranged-items li { display: grid; grid-template-columns: 24px minmax(0,1fr) repeat(3,44px); gap: var(--space-2); border-color: var(--border-highlight); background: var(--surface-inset); padding: var(--space-3); }
+#game-page .arranged-items .piece-text { grid-column: 2 / -1; min-width: 0; line-height: 1.5; }
+#game-page .arranged-items button:first-of-type { grid-column: 3; }
+#game-page .arranged-items button { padding: var(--space-2); font-size: .8125rem; }
+#game-page .arranged-number { display: grid; place-items: center; width: 24px; height: 24px; color: var(--gold); background: var(--gold-soft); border-radius: 50%; font-size: .8125rem; font-variant-numeric: tabular-nums; }
+#game-page .arrangement-empty { padding: var(--space-5); margin: 0; color: var(--muted); border: 1px dashed var(--border-strong); border-radius: var(--radius); font-size: .875rem; }
+#game-page .game-help { color: var(--muted); font-size: .8125rem; }
+#game-page .game-help p { margin-top: 0; }
+#game-page .vietnamese-answer .word-tile { box-shadow: inset 0 -3px 0 var(--shadow-color), inset 0 1px 0 var(--light-edge); font-weight: 650; }
+#game-page .word-tile--space::after { content: '␠'; color: var(--muted); }
+#game-page .placed-word small { font-size: .75rem; color: var(--accent); }
+#game-page .sentence-row { background: linear-gradient(135deg,var(--accent-soft),var(--surface-inset)); }
+#game-page #joined-pieces { min-height: 44px; padding: var(--space-3); background: var(--surface-inset); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); font-size: var(--text-lg); }
+#game-page #joined-pieces:empty { display: none; }
+#game-page #submit-answer { margin-top: var(--space-3); }
+#game-page .song-player { padding: var(--space-3); border-color: var(--border-highlight); background: var(--media-bg); box-shadow: inset 0 1px 0 var(--light-edge); }
+#game-page .song-video { aspect-ratio: 16 / 9; max-height: 44vh; }
+#game-page .video-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+#game-page .video-actions button { font-size: .8125rem; }
+#game-page #enable-video-sound { border-color: var(--violet); }
+#game-page #video-status { padding: var(--space-3); border-radius: var(--radius-sm); background: var(--surface-inset); color: var(--muted); font-size: .8125rem; }
+#game-page .song-player[data-media-state="blocked"] { border-color: var(--warning); }
+#game-page .song-player[data-media-state="blocked"] #video-status { color: var(--warning); background: var(--warning-bg); }
+#game-page .song-player[data-media-state="error"] { border-color: var(--danger-border); }
+#game-page .song-player[data-media-state="error"] #video-status { background: var(--danger-bg); color: var(--danger); padding-left: var(--space-3); }
+#game-page .song-player[data-media-state="buffering"] { border-color: var(--blue); }
+#game-page .released-clues { padding: var(--space-4); background: radial-gradient(ellipse at 0 0,var(--glow-blue),transparent 75%), var(--surface-inset); }
+#game-page .released-clues h4 { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: 1rem; }
+#game-page .released-clues h4 .icon { color: var(--blue); }
+#game-page .released-clues li { border: 0; padding: 0 0 var(--space-5); position: relative; }
+#game-page .released-clues li:not(:last-child)::before { content: ''; position: absolute; top: 28px; bottom: 0; left: 14px; width: 1px; background: var(--border-strong); }
+#game-page .released-clues li:last-child { padding-bottom: 0; }
+#game-page .clue-number { color: var(--info); background: var(--blue-soft); border: 1px solid var(--border-highlight); border-radius: 50%; }
+#game-page .released-clues li p { color: var(--text-strong); font-size: 1rem; line-height: 1.6; }
+#game-page .released-clues small { font-size: .8125rem; }
+@media (max-width: 1100px) { #game-page .ordering-workspace { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 480px) {
+  .song-player { padding: var(--space-2); }
+  .released-clues { padding: var(--space-3); }
+  #game-page .text-answer .field { padding: var(--space-3); }
+  #game-page .arranged-items li { grid-template-columns: 24px minmax(0,1fr) repeat(3,44px); padding: var(--space-2); }
+  #game-page .arranged-items button:first-of-type { grid-column: 3; }
+}

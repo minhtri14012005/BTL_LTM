@@ -1,5 +1,7 @@
 /** Original stroke icons authored for this project; no CDN/font/HTML injection. */
 const paths=Object.freeze({
+  gamepad:"M7 7h10a4 4 0 0 1 4 3l1 7a2 2 0 0 1-3.4 1.7L16 16H8l-2.6 2.7A2 2 0 0 1 2 17l1-7a4 4 0 0 1 4-3ZM7 10v4M5 12h4M16 11h.01M19 13h.01M9 7l1-3h4l1 3",
+  book:"M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1ZM12 5v15M5 7l4 1M5 11l4 1M15 8l4-1M15 12l4-1",
   home:"m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8",
   trophy:"M8 3h8v6a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4M16 5h4v2a4 4 0 0 1-4 4M12 13v5M8 21h8M9 18h6v3H9v-3Z",
   medal:"m8 3 4 6 4-6M5 3h4l3 5 3-5h4l-5 8M10 11 5 3M18 16a6 6 0 1 1-12 0 6 6 0 0 1 12 0ZM12 13l2 3-2 3-2-3 2-3Z",

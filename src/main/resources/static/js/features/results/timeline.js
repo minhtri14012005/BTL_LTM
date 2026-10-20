@@ -14,15 +14,17 @@ export function historyQuestion(s,q,selfId) {
     else if(isArrangement(mode) && q.payload?.correctOrder)solution=notice("Thứ tự đã công bố: "+correctArrangement(q).join(mode==="VIETNAMESE_PUZZLE"?"":" → "));
     else if(q.correctAnswer)solution=notice(`Đáp án đã công bố: ${q.correctAnswer}`);
   }
-  return h("article",{className:"card history-question","data-index":q.questionIndex},
-    h("div",{className:"card-top"},h("p",{className:"eyebrow"},`CÂU ${q.questionIndex} · ${MODE_LABELS[mode]||mode}`),h("span",{className:"badge"},published?"Đã chấm":"Chưa chấm")),
-    h("h2",{},q.content),image(s,q,q.questionIndex,{history:true}),historyVideo(s,{...q,mode}),mode==="CLUES"?releasedClues(q.payload):null,
+  const question=h("details",{className:"card history-question","data-index":q.questionIndex,open:q.questionIndex===1},
+    h("summary",{className:"history-question-summary"},h("span",{className:"history-question-index"},q.questionIndex),h("span",{},h("strong",{},q.content),h("small",{},MODE_LABELS[mode]||mode)),h("span",{className:"badge"},published?"Đã chấm":"Chưa chấm")),
+    h("div",{className:"history-question-body"},image(s,q,q.questionIndex,{history:true}),historyVideo(s,{...q,mode}),mode==="CLUES"?releasedClues(q.payload):null,
     mode==="QUIZ"?h("ul",{className:"options"},["A","B","C","D"].map(k=>h("li",{className:published && q.correctAnswer===k?"correct":""},`${k}. ${q.options?.[k]??"—"}`))):null,solution,
     q.answers.length?q.answers.map(a=>h("section",{className:`answer-timeline ${a.userId===selfId?"is-self":""}`,"data-user-id":a.userId,"data-status":a.answerStatus},
       h("div",{className:"card-top"},h("h3",{},s.members.find(m=>m.userId===a.userId)?.displayName||`User #${a.userId}`,a.userId===selfId?" · Bạn":""),h("span",{className:"badge"},outcomes[a.answerStatus]||a.answerStatus)),
       h("p",{className:"submitted-answer"},`${["CLUES","RIDDLE","IMAGE_WORD","SONG"].includes(mode)?"Nhập: "+(a.submittedAnswer?.text??"—"):isArrangement(mode)?"Xếp: "+(a.submittedAnswer?.itemIds?.map(id=>(q.payload?.pieces||q.payload?.items||[]).find(v=>v.id===id)?.text||id).join(mode==="VIETNAMESE_PUZZLE"?"":" → ")??"—"):"Chọn: "+(a.selectedOption??"—")} · ${seconds(a.answerTimeMs)}`),
       mode==="QUIZ"?h("p",{className:"muted"},`Spin: ${effects[a.spinEffect]||"Không dùng / chưa lưu"} · Star: ${a.starSelected==null?"chưa lưu":a.starSelected?"đã chọn":"không chọn"}`):null,
-      a.result?resultPanel({index:q.questionIndex,question:null,results:[a.result]},s.members,null):h("p",{className:"muted"},"Điểm / kết quả: chưa chấm. Thời gian này không cộng vào tổng xếp hạng."))):notice("Không có Answer đã lưu cho câu này."));
+      a.result?resultPanel({index:q.questionIndex,question:null,results:[a.result]},s.members,null):h("p",{className:"muted"},"Điểm / kết quả: chưa chấm. Thời gian này không cộng vào tổng xếp hạng."))):notice("Không có Answer đã lưu cho câu này.")));
+  question.addEventListener("toggle",()=>{if(!question.open)question.querySelectorAll("video").forEach(video=>video.pause());});
+  return question;
 }
 
 /** Display-only aggregation of actual per-question result fields, never a ScoreEngine. */

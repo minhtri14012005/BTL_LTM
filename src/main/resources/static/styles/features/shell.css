@@ -1,22 +1,44 @@
-#sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-width); background: var(--surface-inset); border-right: 1px solid var(--border); padding: var(--space-6) var(--space-5); display: flex; flex-direction: column; overflow-y: auto; }
-.brand { font-size: 1.05rem; font-weight: 750; color: var(--text); margin-bottom: var(--space-7); line-height: 1.4; }
-.nav-label { color: var(--muted); margin: 0 10px 10px; }
-nav { display: flex; flex-direction: column; gap: 6px; }
-nav a { color: var(--muted); border-radius: var(--radius-sm); padding: 12px; min-height: 44px; }
-nav a:hover, nav a:focus-visible { background: var(--surface-raised); color: var(--text); text-decoration: none; }
-.account-info { margin-top: auto; border-top: 1px solid var(--border); padding-top: var(--space-5); display: flex; flex-direction: column; gap: 5px; }
-.account-info small { color: var(--muted); }
-.account-info button { margin-top: var(--space-3); }
-.connection { font-size: .8rem; color: var(--warning); }
+/* One navigation DOM for USER/ADMIN; shell rules never target feature navs. */
+#sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-width); background: var(--shell); background-image: linear-gradient(170deg, var(--blue-soft), var(--shell) 35%, var(--page)); border-right: 1px solid var(--border); padding: var(--space-6) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); overflow-y: auto; box-shadow: 8px 0 32px var(--shadow-color); }
+#sidebar .brand { display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--control-size); margin: 0 var(--space-2) var(--space-6); color: var(--text); font-size: var(--text-lg); font-weight: 750; text-decoration: none; }
+.brand-mark { display: grid; place-items: center; flex: 0 0 32px; height: 32px; color: var(--accent); }
+.brand-mark .icon { width: 32px; height: 32px; filter: drop-shadow(0 0 6px var(--glow-mint)); }
+#sidebar .nav-label { margin: 0 var(--space-3) var(--space-2); color: var(--muted); }
+#sidebar nav { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+#sidebar nav a { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: var(--space-3); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--muted); font-size: var(--text-sm); font-weight: 550; text-decoration: none; transition: background-color var(--motion-standard) var(--ease-standard), border-color var(--motion-standard) var(--ease-standard), color var(--motion-fast) var(--ease-standard); }
+#sidebar nav a > .icon { flex-shrink: 0; }
+#sidebar nav a:hover, #sidebar nav a:focus-visible { background: var(--surface-raised); color: var(--text); }
+#sidebar nav a[aria-current="page"] { background: var(--accent-soft); background-image: var(--selected-gradient); color: var(--accent); border-color: var(--border-highlight); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent), 0 3px 12px var(--shadow-color); }
+#sidebar nav a[aria-current="page"] .icon { filter: drop-shadow(0 0 5px var(--glow-mint)); }
+#sidebar .account-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; margin-top: auto; padding: var(--space-4) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-gradient); }
+#sidebar .account-info strong { font-size: var(--text-sm); }
+#sidebar .account-info small { color: var(--muted); font-size: var(--text-xs); }
+#sidebar .account-info .badge { align-self: flex-start; }
+#sidebar #logout { margin-top: var(--space-3); }
+.connection { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--warning); font-size: var(--text-xs); }
+.connection::before { content: ""; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: currentColor; }
 .connection[data-state="ready"] { color: var(--success); }
 #connection-banner:empty { display: none; }
-#connection-banner { margin-bottom: var(--space-5); }
+#connection-banner { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+#connection-banner .notice { flex: 1 1 320px; margin: 0; }
+#connection-banner button { flex: 0 0 auto; }
+@media (max-width: 1199px) {
+  #sidebar { position: static; width: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3) var(--space-5); padding: var(--space-4) var(--space-5) 0; border-right: 0; border-bottom: 1px solid var(--border); overflow: visible; }
+  #sidebar .brand { grid-column: 1; grid-row: 1; margin: 0; align-self: center; }
+  #sidebar .nav-label { display: none; }
+  #sidebar nav { grid-column: 1 / -1; grid-row: 2; flex-direction: row; flex-wrap: nowrap; gap: var(--space-2); overflow-x: auto; padding: var(--space-1) var(--space-1) var(--space-3); scrollbar-width: thin; scrollbar-color: var(--border-strong) var(--surface-inset); }
+  #sidebar nav a { flex: 0 0 auto; white-space: nowrap; min-height: var(--control-size); padding: var(--space-2) var(--space-3); }
+  #sidebar .account-info { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-4); row-gap: 0; margin: 0; padding: 0; border: 0; background: none; align-items: center; }
+  #sidebar .account-info strong { grid-column: 1; grid-row: 1; max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #sidebar .account-info small { display: none; }
+  #sidebar .account-info .connection, #sidebar .account-info .badge { grid-column: 1; grid-row: 2; }
+  #sidebar #logout { grid-column: 2; grid-row: 1 / span 2; margin: 0; font-size: var(--text-sm); }
+}
 @media (max-width: 760px) {
-  #sidebar { position: static; width: auto; padding: var(--space-4); border-right: 0; border-bottom: 1px solid var(--border); }
-  .brand { margin-bottom: var(--space-3); }
-  nav { flex-direction: row; flex-wrap: wrap; gap: 0; }
-  nav a { padding: 8px 10px; }
-  .nav-label { display: none; }
-  .account-info { margin-top: var(--space-3); padding-top: var(--space-3); flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; }
-  .account-info button { margin: 0 0 0 auto; }
+  #sidebar { grid-template-columns: auto minmax(0, 1fr); padding: var(--space-3) var(--space-4) 0; column-gap: var(--space-3); }
+  #sidebar .brand { gap: var(--space-2); font-size: var(--text-base); }
+  #sidebar .brand-mark { flex-basis: 28px; height: 28px; font-size: var(--text-sm); }
+  #sidebar .account-info { justify-self: end; width: 100%; column-gap: var(--space-2); }
+  #sidebar .account-info strong { font-size: var(--text-xs); max-width: 16ch; }
+  #sidebar #logout { padding-inline: var(--space-2); font-size: var(--text-xs); }
 }

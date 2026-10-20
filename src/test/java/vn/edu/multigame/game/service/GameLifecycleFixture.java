@@ -20,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import vn.edu.multigame.auth.security.AuthPrincipal;
 import vn.edu.multigame.game.dto.request.StartGameRequest;
 import vn.edu.multigame.game.dto.response.*;
@@ -97,6 +99,7 @@ abstract class GameLifecycleFixture {
     }
     @LocalServerPort int port;
     @Autowired JdbcTemplate jdbc;
+    @Autowired PlatformTransactionManager cleanupTransactions;
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;
     @Autowired QuizRepository quizzes;
@@ -157,15 +160,20 @@ abstract class GameLifecycleFixture {
     }
     @BeforeEach void before() { observer.seen.clear(); observer.committed.clear(); observer.failPublication.set(null); assertThat(jdbc.queryForObject("select database()",String.class)).isEqualTo("quizz_task2_test"); }
     @AfterEach void cleanup() {
-        reset(players,transactions,runtime);
-        for(long id:installed) { try { runtime.interrupt(id).get(10,TimeUnit.SECONDS); } catch(Exception ignored) {} }
-        for(long id:userIds) { jdbc.update("delete from account_effect_intent where user_id=?",id);jdbc.update("delete from admin_account_action where target_user_id=? or admin_user_id=?",id,id);jdbc.update("delete from admin_orphan_close_action where host_user_id=? or admin_user_id=?",id,id); }
-        for(long id:gameIds) { transactions.interrupt(id,Math.max(System.currentTimeMillis(),clock.sample().epochMs())); jdbc.update("delete from achievement_award where game_session_id=?",id);jdbc.update("delete from game_award_participant where game_session_id=?",id);jdbc.update("delete from game_award_decision where game_session_id=?",id);jdbc.update("delete from game_participation_restriction where game_session_id=?",id);jdbc.update("delete from admin_kick_action where game_session_id=?",id);jdbc.update("delete from game_decision_action where game_session_id=?",id);jdbc.update("delete from game_question_participation where game_session_id=?",id);jdbc.update("delete from answer where game_session_id=?",id); jdbc.update("delete from game_question where game_session_id=?",id); jdbc.update("delete from game_stage where game_session_id=?",id); jdbc.update("delete from player_session where game_session_id=?",id); jdbc.update("delete from game_member where game_session_id=?",id); jdbc.update("delete from game_session where id=?",id); }
-        for(long id:roomIds) { jdbc.update("delete from room_stage where room_id=?",id); jdbc.update("delete from room_member where room_id=?",id); jdbc.update("delete from room where id=?",id); }
-        for(long id:quizIds) { jdbc.update("delete from question where quiz_id=?",id); jdbc.update("delete from quiz where id=?",id); }
-        for(long id:userIds) jdbc.update("delete from app_user where id=?",id);
-        clients.forEach(Client::close);
-        assertThat(observer.committed).doesNotContain(false);
+        try {
+            reset(players,transactions,runtime);
+            for(long id:installed) { try { runtime.interrupt(id).get(10,TimeUnit.SECONDS); } catch(Exception ignored) {} }
+            for(long id:userIds) { jdbc.update("delete from account_effect_intent where user_id=?",id);jdbc.update("delete from admin_account_action where target_user_id=? or admin_user_id=?",id,id);jdbc.update("delete from admin_orphan_close_action where host_user_id=? or admin_user_id=?",id,id); }
+            for(long id:gameIds) new TransactionTemplate(cleanupTransactions).executeWithoutResult(status -> {
+                // interrupt() takes Room -> Game locks. Keep them until all test rows are gone:
+                // another cached context's reconciler must not repair a deleted award receipt.
+                transactions.interrupt(id,Math.max(System.currentTimeMillis(),clock.sample().epochMs())); jdbc.update("delete from achievement_award where game_session_id=?",id);jdbc.update("delete from game_award_participant where game_session_id=?",id);jdbc.update("delete from game_award_decision where game_session_id=?",id);jdbc.update("delete from game_participation_restriction where game_session_id=?",id);jdbc.update("delete from admin_kick_action where game_session_id=?",id);jdbc.update("delete from game_decision_action where game_session_id=?",id);jdbc.update("delete from game_question_participation where game_session_id=?",id);jdbc.update("delete from answer where game_session_id=?",id); jdbc.update("delete from game_question where game_session_id=?",id); jdbc.update("delete from game_stage where game_session_id=?",id); jdbc.update("delete from player_session where game_session_id=?",id); jdbc.update("delete from game_member where game_session_id=?",id); jdbc.update("delete from game_session where id=?",id);
+            });
+            for(long id:roomIds) { jdbc.update("delete from room_stage where room_id=?",id); jdbc.update("delete from room_member where room_id=?",id); jdbc.update("delete from room where id=?",id); }
+            for(long id:quizIds) { jdbc.update("delete from question where quiz_id=?",id); jdbc.update("delete from quiz where id=?",id); }
+            for(long id:userIds) jdbc.update("delete from app_user where id=?",id);
+            assertThat(observer.committed).doesNotContain(false);
+        } finally { clients.forEach(Client::close); }
     }
 
     class Client implements AutoCloseable {

@@ -1,13 +1,14 @@
 import {h,notice,button,link} from "/js/shared/dom.js";
 import {MODE_LABELS} from "/js/shared/mode-labels.js";
 import {awardLabel,awardEmblem,rankMark} from "/js/shared/achievement-ui.js";
+import {icon} from "/js/shared/icons.js";
 
 /** Server decision states, never inferred from score/rank or a gameplay ACK. */
 export const AWARD_STATES=Object.freeze(["AWARDS_PENDING","AWARDS_NOT_QUALIFIED","AWARDS_DECIDED"]);
 export function awardStateView(state) {
   if(!AWARD_STATES.includes(state))return null;
   const messages={AWARDS_PENDING:"Đang chờ kết quả xét thưởng.",AWARDS_NOT_QUALIFIED:"Trận không đủ điều kiện xét thưởng.",AWARDS_DECIDED:"Kết quả xét thưởng đã sẵn sàng."};
-  return h("section",{className:"card award-state","data-award-state":state},h("h2",{},"Xét thưởng"),notice(messages[state]));
+  return h("section",{className:"card award-state","data-award-state":state},h("span",{className:"award-state-symbol","aria-hidden":"true"},icon(state==="AWARDS_DECIDED"?"medal":"info")),h("div",{},h("p",{className:"eyebrow"},"THÀNH TÍCH CHÍNH THỨC"),h("h2",{},"Xét thưởng"),notice(messages[state])));
 }
 
 const reasons={NOT_COMPLETED:"Trận bị hủy hoặc gián đoạn, không tính thành tích chính thức.",INSUFFICIENT_INITIAL_PLAYERS:"Roster ban đầu chưa đủ người chơi theo chính sách.",INSUFFICIENT_QUESTIONS:"Trận chưa đủ số câu được cấu hình và chấm hoàn tất.",INSUFFICIENT_ELIGIBLE_PLAYERS:"Không còn đủ người đủ điều kiện xét thưởng.",NO_ELIGIBLE_CORRECT:"Nhóm đủ điều kiện không có câu trả lời đúng."};
@@ -20,12 +21,14 @@ export function ceremonyView(data,selfId){
   if(data.awardState==="AWARDS_NOT_QUALIFIED")return h("section",{className:"card award-ceremony","data-award-state":data.awardState},h("p",{className:"eyebrow"},"KẾT QUẢ XÉT THƯỞNG"),h("h2",{},"Trận không đủ điều kiện"),
     ...(data.qualification?.reasonCodes||[]).map(code=>notice(reasons[code]||"Trận không đáp ứng chính sách xét thưởng.")),h("p",{className:"muted"},"Không cộng cúp hoặc số trận chính thức. Điểm và thứ hạng lịch sử không đổi."));
   const participants=data.participants||[],awards=data.awards||[],own=participants.find(p=>p.userId===selfId);
-  const podium=participants.filter(p=>p.eligible && p.awardRank<=3).map(p=>h("article",{className:`award-podium-card${p.userId===selfId?" own":""}`,"data-award-rank":p.awardRank},
-    h("div",{className:"award-rank"},rankMark(p.awardRank)),h("h3",{},p.displayNameSnapshot),h("p",{className:"muted"},`Hạng lịch sử #${p.historyRank}`),
-    ...awards.filter(a=>a.userId===p.userId&&a.type==="CUP"&&a.value===1).map(a=>h("p",{className:"award-cup","data-award-id":a.awardId},awardEmblem(a.type),title(a)))));
+  const podium=participants.filter(p=>p.eligible && p.awardRank>=1 && p.awardRank<=3).map(p=>h("article",{className:`award-podium-card${p.userId===selfId?" own":""}`,"data-award-rank":p.awardRank,"data-user-id":p.userId},
+    h("div",{className:"award-rank"},rankMark(p.awardRank)),h("div",{},h("h3",{},p.displayNameSnapshot),h("p",{className:"muted"},`Hạng lịch sử #${p.historyRank}`))));
+  const cups=awards.filter(a=>a.type==="CUP"&&a.value===1);
   return h("section",{className:"card award-ceremony","data-award-state":data.awardState},h("p",{className:"eyebrow"},"VINH DANH"),h("h2",{},"Thành tích đã được ghi nhận"),h("p",{className:"muted"},"Thứ hạng xét thưởng thuộc nhóm đủ điều kiện; thứ hạng thi đấu gốc vẫn được giữ."),
-    h("div",{className:"award-podium"},podium),
-    h("div",{className:"award-badges"},awards.filter(a=>a.type!=="CUP").map(a=>{const p=participants.find(p=>p.userId===a.userId);return h("article",{className:`award-badge${a.userId===selfId?" own":""}`,"data-award-id":a.awardId},awardEmblem(a.type),h("h3",{},title(a)),h("p",{},p?.displayNameSnapshot||"Người chơi"));})),
+    cups.length?h("div",{className:"award-cups"},cups.map(a=>h("article",{className:`award-cup${a.userId===selfId?" own":""}`,"data-award-id":a.awardId,"data-award-type":a.type},awardEmblem(a.type),h("div",{},h("p",{className:"eyebrow"},title(a)),h("h3",{},participants.find(p=>p.userId===a.userId)?.displayNameSnapshot||"Người chơi"))))):null,
+    h("div",{className:"award-badges"},awards.filter(a=>a.type!=="CUP").map(a=>{const p=participants.find(p=>p.userId===a.userId);return h("article",{className:`award-badge${a.userId===selfId?" own":""}`,"data-award-id":a.awardId,"data-award-type":a.type},awardEmblem(a.type),h("div",{},h("h3",{},title(a)),h("p",{},p?.displayNameSnapshot||"Người chơi"),a.type!=="FAST"&&a.modeKey&&a.modeKey!=="ALL"?h("small",{},MODE_LABELS[a.modeKey]||a.modeKey):null));})),
+    !awards.length?notice("Quyết định đã được ghi nhận; không có cúp hoặc danh hiệu được trao."):null,
+    podium.length?h("details",{className:"award-ranks"},h("summary",{},"Xem thứ hạng xét thưởng"),h("div",{className:"award-podium"},podium)):null,
     own?notice(own.eligible?`Của bạn: +${own.officialGameDelta} trận chính thức · +${own.officialWinDelta} trận thắng.`:"Bạn không thuộc nhóm đủ điều kiện nhận thưởng trận này.",own.eligible?"success":"info"):null);
 }
 

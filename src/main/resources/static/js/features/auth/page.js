@@ -18,7 +18,7 @@ export function accountPage(app, register) {
   const form=h("form",{id:register?"register-form":"login-form",className:"card auth-form","aria-labelledby":"auth-title"},
     h("nav",{className:"auth-tabs","aria-label":"Tài khoản"},login,signup),
     h("p",{className:"eyebrow"},"TÀI KHOẢN MULTIGAME"),
-    h("h2",{id:"auth-title"},register?"Sẵn sàng nhập cuộc?":"Chào mừng trở lại"),
+    h("h1",{id:"auth-title"},register?"Sẵn sàng nhập cuộc?":"Chào mừng trở lại"),
     h("p",{className:"muted auth-description"},register?"Tạo tài khoản để soạn câu hỏi và chơi cùng bạn bè.":"Đăng nhập để trở về phòng và tiếp tục cuộc chơi."),
     field("Tên đăng nhập",input("username",{required:true,minLength:3,maxLength:32,pattern:"[a-zA-Z0-9_]{3,32}",autocomplete:"username",autocapitalize:"none",spellcheck:false}),"3–32 chữ, số hoặc dấu gạch dưới."),
     register?field("Tên hiển thị",input("displayName",{required:true,maxLength:100,autocomplete:"nickname"})):null,
@@ -58,10 +58,11 @@ export function accountPage(app, register) {
     }
   });
   return h("div",{className:"auth-layout"},
-    h("section",{className:"auth-story"},h("a",{href:"#/login",className:"auth-brand"},h("span",{className:"auth-monogram","aria-hidden":"true"},"M"),"MultiGame"),
+    h("section",{className:"auth-story"},h("a",{href:"#/login",className:"auth-brand"},h("span",{className:"auth-monogram","aria-hidden":"true"},icon("gamepad")),"MultiGame"),
       h("p",{className:"eyebrow"},"PLAY · THINK · CONNECT"),
-      h("h1",{},"Cuộc chơi hay hơn khi có bạn."),
+      h("h2",{},"Cuộc chơi hay hơn khi có bạn."),
       h("p",{},"Biến những câu hỏi thành một buổi chơi cùng nhau. Tạo phòng, chia sẻ mã và sẵn sàng thử sức."),
+      h("div",{className:"auth-art","aria-hidden":"true"},h("span",{className:"auth-art-controller"},icon("gamepad")),h("span",{className:"auth-art-question"},icon("help")),h("span",{className:"auth-art-trophy"},icon("trophy")),h("span",{className:"auth-art-book"},icon("book"))),
       h("div",{className:"auth-preview","aria-label":"Cách bắt đầu"},
         h("div",{},icon("grid"),h("strong",{},"Chọn bộ câu hỏi"),h("span",{},"Bộ công khai hoặc bộ riêng của bạn")),
         h("div",{},icon("check"),h("strong",{},"Vào phòng cùng nhau"),h("span",{},"Chia sẻ mã để mời bạn bè")),

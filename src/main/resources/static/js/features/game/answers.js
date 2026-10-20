@@ -13,11 +13,12 @@ export function quizAnswers(s,{policy,selected,present,animateIndex,remaining,on
     const active=selected===k||p?.selectedOption===k;
     const content=s.question.options?.[k]??"Không có nội dung đáp án";
     const node=button("",()=>onSelect(k),{id:`option-${k}`,"data-option":k,"aria-label":`${k}. ${content}${mark}`,disabled:!policy.answer,className:"secondary "+(correct?"answer-correct ":wrong?"answer-wrong ":active?"selected ":"")+(pulse?"result-pulse":""),"aria-pressed":active});
-    node.append(h("span",{className:"option-key","aria-hidden":"true"},k),h("span",{},content+mark));
+    node.append(h("span",{className:"option-key","aria-hidden":"true"},k),h("span",{className:"option-content"},content));
+    if(mark||active)node.append(h("small",{className:"option-state","aria-hidden":"true"},correct?"✓ Đúng":wrong?"✕ Sai":"✓ Đã chọn"));
     if(pulse)node.style.animationDelay="-"+Math.max(0,1500-remaining())+"ms";
     options.append(node);
   }
-  const box=h("div",{className:"quiz-answer"},options);
+  const box=h("div",{className:"quiz-answer"},h("p",{className:"answer-section-label"},"Chọn đáp án của bạn"),options);
   if(!s.question.options || ["A","B","C","D"].some(k=>s.question.options[k]==null))box.prepend(notice("Nội dung đáp án chưa đầy đủ. Hãy đồng bộ lại trạng thái trận.","error"));
   if(s.phase==="QUESTION_OPEN"){
     if(!p?.alreadyAnswered && p?.state==="PLAYING")box.append(button("Gửi đáp án",onSubmit,{id:"submit-answer",disabled:!policy.answer || !selected}));
@@ -25,12 +26,12 @@ export function quizAnswers(s,{policy,selected,present,animateIndex,remaining,on
   }
   return box;
 }
-export function acceptedAnswer(){return h("p",{className:"notice info",id:"answer-accepted",role:"status"},"Đã gửi đáp án. Đang chờ kết quả…");}
+export function acceptedAnswer(){return h("p",{className:"notice info",id:"answer-accepted",role:"status"},"✓ Đã nhận đáp án · Chờ kết quả từ trận.");}
 export function textAnswer(s,{policy,textDraft,userId,onInput,onSubmit}) {
   const p=s.player,result=publishedResult(s)?s.results.find(r=>r.userId===userId):null;
   const answer=h("textarea",{id:"answer-text",name:"answerText",rows:3,maxLength:300,placeholder:"Nhập đáp án của bạn…",value:p?.submittedAnswer?.text??textDraft,disabled:!policy.answer,className:result?(result.outcome==="CORRECT"?"answer-correct":result.outcome==="WRONG"?"answer-wrong":""):""});
   answer.oninput=()=>onInput(answer.value);
-  const box=h("div",{className:"text-answer"});
+  const box=h("div",{className:"text-answer","data-answer-mode":s.question.mode});
   if(p)box.append(field("Đáp án của bạn",answer,"Giữ dấu tiếng Việt. Bấm Gửi đáp án để xác nhận; Enter xuống dòng."));
   if(s.phase==="QUESTION_OPEN" && p?.state==="PLAYING"){
     if(p.alreadyAnswered)box.append(acceptedAnswer());

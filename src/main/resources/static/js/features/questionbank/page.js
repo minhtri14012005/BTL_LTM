@@ -16,8 +16,9 @@ export async function questionBankList(app,page=0,scope="SHARED",mode="") {
     link("Của tôi","quizzes?scope=MINE"+(mode?"&mode="+mode:""),"catalogue-tab "+(scope==="MINE"?"is-active":"")),
     link("Chung","quizzes?scope=SHARED"+(mode?"&mode="+mode:""),"catalogue-tab "+(scope==="SHARED"?"is-active":"")));
   const filters=h("div",{className:"actions catalogue-filters"},tabs,modeDropdown(scope,mode));
-  return h("section",{},heading("Bộ câu hỏi",scope==="MINE"?"Tất cả bộ do bạn tạo, gồm công khai và riêng tư.":"Mọi bộ công khai, gồm cả bộ công khai của bạn.",link("Tạo bộ câu hỏi","quizzes/new","button")),filters,
-    result.items.length?h("div",{className:"card-grid"},result.items.map(q => h("article",{className:"card quiz-card"},h("div",{className:"card-top"},h("span",{className:"badge"},q.visibility==="PUBLIC"?"Công khai":"Riêng tư"),h("span",{className:"muted"},q.ownerUserId===app.user.id?"Của bạn":`Tác giả #${q.ownerUserId}`)),h("h2",{},link(q.title,`quiz/${q.id}`)),h("p",{className:"muted"},`${MODE_LABELS[q.mode]||q.mode} · ${q.questionCount} câu hỏi`),h("div",{className:"actions"},link("Xem chi tiết",`quiz/${q.id}`,"button secondary"),PLAYABLE_MODES.includes(q.mode)?link("Dùng để tạo phòng",`rooms/new?quiz=${q.id}`,"text-link"):h("span",{className:"muted"},"Chưa hỗ trợ chơi"))))):emptyState("Chưa có bộ câu hỏi nào để hiển thị."),
+  tabs.querySelectorAll("a").forEach(item=>{if(item.classList.contains("is-active"))item.setAttribute("aria-current","page");});
+  return h("section",{id:"question-bank",className:"catalogue-page"},heading("Bộ câu hỏi",scope==="MINE"?"Tất cả bộ do bạn tạo, gồm công khai và riêng tư.":"Mọi bộ công khai, gồm cả bộ công khai của bạn.",link([icon("book"),"Tạo bộ câu hỏi"],"quizzes/new","button")),filters,
+    result.items.length?h("div",{className:"card-grid"},result.items.map(q => h("article",{className:"card quiz-card","data-mode":q.mode,"data-quiz-id":q.id},h("div",{className:"card-top"},h("span",{className:"quiz-mode-symbol","aria-hidden":"true"},icon(({QUIZ:"help",SONG:"music",VIETNAMESE_PUZZLE:"type",RIDDLE:"help",CLUES:"search",IMAGE_WORD:"image",ORDERING:"sort"})[q.mode]||"book")),h("span",{className:"badge"},q.visibility==="PUBLIC"?"Công khai":"Riêng tư")),h("h2",{},link(q.title,`quiz/${q.id}`)),h("p",{className:"quiz-card-metadata"},`${MODE_LABELS[q.mode]||q.mode} · ${q.questionCount} câu hỏi`),h("p",{className:"quiz-author"},q.ownerUserId===app.user.id?"Của bạn":`Tác giả #${q.ownerUserId}`),h("div",{className:"actions"},link("Xem chi tiết",`quiz/${q.id}`,"button secondary"),PLAYABLE_MODES.includes(q.mode)?link("Dùng để tạo phòng",`rooms/new?quiz=${q.id}`,"text-link"):h("span",{className:"muted"},"Chưa hỗ trợ chơi"))))):emptyState("Chưa có bộ câu hỏi nào để hiển thị."),
     h("div",{className:"pagination"},page>0?link("← Trang trước",route(page-1),"button secondary"):null,h("span",{},`Trang ${page+1}`),(page+1)*result.size<result.totalElements?link("Trang sau →",route(page+1),"button secondary"):null));
 }
 function modeDropdown(scope,mode) {
@@ -46,18 +47,24 @@ function modeDropdown(scope,mode) {
 }
 export async function questionBankDetail(app,id) {
   const quiz=await app.api.request("GET",`/api/quizzes/${id}`);const questions=ownerQuestions(quiz,app.user);
-  const panel=h("section",{},heading(quiz.title,`${MODE_LABELS[quiz.mode]||quiz.mode} · ${quiz.questionCount} câu · ${quiz.visibility==="PUBLIC"?"Công khai":"Riêng tư"}`,PLAYABLE_MODES.includes(quiz.mode)?link("Tạo phòng với bộ này",`rooms/new?quiz=${id}`,"button"):null),
+  const panel=h("section",{id:"quiz-detail",className:"quiz-detail-page","data-mode":quiz.mode},heading(quiz.title,`${MODE_LABELS[quiz.mode]||quiz.mode} · ${quiz.questionCount} câu · ${quiz.visibility==="PUBLIC"?"Công khai":"Riêng tư"}`,PLAYABLE_MODES.includes(quiz.mode)?link("Tạo phòng với bộ này",`rooms/new?quiz=${id}`,"button"):null),
     questions?notice("Bạn là tác giả. Nội dung và đáp án dưới đây chỉ hiển thị với bạn."):notice("Bạn có thể dùng bộ công khai này để mở phòng. Nội dung và đáp án thuộc quyền xem của tác giả."));
   if(questions && PLAYABLE_MODES.includes(quiz.mode)) {
     const controls=h("div",{className:"actions"},link("Chỉnh sửa",`quiz/${id}/edit`,"button secondary"));
-    const confirm=confirmPanel("Xóa bộ câu hỏi này?","delete-confirm");confirm.append(button("Giữ lại",()=>setConfirmation(confirm,false),{className:"secondary"}));
+    const confirm=confirmPanel(`Xóa bộ câu hỏi “${quiz.title}”?`,"delete-confirm");confirm.append(button("Giữ lại",()=>setConfirmation(confirm,false),{className:"secondary"}));
     confirm.append(button("Xác nhận xóa",() => action(app,confirm,async () => {
       try{return await app.api.request("DELETE",`/api/quizzes/${id}?revision=${quiz.revision}`);}catch(e){e.retryable=false;throw e;}
     },() => {app.flash="Đã xóa bộ câu hỏi.";app.navigate("quizzes");}),{className:"danger",id:"confirm-delete-quiz"}));
     controls.append(button("Xóa bộ câu hỏi",event=>setConfirmation(confirm,true,event.currentTarget),{className:"danger secondary",id:"delete-quiz"}));panel.append(controls,confirm);
-    for(const q of questions) panel.append(h("article",{className:"card question-preview"},h("h2",{},`${q.position}. ${q.content}`),q.hints?releasedClues({hints:q.hints}):null,q.mediaRef?h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:videoOwnerUrl(id,q.mediaRef)}):null,q.imageRef?h("img",{className:"question-image",alt:"Ảnh câu hỏi",src:imageUrl(id,q.imageRef)}):null,(["CLUES","RIDDLE","IMAGE_WORD","SONG","VIETNAMESE_PUZZLE"].includes(quiz.mode))?notice("Đáp án / cách viết được chấp nhận: "+q.acceptedAnswers.join(" / ")):quiz.mode==="ORDERING"?notice("Thứ tự đúng: "+q.correctOrder.map(id=>q.items.find(v=>v.id===id).text).join(" → ")):h("ul",{className:"options"},OPTIONS.map(k => h("li",{className:k===q.correctAnswer?"correct":""},`${k}. ${q.options[k]}`,k===q.correctAnswer?h("span",{className:"badge"},"Đáp án đúng"):null)))));
+    for(const q of questions) panel.append(h("article",{className:"card question-preview"},h("h2",{},`${q.position}. ${q.content}`),q.hints?releasedClues({hints:q.hints}):null,q.mediaRef?mediaPreview(h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:videoOwnerUrl(id,q.mediaRef)})):null,q.imageRef?mediaPreview(h("img",{className:"question-image",alt:"Ảnh câu hỏi",src:imageUrl(id,q.imageRef)})):null,(["CLUES","RIDDLE","IMAGE_WORD","SONG","VIETNAMESE_PUZZLE"].includes(quiz.mode))?notice("Đáp án / cách viết được chấp nhận: "+q.acceptedAnswers.join(" / ")):quiz.mode==="ORDERING"?notice("Thứ tự đúng: "+q.correctOrder.map(id=>q.items.find(v=>v.id===id).text).join(" → ")):h("ul",{className:"options"},OPTIONS.map(k => h("li",{className:k===q.correctAnswer?"correct":""},`${k}. ${q.options[k]}`,k===q.correctAnswer?h("span",{className:"badge"},"Đáp án đúng"):null)))));
   }
   return panel;
+}
+function mediaPreview(node){
+  const status=h("p",{className:"media-preview-status muted",role:"status"},"Đang tải nội dung xem trước…"),box=h("figure",{className:"bank-media-preview"},node,status);
+  node.addEventListener(node.tagName==="VIDEO"?"loadedmetadata":"load",()=>status.remove(),{once:true});
+  node.addEventListener("error",()=>{node.hidden=true;status.remove();box.append(notice("Không tải được nội dung xem trước. Kiểm tra tệp hoặc chọn lại media.","error"));},{once:true});
+  return box;
 }
 function videoOwnerUrl(id,ref){return `/api/quizzes/${id}/videos/${ref.slice(7)}`;}
 function imageUrl(id,ref) { return `/api/quizzes/${id}/images/${ref.slice(7)}`; }
@@ -65,10 +72,10 @@ export async function questionBankEditor(app,id) {
   const quiz=id?await app.api.request("GET",`/api/quizzes/${id}`):null;
   if(quiz && !PLAYABLE_MODES.includes(quiz.mode))return notice("Chưa hỗ trợ biên soạn chế độ này.","error");
   if(quiz && !ownerQuestions(quiz,app.user)) return notice("Chỉ tác giả được chỉnh sửa bộ câu hỏi này.","error");
-  const list=h("div",{id:"question-list"});const count=h("span",{className:"muted"});
+  const list=h("div",{id:"question-list"});const count=h("span",{className:"quiz-question-count",id:"quiz-question-count",role:"status"});let questionNodeId=0;
   const title=input("title",{required:true,maxLength:200,value:quiz?.title||""});const visibility=select("visibility",[["PUBLIC","Công khai"],["PRIVATE","Riêng tư"]],quiz?.visibility);
   const mode=select("mode",PLAYABLE_MODES.map(m=>[m,MODE_LABELS[m]]),quiz?.mode||"QUIZ");mode.disabled=!!quiz;
-  const form=h("form",{id:"quiz-form"},h("div",{className:"card form-grid"},field("Tên bộ câu hỏi",title),field("Quyền hiển thị",visibility),field("Chế độ",mode,id?"Chế độ cố định sau khi tạo.":"Quiz chọn4 đáp án; Đố mẹo/Đuổi hình/Đoán bài hát/Dấu vết nhập chữ; Vua Tiếng Việt/Trình tự sắp xếp các mục.")),list);
+  const form=h("form",{id:"quiz-form"},h("section",{className:"card quiz-metadata"},h("div",{className:"section-heading"},h("span",{className:"quiz-mode-symbol","aria-hidden":"true"},icon("book")),h("div",{},h("p",{className:"eyebrow"},"THÔNG TIN BỘ CÂU HỎI"),h("h2",{},"Thiết lập chung"))),h("div",{className:"form-grid"},field("Tên bộ câu hỏi",title),field("Quyền hiển thị",visibility),field("Chế độ",mode,id?"Chế độ cố định sau khi tạo.":"Quiz chọn4 đáp án; Đố mẹo/Đuổi hình/Đoán bài hát/Dấu vết nhập chữ; Vua Tiếng Việt/Trình tự sắp xếp các mục."))),h("div",{className:"quiz-questions-heading"},h("h2",{},"Nội dung câu hỏi"),h("p",{className:"muted"},"Soạn câu hỏi, đáp án và media theo từng chế độ.")),list);
   const renumber=() => {list.querySelectorAll("legend").forEach((n,i) => n.textContent=`Câu ${i+1}`);count.textContent=`${list.children.length}/50 câu`;};
   const add=(q={content:"",options:{A:"",B:"",C:"",D:""},correctAnswer:"",imageRef:null}) => {
     if(list.children.length>=50) return;
@@ -81,17 +88,22 @@ export async function questionBankEditor(app,id) {
       field("Đáp án đúng",select("correctAnswer",[["","Chọn một đáp án"],...OPTIONS.map(k => [k,k])],q.correctAnswer)));
     if(mode.value==="SONG") {
       const preview=h("div",{className:"video-box"}),file=input("video",{type:"file",accept:"video/mp4,.mp4"});
-      const show=()=>preview.replaceChildren(row.dataset.mediaRef?h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:row.dataset.draftVideo==="true" || !id?'/api/quizzes/videos/drafts/'+row.dataset.mediaRef.slice(7):videoOwnerUrl(id,row.dataset.mediaRef)}):h("small",{className:"muted"},"Chưa có video."));show();
-      file.onchange=()=>{const selected=file.files[0];if(!selected){show();return;}if(selected.size>20*1024*1024){preview.replaceChildren(notice("Video tối đa20 MiB.","error"));return;}const reader=new FileReader();reader.onload=()=>{if(file.files[0]===selected)preview.replaceChildren(h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:reader.result}));};reader.readAsDataURL(selected);};
+      const show=()=>preview.replaceChildren(row.dataset.mediaRef?mediaPreview(h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:row.dataset.draftVideo==="true" || !id?'/api/quizzes/videos/drafts/'+row.dataset.mediaRef.slice(7):videoOwnerUrl(id,row.dataset.mediaRef)})):h("small",{className:"muted"},"Chưa có video."));show();
+      file.onchange=()=>{const selected=file.files[0];if(!selected){show();return;}if(selected.size>20*1024*1024){preview.replaceChildren(notice("Video tối đa20 MiB.","error"));return;}const reader=new FileReader();reader.onload=()=>{if(file.files[0]===selected)preview.replaceChildren(mediaPreview(h("video",{className:"song-video video-preview",controls:true,preload:"metadata",playsInline:true,src:reader.result})));};reader.readAsDataURL(selected);};
       row.append(field("Video đã cắt, có hình và tiếng (bắt buộc)",file,"MP4 H.264/AAC-LC, tối đa20 MiB/120 giây/1080p; Server kiểm tra khi lưu."),preview,button("Bỏ video",()=>{row.dataset.mediaRef="";file.value="";show();},{className:"secondary"}));
     }
     if(mode.value==="IMAGE_WORD" || id && mode.value==="QUIZ") {
       const imageBox=h("div",{className:"image-box"});const file=input("image",{type:"file",accept:"image/png,image/jpeg"});
-      const showImage=() => {imageBox.replaceChildren(row.dataset.imageRef?h("img",{src:row.dataset.draftImage==="true" || !id?`/api/quizzes/images/drafts/${row.dataset.imageRef.slice(7)}`:imageUrl(id,row.dataset.imageRef),alt:"Ảnh câu hỏi",className:"question-image"}):h("small",{className:"muted"},"Chưa có ảnh."));};showImage();
-      file.onchange=()=>{const selected=file.files[0];if(!selected){showImage();return;}const reader=new FileReader();reader.onload=()=>{if(file.files[0]===selected)imageBox.replaceChildren(h("img",{src:reader.result,alt:"Xem trước ảnh đã chọn",className:"question-image"}));};reader.readAsDataURL(selected);};
+      const showImage=() => {imageBox.replaceChildren(row.dataset.imageRef?mediaPreview(h("img",{src:row.dataset.draftImage==="true" || !id?`/api/quizzes/images/drafts/${row.dataset.imageRef.slice(7)}`:imageUrl(id,row.dataset.imageRef),alt:"Ảnh câu hỏi",className:"question-image"})):h("small",{className:"muted"},"Chưa có ảnh."));};showImage();
+      file.onchange=()=>{const selected=file.files[0];if(!selected){showImage();return;}const reader=new FileReader();reader.onload=()=>{if(file.files[0]===selected)imageBox.replaceChildren(mediaPreview(h("img",{src:reader.result,alt:"Xem trước ảnh đã chọn",className:"question-image"})));};reader.readAsDataURL(selected);};
       row.append(field(mode.value==="IMAGE_WORD"?"Ảnh gợi từ/cụm từ (bắt buộc)":"Ảnh tùy chọn",file,"PNG hoặc JPEG, tối đa 2 MiB; lưu cùng thay đổi."),imageBox,button("Bỏ ảnh",()=>{row.dataset.imageRef="";file.value="";showImage();},{className:"secondary"}));
     } else if(mode.value==="QUIZ")row.append(h("small",{className:"muted"},"Sau khi lưu, bạn có thể thêm ảnh cho từng câu ở màn chỉnh sửa."));
-    row.append(button("Xóa câu này",()=>{if(list.children.length>1){row.remove();renumber();}},{className:"text-button danger"}));list.append(row);renumber();
+    row.append(button("Xóa câu này",()=>{if(list.children.length>1){row.remove();renumber();}},{className:"text-button danger"}));
+    const nodeId=++questionNodeId;
+    row.querySelectorAll("input,textarea,select").forEach((control,i)=>{control.id=`question-${nodeId}-control-${i}`;});
+    const body=h("details",{className:"question-editor-body",open:q.position==null||list.children.length===0},h("summary",{},"Nội dung, đáp án và media"));
+    body.addEventListener("invalid",()=>{body.open=true;},true);
+    [...row.children].filter(node=>node.tagName!=="LEGEND").forEach(node=>body.append(node));row.append(body);list.append(row);renumber();
   };
   (quiz?.questions || [undefined]).forEach(q => add(q));
   let previousMode=mode.value;
@@ -125,5 +137,5 @@ export async function questionBankEditor(app,id) {
       } catch(error) {error.retryable=false;if(error.code==="REQUEST_UNCERTAIN") error.message="Chưa có xác nhận lưu. Mở danh sách hoặc tải lại bộ này để kiểm tra trước khi gửi lại.";throw error;}
     },saved=>{app.flash=id?"Đã lưu bộ câu hỏi.":mode.value==="QUIZ"?"Đã tạo bộ câu hỏi. Bạn có thể thêm ảnh khi chỉnh sửa.":"Đã tạo bộ "+MODE_LABELS[mode.value]+".";app.navigate(id?`quiz/${saved.id}`:`quiz/${saved.id}/edit`);});
   });
-  return h("section",{},heading(id?"Chỉnh sửa bộ câu hỏi":"Tạo bộ câu hỏi","Biên soạn Quiz, Đố mẹo, Đuổi hình, Đoán bài hát, Truy tìm dấu vết, Vua Tiếng Việt hoặc Sắp xếp trình tự. Trận nhiều màn chọn1–50 câu tổng cộng; phòng Quiz cũ vẫn cần10–50 câu."),form);
+  return h("section",{id:"quiz-editor",className:"quiz-editor-page"},heading(id?"Chỉnh sửa bộ câu hỏi":"Tạo bộ câu hỏi","Biên soạn Quiz, Đố mẹo, Đuổi hình, Đoán bài hát, Truy tìm dấu vết, Vua Tiếng Việt hoặc Sắp xếp trình tự. Trận nhiều màn chọn1–50 câu tổng cộng; phòng Quiz cũ vẫn cần10–50 câu."),form);
 }

@@ -12,7 +12,7 @@ export async function kickPanel(app,gameId){
     let request=null,working=false;
     const eligible=player.role!=="HOST" && player.participation==="PLAYER" && player.accountRole!=="ADMIN" && !player.restricted;
     const row=h("section",{className:"admin-kick-player","data-user-id":player.userId}),feedback=h("div",{className:"kick-feedback","aria-live":"polite"});
-    const confirm=confirmPanel(`Đưa ${player.displayName} ra khỏi trận #${gameId}?`),reason=input("kickReason",{required:true,maxLength:240,placeholder:"Lý do ngắn gọn"});
+    const confirm=confirmPanel(`Đưa ${player.displayName} (#${player.userId}) ra khỏi trận #${gameId}?`),reason=input("kickReason",{id:`kickReason-${gameId}-${player.userId}`,required:true,maxLength:240,placeholder:"Lý do ngắn gọn"});
     const submit=h("button",{type:"submit",className:"danger"},"Xác nhận Kick"),form=h("form",{className:"kick-form"},field("Lý do",reason),submit);
     const opener=button(player.restricted?"Đã Kick":eligible?"Kick":"Không thể Kick",()=>setConfirmation(confirm,true,opener),{className:"danger secondary","data-action":"kick",disabled:!eligible});
     confirm.append(button("Hủy",()=>setConfirmation(confirm,false),{className:"secondary"}),form);

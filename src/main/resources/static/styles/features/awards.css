@@ -1,19 +1,43 @@
+/* G5 ceremonies show only committed Server decisions; no entitlement calculations. */
 .award-panel { margin-block: var(--space-4); min-width: 0; }
-.award-ceremony { border-color: var(--accent); overflow-wrap: anywhere; }
-.award-podium { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: var(--space-3); margin-block: var(--space-4); }
-.award-podium-card { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; }
-.award-podium-card.own, .award-badge.own { border-color: var(--accent); }
-.award-rank { color: var(--accent); font-size: 1.75rem; font-weight: 800; }
-.award-cup { display: flex; align-items: center; gap: var(--space-2); color: var(--accent); font-weight: 700; }
-.award-badges { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.award-badge { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); flex: 1 1 180px; min-width: 0; }
-.award-badge h3 { font-size: 1rem; }
-.award-ceremony { background: radial-gradient(ellipse at top right, #f4d3870d, transparent 65%), var(--surface); }
-.award-podium-card[data-award-rank="1"] { border-top: 3px solid #f4d387; }
-.award-podium-card[data-award-rank="2"] { border-top: 3px solid #cedaeb; }
-.award-podium-card[data-award-rank="3"] { border-top: 3px solid #e9ae8c; }
-.award-rank .icon { width: 32px; height: 32px; }
-.award-cup .achievement-emblem { width: 36px; height: 36px; border-radius: 10px; }
-.award-cup .achievement-emblem .icon { width: 22px; height: 22px; }
-.award-badge > .achievement-emblem { margin-bottom: var(--space-2); }
-.award-badge h3, .award-badge p { overflow-wrap: anywhere; }
+.award-ceremony { border-color: var(--border-highlight); overflow-wrap: anywhere; background: radial-gradient(ellipse at top right,var(--glow-gold),transparent 60%),var(--panel-gradient); }
+.award-ceremony > h2 { font-size: 1.375rem; }
+.award-ceremony > .muted { font-size: .875rem; }
+.award-state { display: flex; align-items: flex-start; gap: var(--space-4); }
+.award-state > div { min-width: 0; flex: 1; }
+.award-state .eyebrow { margin-top: 0; }
+.award-state-symbol { display: grid; place-items: center; flex: 0 0 44px; height: 44px; color: var(--info); background: var(--blue-soft); border: 1px solid var(--border); border-radius: var(--radius); }
+.award-cups { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: var(--space-3); margin-block: var(--space-5); }
+.award-cup { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--gold); border-radius: var(--radius-lg); background: radial-gradient(ellipse at 0 0,var(--glow-gold),transparent 75%),linear-gradient(135deg,var(--gold-soft),var(--surface-inset)); box-shadow: var(--shadow); min-width: 0; }
+.award-cup > div { min-width: 0; }
+.award-cup .eyebrow { color: var(--gold); margin: 0 0 var(--space-2); font-size: .8125rem; }
+.award-cup h3 { font-size: 1.375rem; color: var(--text-strong); margin: 0; }
+.award-cup .achievement-emblem { width: 64px; height: 64px; flex: 0 0 64px; border-radius: var(--radius); animation: ui-enter var(--motion-enter) var(--ease-out); }
+.award-cup .achievement-emblem .icon { width: 36px; height: 36px; }
+.award-badges { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-3); margin-block: var(--space-5); }
+.award-badge { display: flex; align-items: flex-start; gap: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); background: var(--surface-inset); min-width: 0; box-shadow: inset 0 1px 0 var(--light-edge); }
+.award-badge > div { min-width: 0; }
+.award-badge.own { border-color: var(--accent); }
+.award-badge h3 { font-size: 1rem; margin: 0 0 var(--space-2); }
+.award-badge p { font-size: .875rem; margin: 0; color: var(--muted); }
+.award-badge > .achievement-emblem { width: 44px; height: 44px; flex: 0 0 44px; }
+.award-badge[data-award-type="FAST"] { border-top-color: var(--blue); }
+.award-badge[data-award-type="PERFECT"] { border-top-color: var(--violet); }
+.award-badge[data-award-type="MULTITALENT"] { border-top-color: var(--pink); }
+.award-badge[data-award-type="COMEBACK"] { border-top-color: var(--accent); }
+.award-ranks { border-top: 1px solid var(--border); }
+.award-podium { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,190px),1fr)); gap: var(--space-3); margin-block: var(--space-3); }
+.award-podium-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-inset); min-width: 0; }
+.award-podium-card.own { border-color: var(--accent); }
+.award-podium-card h3 { font-size: .875rem; margin: 0; }
+.award-podium-card p { font-size: .8125rem; margin: var(--space-1) 0 0; }
+.award-podium-card > div { min-width: 0; }
+.award-rank .rank-mark { min-width: 44px; }
+.award-panel .achievement-tabs { padding-top: var(--space-2); }
+@media (max-width:760px) {
+ .award-badges { grid-template-columns: minmax(0,1fr); }
+ .award-cup { padding: var(--space-4); gap: var(--space-3); }
+ .award-cup .achievement-emblem { width: 48px; height: 48px; flex-basis: 48px; }
+ .award-state { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion:reduce) { .award-panel *, .award-ceremony * { animation: none !important; transition: none !important; } }

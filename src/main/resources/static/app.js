@@ -5,6 +5,7 @@ import {messages} from "/js/core/protocol.js";
 import {HashRouter} from "/js/core/router.js";
 import {latestRoom} from "/js/features/room/state.js";
 import {h,button,link,notice,disposeMedia} from "/js/shared/dom.js";
+import {icon} from "/js/shared/icons.js";
 import {accountPage} from "/js/features/auth/page.js";
 import {homePage} from "/js/features/lobby/home.js";
 import {questionBankList,questionBankDetail,questionBankEditor} from "/js/features/questionbank/page.js";
@@ -38,11 +39,17 @@ class App {
     this.gameController?.receive(m);}
   enterGame(id){if(location.hash!==`#/game/${id}`)this.navigate(`game/${id}`);}
   shell(){const side=document.querySelector("#sidebar");side.hidden=!this.user;document.body.classList.toggle("signed-in",!!this.user);side.replaceChildren();if(!this.user){document.querySelector("#connection-banner").replaceChildren();return;}
+    const {parts,url}=this.router.read();
+    const section=({quiz:"quizzes",room:"rooms"})[parts[0]]||parts[0]||"home";
+    const adminTab=["games","users","orphans"].includes(url.searchParams.get("tab"))?url.searchParams.get("tab"):"games";
+    const navLink=(label,path,name,active)=>{const item=link([icon(name),h("span",{},label)],path);if(active)item.setAttribute("aria-current","page");return item;};
+    const brand=path=>link([h("span",{className:"brand-mark","aria-hidden":"true"},icon("gamepad")),h("span",{},"MultiGame")],path,"brand");
+    const revealCurrent=()=>{const nav=side.querySelector("nav"),active=nav?.querySelector('[aria-current="page"]');if(active && nav.scrollWidth>nav.clientWidth)nav.scrollLeft=Math.max(0,active.offsetLeft-nav.offsetLeft-12);};
     if(this.user.role==="ADMIN"){
-      side.append(link("M / MultiGame","admin","brand"),h("nav",{},link("Trận đang chơi","admin?tab=games"),link("Tài khoản","admin?tab=users"),link("Phòng thiếu Host","admin?tab=orphans")),h("div",{className:"account-info"},h("strong",{},this.user.displayName),h("small",{},`@${this.user.username}`),h("span",{className:"badge"},"ADMIN"),button("Đăng xuất",()=>this.logout(),{className:"secondary",id:"logout"})));
-      document.querySelector("#connection-banner").replaceChildren();return;
+      side.append(brand("admin"),h("nav",{"aria-label":"Điều hướng quản trị"},navLink("Trận đang chơi","admin?tab=games","grid",adminTab==="games"),navLink("Tài khoản","admin?tab=users","inbox",adminTab==="users"),navLink("Phòng thiếu Host","admin?tab=orphans","warning",adminTab==="orphans")),h("div",{className:"account-info"},h("strong",{title:this.user.displayName},this.user.displayName),h("small",{},`@${this.user.username}`),h("span",{className:"badge"},"ADMIN"),button("Đăng xuất",()=>this.logout(),{className:"secondary",id:"logout"})));
+      revealCurrent();document.querySelector("#connection-banner").replaceChildren();return;
     }
-    side.append(link("M / MultiGame","home","brand"),h("p",{className:"nav-label"},"KHÔNG GIAN CỦA BẠN"),h("nav",{},link("Tổng quan","home"),link("Bộ câu hỏi","quizzes"),link("Phòng của tôi","rooms"),link("Tham gia phòng","join"),link("Lịch sử","history"),link("Hồ sơ","profile"),link("Sảnh danh vọng","leaderboard")),h("div",{className:"account-info"},h("strong",{},this.user.displayName),h("small",{},`@${this.user.username}`),h("span",{id:"connection-status",className:"connection"}),button("Đăng xuất",()=>this.logout(),{className:"secondary",id:"logout"})));this.connection(this.transport.status);}
+    side.append(brand("home"),h("p",{className:"nav-label"},"KHÔNG GIAN CỦA BẠN"),h("nav",{"aria-label":"Điều hướng chính"},navLink("Tổng quan","home","home",section==="home"),navLink("Bộ câu hỏi","quizzes","grid",section==="quizzes"),navLink("Phòng của tôi","rooms","inbox",section==="rooms"),navLink("Tham gia phòng","join","check",section==="join"),navLink("Lịch sử","history","sort",section==="history"),navLink("Hồ sơ","profile","medal",section==="profile"),navLink("Sảnh danh vọng","leaderboard","trophy",section==="leaderboard")),h("div",{className:"account-info"},h("strong",{title:this.user.displayName},this.user.displayName),h("small",{},`@${this.user.username}`),h("span",{id:"connection-status",className:"connection"}),button("Đăng xuất",()=>this.logout(),{className:"secondary",id:"logout"})));revealCurrent();this.connection(this.transport.status);}
   async render(){const version=++this.renderVersion;this.disposePage();const view=document.querySelector("#view");this.shell();view.replaceChildren(loadingState());
     const {url,parts}=this.router.read();let page;
     try{if(!this.user)page=accountPage(this,parts[0]==="register");
