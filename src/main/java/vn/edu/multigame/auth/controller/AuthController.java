@@ -58,6 +58,10 @@ public class AuthController {
         });
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(user);
     }
+    @PutMapping("/profile")
+    ResponseEntity<UserResponse> profile(Authentication auth, @Valid @RequestBody ProfileRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(users.updateProfile(auth, request));
+    }
     @GetMapping("/me")
     ResponseEntity<UserResponse> me(Authentication authentication, HttpServletRequest request) {
         var user = users.requireActiveUser(authentication);
@@ -77,6 +81,13 @@ public class AuthController {
         String path = request.getContextPath().isEmpty() ? "/" : request.getContextPath();
         response.addHeader(HttpHeaders.SET_COOKIE, ResponseCookie.from("JSESSIONID", "").path(path)
                 .httpOnly(true).secure(request.isSecure()).sameSite("Lax").maxAge(0).build().toString());
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
+    @PostMapping("/keepalive")
+    ResponseEntity<Void> keepalive(Authentication authentication,HttpServletRequest request) {
+        var user=users.requireActiveUser(authentication);var session=request.getSession(false);
+        if(session==null)throw AuthService.unauthorized();
+        sessions.requireValid(session.getId(),user.getId());
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 }

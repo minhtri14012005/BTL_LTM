@@ -28,7 +28,7 @@ import vn.edu.multigame.realtime.message.event.RoomEvent;
 @Profile("mysql")
 public class AuthenticatedSocketRegistry {
     private final ConcurrentHashMap<String, Set<WebSocketSession>> sockets = new ConcurrentHashMap<>();
-    private record Binding(String sessionId,long userId,long generation,WebSocketSession outbound,SocketOutbound sender,Set<Long> rooms) {}
+    private record Binding(String sessionId,long userId,long generation,WebSocketSession outbound,SocketOutbound sender,Set<Long> rooms,Set<Long> lessons) {}
     private final Map<String,Binding> bindings=new ConcurrentHashMap<>();
     private final Map<Long,Binding> active=new ConcurrentHashMap<>();
     private final java.util.concurrent.atomic.AtomicLong generations=new java.util.concurrent.atomic.AtomicLong();
@@ -74,7 +74,7 @@ public class AuthenticatedSocketRegistry {
                 // decorator would overwrite our explicit timeout close status.
                 var outbound=socket;
                 var sender=new SocketOutbound(outbound,writers,watchdog,status->remove(sessionId,socket));
-                var created=new Binding(sessionId,userId,generations.incrementAndGet(),outbound,sender,ConcurrentHashMap.newKeySet());
+                var created=new Binding(sessionId,userId,generations.incrementAndGet(),outbound,sender,ConcurrentHashMap.newKeySet(),ConcurrentHashMap.newKeySet());
                 bindings.put(socket.getId(),created);
                 sockets.compute(sessionId,(id,existing) -> {
                     Set<WebSocketSession> set=existing==null?ConcurrentHashMap.newKeySet():existing;
@@ -156,11 +156,18 @@ public class AuthenticatedSocketRegistry {
     }
     /** Network failure closes this connection, never rolls back or repeats a committed operation. */
     public void send(WebSocketSession socket,Object message) {
+        send(socket,message,()->true);
+    }
+    public void sendToUser(long userId,Object message,java.util.function.BooleanSupplier permission) {
+        var binding=active.get(userId);if(binding!=null)send(binding.outbound(),message,permission);
+    }
+    public void send(WebSocketSession socket,Object message,java.util.function.BooleanSupplier permission) {
         Binding binding=bindings.get(socket.getId()); if(binding==null) return;
         if(active.get(binding.userId())!=binding) return;
         try {
             var auth=socket.getPrincipal() instanceof Authentication a?a:null;
             users.requireActiveUser(auth);sessions.requireValid(binding.sessionId(),binding.userId());
+            if(!permission.getAsBoolean())return;
             Long game=gameScope(message);
             if(game!=null && gameAccess.restricted(game,binding.userId()))return;
             binding.sender().send(new TextMessage(json.writeValueAsString(message)),()->{
@@ -171,13 +178,26 @@ public class AuthenticatedSocketRegistry {
                     if(accountAccess!=null && socket.getPrincipal() instanceof Authentication a && a.getPrincipal() instanceof vn.edu.multigame.auth.security.AuthPrincipal p && !accountAccess.beginSend(binding.userId(),p.authEpoch()))return false;
                 }catch(AuthFailure expired){close(socket,new CloseStatus(4001,expired.socketReason()));return false;}
                 catch(org.springframework.dao.DataAccessException unavailable){close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));return false;}
-                return game==null || gameAccess.beginSend(game,binding.userId());
+                return permission.getAsBoolean() && (game==null || gameAccess.beginSend(game,binding.userId()));
             });
         }
         catch(AuthFailure failure){close(socket,new CloseStatus(4001,failure.socketReason()));}
         catch(IOException | RuntimeException failure) {
             binding.sender().abort(new CloseStatus(1011,"SEND_UNAVAILABLE"));
         }
+    }
+    public void subscribeLesson(WebSocketSession socket,long lesson) {
+        requireLessonSubscriptionCapacity(socket,lesson);var binding=bindings.get(socket.getId());
+        binding.lessons().add(lesson);
+    }
+    public void requireLessonSubscriptionCapacity(WebSocketSession socket,long lesson) {
+        requireCurrent(socket);var binding=bindings.get(socket.getId());
+        if(!binding.lessons().contains(lesson) && binding.lessons().size()>=32) throw new java.util.concurrent.RejectedExecutionException("SUBSCRIPTION_LIMIT_REACHED");
+    }
+    public void unsubscribeLesson(WebSocketSession socket,long lesson) {var binding=bindings.get(socket.getId());if(binding!=null)binding.lessons().remove(lesson);}
+    public Map<Long,java.util.List<WebSocketSession>> lessonSubscriptions() {
+        Map<Long,java.util.List<WebSocketSession>> result=new java.util.HashMap<>();
+        bindings.values().forEach(b->b.lessons().forEach(id->result.computeIfAbsent(id,k->new java.util.ArrayList<>()).add(b.outbound())));return result;
     }
     private Long gameScope(Object message){
         if(message instanceof vn.edu.multigame.realtime.message.event.GameEvent e)return e.target().id();

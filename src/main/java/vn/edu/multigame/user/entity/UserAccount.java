@@ -13,7 +13,16 @@ public class UserAccount extends IdentityEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "role", nullable = false, length = 16)
-    private UserRole role = UserRole.USER;
+    private UserRole role = UserRole.SINH_VIEN;
+
+    @Column(name = "ma_sinh_vien", length = 32)
+    private String maSinhVien;
+    public String getMaSinhVien() { return maSinhVien; }
+    public void setMaSinhVien(String value) { maSinhVien = value; }
+
+    @Column(name = "account_status", length = 16, insertable = false, updatable = false)
+    private String status;
+    public String getStatus() { return status == null ? "ACTIVE" : status; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole value) { role = value; }

@@ -24,12 +24,16 @@ public class QuestionBankController {
     ResponseEntity<QuestionBankListResponse> list(Authentication auth, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "VISIBLE") vn.edu.multigame.questionbank.enums.QuestionBankScope scope,
-            @RequestParam(required = false) vn.edu.multigame.game.enums.GameMode mode) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.list(auth, page, size, scope, mode));
+            @RequestParam(required = false) vn.edu.multigame.game.enums.GameMode mode, @RequestParam(defaultValue="") String q) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.list(auth, page, size, scope, mode, q));
     }
     @GetMapping("/{id}")
     ResponseEntity<Object> get(Authentication auth, @PathVariable long id) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.get(auth, id));
+    }
+    @GetMapping("/{id}/preview")
+    ResponseEntity<Object> preview(Authentication auth,@PathVariable long id) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.get(auth,id));
     }
     @PutMapping("/{id}")
     ResponseEntity<QuestionBankOwnerResponse> edit(Authentication auth, @PathVariable long id, @Valid @RequestBody EditQuestionBankRequest request) {
@@ -57,14 +61,6 @@ public class QuestionBankController {
             @RequestParam(required = false) Long gameSessionId) {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).cacheControl(CacheControl.noStore())
                 .header("X-Content-Type-Options", "nosniff").body(quizzes.image(auth, id, hash, gameSessionId));
-    }
-    @PostMapping(value="/{id}/videos",consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<VideoResponse> uploadVideo(Authentication auth,@PathVariable long id,@RequestPart("file") MultipartFile file) {
-        return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore()).body(quizzes.uploadVideo(auth,id,file));
-    }
-    @PostMapping(value="/videos/drafts",consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<VideoResponse> uploadDraftVideo(Authentication auth,@RequestPart("file") MultipartFile file) {
-        return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore()).body(quizzes.uploadDraftVideo(auth,file));
     }
     @GetMapping("/videos/drafts/{hash}")
     ResponseEntity<org.springframework.core.io.Resource> draftVideo(Authentication auth,@PathVariable String hash) {

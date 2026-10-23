@@ -37,11 +37,28 @@ public class AuthService {
             throw new AuthFailure(HttpStatus.CONFLICT, "USERNAME_TAKEN", "Tên đăng nhập đã tồn tại.");
         }
         UserAccount user = new UserAccount();
-        user.setRole(vn.edu.multigame.user.enums.UserRole.USER);
-        user.setUsername(username); user.setDisplayName(request.displayName().strip());
+        user.setRole(vn.edu.multigame.user.enums.UserRole.SINH_VIEN);
+        user.setUsername(username); user.setDisplayName(request.hoTen().strip());
         user.setPasswordHash(passwords.encode(request.password()));
         user.setCreatedAtMs(System.currentTimeMillis());
+        user.setMaSinhVien(request.maSinhVien().toUpperCase(Locale.ROOT));
         return UserResponse.from(users.saveAndFlush(user));
+    }
+    @Transactional
+    public UserResponse updateProfile(Authentication auth, vn.edu.multigame.auth.dto.request.ProfileRequest request) {
+        var current = requireActiveUser(auth);
+        access.requireLocked(current.getId());
+        access.requireSession(current.getId(), ((AuthPrincipal)auth.getPrincipal()).authEpoch());
+        if (current.getRole() != vn.edu.multigame.user.enums.UserRole.SINH_VIEN)
+            throw new AuthFailure(HttpStatus.FORBIDDEN, "FORBIDDEN", "Profile sinh viên chỉ dành cho sinh viên.");
+        var user = users.findLockedById(current.getId()).orElseThrow(AuthService::unauthorized);
+        user.setDisplayName(request.hoTen().strip());
+        user.setMaSinhVien(request.maSinhVien().toUpperCase(Locale.ROOT));
+        return UserResponse.from(users.saveAndFlush(user));
+    }
+    public void requireCompleteProfile(UserAccount user) {
+        if (user.getRole() == vn.edu.multigame.user.enums.UserRole.SINH_VIEN && user.getMaSinhVien() == null)
+            throw new AuthFailure(HttpStatus.FORBIDDEN, "PROFILE_REQUIRED", "Hãy hoàn thiện họ tên và mã sinh viên.");
     }
     @Transactional(readOnly = true)
     public UserAccount requireActiveUser(Authentication authentication) {

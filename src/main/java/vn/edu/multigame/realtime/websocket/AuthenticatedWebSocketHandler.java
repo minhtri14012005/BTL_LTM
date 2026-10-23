@@ -19,6 +19,7 @@ public class AuthenticatedWebSocketHandler extends AbstractWebSocketHandler {
     private final AuthSessionRegistry sessions;
     private final AuthenticatedSocketRegistry sockets;
     private final WaitingRoomAdapter waiting;
+    @org.springframework.beans.factory.annotation.Autowired private LessonCommandAdapter lessons;
     public AuthenticatedWebSocketHandler(AuthService users, AuthSessionRegistry sessions,
             AuthenticatedSocketRegistry sockets,WaitingRoomAdapter waiting) {
         this.users = users; this.sessions = sessions; this.sockets = sockets; this.waiting=waiting;
@@ -52,7 +53,9 @@ public class AuthenticatedWebSocketHandler extends AbstractWebSocketHandler {
         catch (DataAccessException failure) { socket.close(new CloseStatus(1011, "AUTH_UNAVAILABLE")); }
     }
     @Override protected void handleTextMessage(WebSocketSession socket, TextMessage message) throws Exception {
-        try { validate(socket);if(adminChannel(socket)){socket.close(new CloseStatus(1008,"READ_ONLY_ADMIN"));return;}waiting.text(socket,message.getPayload(),()->validate(socket)); }
+        try { validate(socket);if(adminChannel(socket)){socket.close(new CloseStatus(1008,"READ_ONLY_ADMIN"));return;}
+            if(lessons!=null && lessons.handles(message.getPayload()))lessons.text(socket,message.getPayload(),()->validate(socket));
+            else waiting.text(socket,message.getPayload(),()->validate(socket)); }
         catch(WaitingRoomCommandParser.Unsupported e) { socket.close(new CloseStatus(1008,"UNSUPPORTED_MESSAGE")); }
         catch(AuthFailure e) { socket.close(new CloseStatus(4001,e.socketReason())); }
         catch(vn.edu.multigame.realtime.connection.SocketReplaced e) { socket.close(new CloseStatus(4002,"SESSION_REPLACED")); }

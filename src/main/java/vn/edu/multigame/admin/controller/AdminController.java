@@ -17,7 +17,8 @@ public class AdminController {
     @GetMapping(value={"/admin","/admin/"},produces=MediaType.TEXT_HTML_VALUE)
     ResponseEntity<Resource> entry(Authentication auth,HttpServletRequest request){reads.requireAccess(auth,session(request));return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new ClassPathResource("static/index.html"));}
     @GetMapping("/api/admin/users")
-    ResponseEntity<AdminPage<AdminPage.User>> users(Authentication auth,HttpServletRequest request,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(reads.users(auth,session(request),page,size));}
+    ResponseEntity<AdminPage<AdminPage.User>> users(Authentication auth,HttpServletRequest request,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,
+            @RequestParam(required=false) vn.edu.multigame.user.enums.UserRole role,@RequestParam(defaultValue="") String q,@RequestParam(required=false) String status){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(reads.users(auth,session(request),page,size,role,q,status));}
     @GetMapping("/api/admin/games/{gameId}/players")
     ResponseEntity<java.util.List<AdminPage.KickTarget>> players(Authentication auth,HttpServletRequest request,@PathVariable long gameId){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(reads.players(auth,session(request),gameId));}
     @GetMapping("/api/admin/games")

@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 
 target/
+frontend/node_modules/
+frontend/*.tsbuildinfo
 .cache/
 .idea/
 *.iml
@@ -18,7 +20,5 @@ data/quiz-images/
 
 /data/quiz-videos/
 
-/HUONG_DAN_CHAY.md
-/MULTIGAME_THUYET_MINH_CHO_NHOM_VIET_BAO_CAO.md
 
 

@@ -7,4 +7,9 @@ import vn.edu.multigame.quiz.enums.Option;
 public record QuestionResponse(long id, int position, String content, Map<Option, String> options,
         Option correctAnswer, String imageRef, java.util.List<String> acceptedAnswers,
         java.util.List<ArrangementItemResponse> pieces,
-        java.util.List<ArrangementItemResponse> items, java.util.List<String> correctOrder, String mediaRef, java.util.List<vn.edu.multigame.questionbank.dto.request.HintRequest> hints) {}
+        java.util.List<ArrangementItemResponse> items, java.util.List<String> correctOrder, String mediaRef, java.util.List<vn.edu.multigame.questionbank.dto.request.HintRequest> hints,
+        vn.edu.multigame.questionbank.enums.TextMatchPolicy matchingPolicy) {
+    public QuestionResponse(long id,int position,String content,Map<Option,String> options,Option correctAnswer,String imageRef,java.util.List<String> acceptedAnswers,java.util.List<ArrangementItemResponse> pieces,java.util.List<ArrangementItemResponse> items,java.util.List<String> correctOrder,String mediaRef,java.util.List<vn.edu.multigame.questionbank.dto.request.HintRequest> hints) {
+        this(id,position,content,options,correctAnswer,imageRef,acceptedAnswers,pieces,items,correctOrder,mediaRef,hints,null);
+    }
+}

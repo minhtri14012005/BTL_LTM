@@ -30,18 +30,18 @@ class SystemWebTest {
     void servesClientButDoesNotClaimDatabaseReadinessWithoutMysql() throws Exception {
         HttpResponse<String> page = get("/");
         assertThat(page.statusCode()).isEqualTo(200);
-        assertThat(page.body()).contains("<html lang=\"vi\">", "<title>MultiGame</title>", "<script type=\"module\" src=\"/app.js\">");
-        assertThat(get("/app.js").statusCode()).isEqualTo(200);
-        assertThat(get("/styles.css").statusCode()).isEqualTo(200);
-        var staticRoot=java.nio.file.Path.of("src/main/resources/static");
-        try(var assets=java.nio.file.Files.walk(staticRoot)) {
-            for(var asset:assets.filter(p -> p.toString().endsWith(".js") || p.toString().endsWith(".css")).toList()) {
-                String path="/"+staticRoot.relativize(asset).toString().replace('\\','/');
-                var response=get(path);
-                assertThat(response.statusCode()).as(path).isEqualTo(200);
-                assertThat(response.body()).as(path).isEqualTo(java.nio.file.Files.readString(asset));
-            }
+        assertThat(page.body()).contains("<html lang=\"vi\">", "<title>ClassQuest — Hành trình thử thách trong lớp học</title>", "id=\"root\"", "/assets/");
+        for (String route : new String[]{"/login", "/app", "/app/sinh_vien", "/app/giang_vien/classes/123"}) {
+            assertThat(get(route).statusCode()).as(route).isEqualTo(200);
+            assertThat(get(route).body()).as(route).isEqualTo(page.body());
         }
+        var references=java.util.regex.Pattern.compile("(?:src|href)=\"(/assets/[^\"]+)\"").matcher(page.body());
+        int count=0;
+        while(references.find()) { assertThat(get(references.group(1)).statusCode()).isEqualTo(200); count++; }
+        assertThat(count).isGreaterThanOrEqualTo(2);
+        assertThat(get("/assets/missing.js").statusCode()).isEqualTo(404);
+        assertThat(get("/api/missing").statusCode()).isNotEqualTo(200);
+        for(String retired:new String[]{"/app.js","/styles.css","/js/features/game/page.js","/styles/features/multimode.css"})assertThat(get(retired).statusCode()).as(retired).isEqualTo(403);
         assertThat(get("/client/core.js").statusCode()).isEqualTo(403);
         HttpResponse<String> status = get("/api/system/status");
         assertThat(status.statusCode()).isEqualTo(200);

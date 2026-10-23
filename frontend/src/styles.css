@@ -1,0 +1,537 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #fff;
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-destructive: #b42336;
+  --shadow-sm: 0 3px 16px rgb(46 39 80 / 3%);
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+}
+:root {
+  color-scheme: light;
+  --background: #f8f9fc;
+  --foreground: #292b40;
+  --card: #fff;
+  --primary: #6550b9;
+  --muted: #eef0f6;
+  --muted-foreground: #65697d;
+  --accent: #eeebfa;
+  --border: #e1e4ed;
+  --radius: 1rem;
+  --space-page: clamp(1rem, 4vw, 3.5rem);
+  --gradient-welcome: linear-gradient(
+    112deg,
+    #ece6fc 0%,
+    #e7eefd 56%,
+    #e2f5f0 100%
+  );
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    overflow-wrap: anywhere;
+    @apply m-0 bg-background font-sans text-foreground antialiased;
+  }
+  button,
+  a,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
+  h1,
+  h2,
+  h3,
+  p,
+  dd {
+    overflow-wrap: anywhere;
+  }
+}
+@layer components {
+  .wheel-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(100%, 22rem);
+    aspect-ratio: 1;
+    margin: auto;
+    padding: 1rem;
+  }
+  .teacher-wheel {
+    width: 100%;
+    height: 100%;
+    border: 10px solid var(--card);
+    border-radius: 50%;
+    box-shadow: 0 5px 25px #6550b91a;
+    background: conic-gradient(
+      #dcd3f6 0deg 45deg,
+      #d4e5fa 45deg 90deg,
+      #f6dce9 90deg 135deg,
+      #d5eee4 135deg 180deg,
+      #dcd3f6 180deg 225deg,
+      #d4e5fa 225deg 270deg,
+      #f6dce9 270deg 315deg,
+      #d5eee4 315deg
+    );
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.12, 0.65, 0.12, 1);
+  }
+  .wheel-center {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 50%;
+    background: var(--card);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem;
+    color: var(--primary);
+  }
+  .wheel-pointer {
+    position: absolute;
+    top: 0.1rem;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    border-left: 0.65rem solid transparent;
+    border-right: 0.65rem solid transparent;
+    border-top: 1.5rem solid var(--primary);
+  }
+  .admin-nav-link {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.8rem;
+    background: var(--card);
+    font-size: 0.875rem;
+  }
+  .admin-nav-link.active {
+    background: var(--accent);
+    color: var(--primary);
+    border-color: var(--primary);
+    font-weight: 600;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 1.3rem;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+    flex-shrink: 0;
+  }
+  .brand-icon {
+    display: grid;
+    place-items: center;
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 0.85rem;
+    background: var(--primary);
+    color: white;
+  }
+  .brand-icon svg {
+    width: 1.65rem;
+    height: 1.65rem;
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    color: var(--primary);
+  }
+  .app-layout {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.15rem var(--space-page);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 20;
+  }
+  .main-nav {
+    display: flex;
+    align-self: stretch;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .main-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    border-radius: 0.8rem;
+  }
+  .main-nav svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .main-nav a.active {
+    background: var(--accent);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .main-nav a:hover {
+    background: var(--muted);
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: #eee5f7;
+    color: var(--primary);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .user-name {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    max-width: 11rem;
+  }
+  .user-name strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .user-name small {
+    color: var(--muted-foreground);
+    margin-top: 0.2rem;
+  }
+  .menu-toggle {
+    display: none;
+  }
+  .app-content {
+    width: 100%;
+    max-width: 1512px;
+    margin: 0 auto;
+    padding: 2.5rem var(--space-page) 3.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .app-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.5rem var(--space-page);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    border-top: 1px solid var(--border);
+  }
+  .welcome-banner {
+    border-radius: 1.5rem;
+    padding: clamp(1.5rem, 3vw, 2.75rem);
+    background: var(--gradient-welcome);
+    position: relative;
+    overflow: hidden;
+  }
+  .banner-symbol {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%) rotate(-12deg);
+    color: #6550b9;
+    opacity: 0.14;
+  }
+  .banner-symbol svg {
+    width: 13rem;
+    height: 13rem;
+  }
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+  .course-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .course-card > :last-child {
+    margin-top: auto;
+  }
+  .course-cover {
+    min-height: 12rem;
+  }
+  .tone-0 {
+    background: linear-gradient(125deg, #eae3fa, #f2eefb);
+  }
+  .tone-1 {
+    background: linear-gradient(125deg, #deebfc, #edf4fe);
+  }
+  .tone-2 {
+    background: linear-gradient(125deg, #f8e1eb, #fcf0f5);
+  }
+  .tone-3 {
+    background: linear-gradient(125deg, #dbf0e8, #eef8f3);
+  }
+  .course-code {
+    border: 1px solid rgb(255 255 255 / 65%);
+    background: rgb(255 255 255 / 55%);
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .status-badge {
+    display: inline-flex;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.5rem;
+    font-size: 0.7rem;
+    background: #f3f0e8;
+    color: #6f5a23;
+  }
+  .status-positive {
+    background: #e4f3eb;
+    color: #226044;
+  }
+  .network-notice {
+    padding: 0.75rem var(--space-page);
+    background: #fff5dc;
+    color: #765217;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .skip-link {
+    position: fixed;
+    top: -6rem;
+    left: 1rem;
+    z-index: 100;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--card);
+  }
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+  .login-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    min-height: 100dvh;
+  }
+  .login-story {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3rem;
+    padding: 2.5rem clamp(2rem, 5vw, 6rem);
+    background: var(--gradient-welcome);
+  }
+  .login-story h1 {
+    font-size: clamp(2rem, 3.3vw, 3.5rem);
+    font-weight: 650;
+    line-height: 1.22;
+    letter-spacing: -0.04em;
+  }
+  .login-form {
+    display: grid;
+    place-items: center;
+    padding: 3rem 2rem;
+    background: var(--card);
+  }
+  .login-art {
+    height: 15rem;
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  .art-orbit {
+    position: absolute;
+    width: 18rem;
+    max-width: 95%;
+    height: 12rem;
+    border: 1px solid #bdb1e3;
+    border-radius: 50%;
+    transform: rotate(-20deg);
+  }
+  .art-book {
+    transform: rotate(-12deg);
+    display: grid;
+    place-items: center;
+    height: 9rem;
+    width: 11rem;
+    border-radius: 2rem;
+    color: #6650b6;
+    background: linear-gradient(135deg, #fff9, #d7c9f1);
+    box-shadow: 8px 20px 35px #7765ad1a;
+  }
+  .art-chip {
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0;
+    background: #ffffffb3;
+    border: 1px solid #fff;
+    padding: 0.7rem 1rem;
+    font-size: 0.75rem;
+    border-radius: 1rem;
+  }
+  .account-details {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .account-details dt {
+    color: var(--muted-foreground);
+  }
+  .account-details dd {
+    font-weight: 500;
+  }
+}
+@media (min-width: 1450px) {
+  .course-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1100px) {
+  .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .user-name {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .app-header {
+    gap: 0.5rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+  .brand {
+    font-size: 1.1rem;
+    gap: 0.5rem;
+  }
+  .brand-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .menu-toggle {
+    display: inline-flex;
+  }
+  .main-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 0.7rem 1rem;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 15px #292b4008;
+  }
+  .main-nav.nav-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .connection-indicator {
+    display: none;
+  }
+  .app-content {
+    padding-top: 1.5rem;
+  }
+  .banner-symbol {
+    right: -3rem;
+    opacity: 0.07;
+  }
+  .login-layout {
+    grid-template-columns: 1fr;
+  }
+  .login-story {
+    gap: 1.75rem;
+    padding: 1.5rem;
+  }
+  .login-story h1 {
+    font-size: 2rem;
+  }
+  .login-story > p,
+  .login-art {
+    display: none;
+  }
+  .login-story .space-y-6 {
+    gap: 0;
+  }
+  .login-story .space-y-6 > p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .login-form {
+    padding: 2rem 1.5rem;
+  }
+}
+@media (max-width: 560px) {
+  .course-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .account-details {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  .account-details dd {
+    margin-bottom: 0.7rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Keep component utility styles from overriding responsive navigation. */
+@media (min-width: 761px) {
+  button.menu-toggle {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  button.menu-toggle {
+    display: inline-flex;
+  }
+}

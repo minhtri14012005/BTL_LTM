@@ -21,16 +21,45 @@ public final class AuthPrincipal implements UserDetails, CredentialsContainer {
     private String passwordHash;
 
     public AuthPrincipal(UserAccount user) {
-        userId = user.getId(); authEpoch = user.getAuthEpoch(); username = user.getUsername();
-        enabled = user.getDeletedAtMs() == null; passwordHash = user.getPasswordHash();role = user.getRole();
+        userId = user.getId();
+        authEpoch = user.getAuthEpoch();
+        username = user.getUsername();
+        enabled = user.getDeletedAtMs() == null;
+        passwordHash = user.getPasswordHash();
+        role = user.getRole();
     }
-    public long userId() { return userId; }
-    public long authEpoch() { return authEpoch; }
-    @Override public String getUsername() { return username; }
-    @JsonIgnore @Override public String getPassword() { return passwordHash; }
-    @Override public boolean isEnabled() { return enabled; }
-    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role == UserRole.ADMIN ? "ROLE_ADMIN" : "ROLE_USER"));
+
+    public long userId() {
+        return userId;
     }
-    @Override public void eraseCredentials() { passwordHash = null; }
+
+    public long authEpoch() {
+        return authEpoch;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @JsonIgnore
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public void eraseCredentials() {
+        passwordHash = null;
+    }
 }

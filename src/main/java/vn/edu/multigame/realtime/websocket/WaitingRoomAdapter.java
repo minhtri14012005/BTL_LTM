@@ -23,25 +23,21 @@ public class WaitingRoomAdapter {
     private final RoomService rooms;
     private final AuthService users;
     private final AuthenticatedSocketRegistry sockets;
-    private final GameOperations games;
-    private final GameCommandAdapter gameplay;
-    public WaitingRoomAdapter(WaitingRoomCommandParser parser,RoomOperations operations,RoomService rooms,AuthService users,AuthenticatedSocketRegistry sockets,GameOperations games,GameCommandAdapter gameplay) {
+
+
+    public WaitingRoomAdapter(WaitingRoomCommandParser parser,RoomOperations operations,RoomService rooms,AuthService users,AuthenticatedSocketRegistry sockets) {
         this.parser=parser; this.operations=operations; this.rooms=rooms; this.users=users; this.sockets=sockets;
-        this.games=games;
-        this.gameplay=gameplay;
+
+
     }
     public void text(WebSocketSession socket,String text,Runnable validateConnection) {
         WaitingRoomCommand command=null;
         try {
-            if(parser.isGameplay(text)) { gameplay.text(socket,text,validateConnection); return; }
+            if(parser.isGameplay(text)) { throw new RoomFailure(org.springframework.http.HttpStatus.GONE,"LEGACY_GAME_DISABLED"); }
             command=parser.read(text); var c=command; long id=c.target().id();
             Authentication auth=socket.getPrincipal() instanceof Authentication a?a:null;
             long uid=users.requireActiveUser(auth).getId(); String code=c.payload().path("roomCode").asText(null);
-            if(c.type().equals("START_GAME")) {
-                rooms.authorizeReceipt(uid,id,"START_GAME",null); sockets.subscribe(socket,id);
-                var response=games.start(auth,id,new vn.edu.multigame.game.dto.request.StartGameRequest(c.requestId(),c.payload().path("revision").asLong(),c.payload().path("questionCount").asInt()),validateConnection);
-                sockets.send(socket,new RoomAck(1,"ACK",c.requestId(),c.type(),c.target(),"ACCEPTED",response.room().revision(),response.serverTimeMs(),response)); return;
-            }
+            if(c.type().equals("START_GAME")) throw new RoomFailure(org.springframework.http.HttpStatus.GONE,"LEGACY_GAME_DISABLED");
             if(c.type().equals("JOIN_ROOM") || c.type().equals("SUBSCRIBE_ROOM")) sockets.requireSubscriptionCapacity(socket,id);
             operations.execute(auth,id,c.requestId(),c.type(),c.payload(),code,validateConnection,()->switch(c.type()) {
                 case "JOIN_ROOM" -> rooms.join(uid,id,code,Participation.valueOf(c.payload().get("participation").asText()));

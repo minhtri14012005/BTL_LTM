@@ -1,0 +1,15 @@
+spring:
+  config:
+    import: optional:file:./config/application-local.properties
+  datasource:
+    url: ${BASELINE_DB_URL}
+    username: ${DB_USER:quiz_app}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    clean-disabled: true
+server:
+  address: 127.0.0.1
+  port: 0

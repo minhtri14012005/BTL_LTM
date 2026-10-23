@@ -61,7 +61,7 @@ public class SampleDataSeeder implements ApplicationRunner {
             }
             return user;
         }
-        long id = accounts.register(new RegisterRequest(username, displayName, password)).id();
+        long id = accounts.register(new RegisterRequest(username, displayName, password, "DEMO_" + username)).id();
         return users.findById(id).orElseThrow();
     }
     public static CreateQuestionBankRequest sampleQuiz() {

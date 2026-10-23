@@ -13,14 +13,18 @@ import vn.edu.multigame.realtime.idempotency.CommandFingerprint;
 public class AdminSanctionController {
     private final AdminSanctionTransactions transactions;
     private final CommandFingerprint fingerprints;
-    public AdminSanctionController(AdminSanctionTransactions transactions,CommandFingerprint fingerprints){this.transactions=transactions;this.fingerprints=fingerprints;}
-    @PostMapping("/{id}/temporary-ban") ResponseEntity<SanctionResponse> temporary(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"TEMP",request);}
-    @PostMapping("/{id}/ban") ResponseEntity<SanctionResponse> indefinite(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"INDEFINITE",request);}
-    @PostMapping("/{id}/unban") ResponseEntity<SanctionResponse> unban(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"UNBAN",request);}
+    private final vn.edu.multigame.auth.security.AuthSessionRegistry sessions;
+    public AdminSanctionController(AdminSanctionTransactions transactions,CommandFingerprint fingerprints,vn.edu.multigame.auth.security.AuthSessionRegistry sessions){this.transactions=transactions;this.fingerprints=fingerprints;this.sessions=sessions;}
+    @PostMapping({"/{id}/ban","/{id}/expel"}) ResponseEntity<SanctionResponse> indefinite(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"INDEFINITE",request);}
+    @PostMapping({"/{id}/unban","/{id}/restore"}) ResponseEntity<SanctionResponse> unban(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"UNBAN",request);}
     private ResponseEntity<SanctionResponse> apply(Authentication auth,long id,String kind,SanctionRequest request){
         if(id<=0)throw vn.edu.multigame.game.service.GameFailure.conflict("USER_UNAVAILABLE");
         String hash=fingerprints.of(kind,"ACCOUNT",id,null,request);
-        try{return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(transactions.apply(auth,id,kind,request,hash));}
+        try{
+            var result=transactions.apply(auth,id,kind,request,hash);
+            if(kind.equals("INDEFINITE")) sessions.revokeThrough(id,result.current().epoch(),"ACCOUNT_EXPELLED");
+            return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(result);
+        }
         catch(org.springframework.dao.DuplicateKeyException concurrentRequest){throw vn.edu.multigame.game.service.GameFailure.conflict("REQUEST_ID_REUSED");}
     }
 }

@@ -54,8 +54,11 @@ public class GameRuntime {
             ServerClock clock,TimerScheduler scheduler,SpinSelector spins,CommandFingerprint fingerprints,vn.edu.multigame.realtime.connection.AuthenticatedSocketRegistry sockets) {
         this.transactions=transactions; this.startup=startup; this.events=events; this.clock=clock;
         this.spins=spins; this.fingerprints=fingerprints;this.sockets=sockets;
-        queue=new SessionQueue<>(clock,scheduler,4,512,64,32);
+        queue=sessionQueue(clock,scheduler);
         sockets.onPresence(presenceListener);
+    }
+    public static <T> SessionQueue<T> sessionQueue(ServerClock clock,TimerScheduler scheduler) {
+        return new SessionQueue<>(clock,scheduler,4,512,64,32);
     }
     public Reservation reserve() {
         cleanup();

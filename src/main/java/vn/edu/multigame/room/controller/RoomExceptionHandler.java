@@ -17,7 +17,7 @@ public class RoomExceptionHandler {
     @ExceptionHandler(RoomFailure.class) ResponseEntity<RoomError> room(RoomFailure e) { return error(e.status(),e.code(),e.retryable()); }
     @ExceptionHandler(QuestionBankFailure.class) ResponseEntity<RoomError> quiz(QuestionBankFailure e) { return error(e.status(),e.code(),false); }
     @ExceptionHandler(AuthFailure.class) ResponseEntity<RoomError> auth(AuthFailure e) { return error(e.status(),e.code(),false); }
-    @ExceptionHandler({HttpMessageNotReadableException.class,MissingServletRequestParameterException.class,MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({HttpMessageNotReadableException.class,MissingServletRequestParameterException.class,MethodArgumentTypeMismatchException.class,MethodArgumentNotValidException.class})
     ResponseEntity<RoomError> invalid(Exception e) { return error(HttpStatus.BAD_REQUEST,"INVALID_REQUEST",false); }
     @ExceptionHandler(DataAccessException.class) ResponseEntity<RoomError> database(Exception e) { return error(HttpStatus.SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE",true); }
     private ResponseEntity<RoomError> error(HttpStatus status,String code,boolean retryable) {

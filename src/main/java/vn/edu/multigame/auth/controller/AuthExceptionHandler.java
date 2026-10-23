@@ -28,7 +28,7 @@ public class AuthExceptionHandler {
     ResponseEntity<AuthError> database(DataAccessException e) {
         for (Throwable cause = e; cause != null; cause = cause.getCause()) {
             if (cause instanceof SQLException sql && sql.getErrorCode() == 1062) {
-                return error(HttpStatus.CONFLICT, "USERNAME_TAKEN", "Tên đăng nhập đã tồn tại.");
+                return error(HttpStatus.CONFLICT, "IDENTITY_TAKEN", "Tên đăng nhập hoặc mã sinh viên đã tồn tại.");
             }
         }
         return error(HttpStatus.SERVICE_UNAVAILABLE, "AUTH_UNAVAILABLE", "Chưa thể xác thực; thử lại sau.");

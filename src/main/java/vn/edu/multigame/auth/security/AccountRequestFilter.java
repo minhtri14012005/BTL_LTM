@@ -21,7 +21,11 @@ public final class AccountRequestFilter extends OncePerRequestFilter {
         var auth=SecurityContextHolder.getContext().getAuthentication();
         try {
             if(auth!=null && auth.getPrincipal() instanceof AuthPrincipal principal){
-                users.requireActiveUser(auth);var session=request.getSession(false);
+                var user=users.requireActiveUser(auth);
+                String resource=request.getRequestURI().substring(request.getContextPath().length());
+                if (!java.util.Set.of("/api/auth/me","/api/auth/profile","/api/auth/logout","/api/auth/csrf","/api/auth/login","/api/auth/keepalive").contains(resource))
+                    users.requireCompleteProfile(user);
+                var session=request.getSession(false);
                 if(session==null)throw AuthService.unauthorized();sessions.requireValid(session.getId(),principal.userId());
             }
         }catch(AuthFailure failure){
