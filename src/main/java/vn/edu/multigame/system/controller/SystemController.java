@@ -37,7 +37,7 @@ public class SystemController {
 
     private SystemStatus currentStatus() {
         var startup=gameStartup.getIfAvailable(); boolean ready=startup==null || startup.ready();
-        return new SystemStatus("multigame", ready?"UP":"STARTING", databaseProbe.check(), Instant.now().toEpochMilli(),
+        return new SystemStatus("ClassQuest", ready?"UP":"STARTING", databaseProbe.check(), Instant.now().toEpochMilli(),
                 startup==null?"NOT_IMPLEMENTED":ready?"GAMEPLAY_WS":"LIFECYCLE_INITIALIZING");
     }
 

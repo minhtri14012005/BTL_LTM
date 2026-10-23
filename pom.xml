@@ -12,7 +12,7 @@
     <groupId>vn.edu.multigame</groupId>
     <artifactId>multigame</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>MultiGame</name>
+    <name>ClassQuest</name>
     <description>Single-server localhost/LAN multiplayer game system</description>
     <properties>
         <java.version>21</java.version>

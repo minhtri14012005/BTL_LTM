@@ -69,6 +69,6 @@ class MySqlSmokeIT {
                         .timeout(Duration.ofSeconds(10)).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"status\":\"UP\"", "\"server\":\"UP\"", "\"gameplay\":\"GAMEPLAY_WS\"", "\"application\":\"multigame\"");
+        assertThat(response.body()).contains("\"status\":\"UP\"", "\"server\":\"UP\"", "\"gameplay\":\"GAMEPLAY_WS\"", "\"application\":\"ClassQuest\"");
     }
 }

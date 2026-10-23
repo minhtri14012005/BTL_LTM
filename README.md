@@ -1,6 +1,6 @@
-# ClassQuest
+﻿# ClassQuest
 
-**ClassQuest** là hệ thống học tập tương tác qua trò chơi, dành cho giảng viên và sinh viên trong cùng lớp. Khẩu hiệu: **Hành trình thử thách trong lớp học**. Tên kỹ thuật hiện tại trong source và file JAR vẫn là **MultiGame**.
+**ClassQuest** là hệ thống học tập tương tác qua trò chơi, dành cho giảng viên và sinh viên trong cùng lớp. Khẩu hiệu: **Hành trình thử thách trong lớp học**.
 
 Ứng dụng chạy trên một máy chủ cá nhân với MySQL. Người học mở trình duyệt trên máy tính hoặc điện thoại cùng mạng Wi-Fi/LAN, không cần cài ứng dụng riêng.
 
