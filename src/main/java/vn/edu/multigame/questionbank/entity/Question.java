@@ -46,13 +46,11 @@ public class Question extends IdentityEntity {
     @Column(name = "deleted_at_ms")
     private Long deletedAtMs;
 
-    @Column(name = "schema_version", nullable = false, updatable = false)
-    private Integer schemaVersion = 1;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "mode", nullable = false, length = 24)
-    private vn.edu.multigame.game.enums.GameMode mode = vn.edu.multigame.game.enums.GameMode.QUIZ;
+    private vn.edu.multigame.questionbank.enums.GameMode mode = vn.edu.multigame.questionbank.enums.GameMode.QUIZ;
 
     @com.fasterxml.jackson.annotation.JsonIgnore
     @JdbcTypeCode(SqlTypes.JSON)
@@ -96,11 +94,9 @@ public class Question extends IdentityEntity {
     public void setDeletedAtMs(Long value) { this.deletedAtMs = value; }
 
 
-    public Integer getSchemaVersion() { return schemaVersion; }
-    public void setSchemaVersion(Integer value) { this.schemaVersion = value; }
 
-    public vn.edu.multigame.game.enums.GameMode getMode() { return mode; }
-    public void setMode(vn.edu.multigame.game.enums.GameMode value) { this.mode = value; }
+    public vn.edu.multigame.questionbank.enums.GameMode getMode() { return mode; }
+    public void setMode(vn.edu.multigame.questionbank.enums.GameMode value) { this.mode = value; }
 
     public java.util.Map<String,Object> getPayload() { return payload; }
     public void setPayload(java.util.Map<String,Object> value) { this.payload = value; }

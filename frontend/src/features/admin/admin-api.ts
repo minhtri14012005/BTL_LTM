@@ -60,6 +60,7 @@ export function offeringLabel(catalog: Catalog, offeringId: number) {
     .join(" / ");
 }
 const messages: Record<string, string> = {
+  TEACHER_UNAVAILABLE: "Giảng viên đã bị xóa. Hãy tải lại danh sách và chọn người tiếp quản đang hoạt động.",
   DUPLICATE_RESOURCE:
     "Mã hoặc dữ liệu này đã tồn tại. Vui lòng kiểm tra danh sách.",
   RESOURCE_IN_USE:

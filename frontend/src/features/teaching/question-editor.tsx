@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import {
-  modeNames,
+  type Subject,
   questionError,
   type ContentMode,
   type Question,
@@ -42,6 +42,9 @@ export function QuestionEditor({
   initialTitle,
   initialQuestions,
   initialVisibility,
+  subjects,
+  modeControl,
+  initialSubjectId,
   onSave,
   pending,
   error,
@@ -51,15 +54,20 @@ export function QuestionEditor({
   initialTitle: string;
   initialQuestions: Question[];
   initialVisibility?: "PUBLIC" | "PRIVATE";
+  subjects?: Subject[];
+  modeControl?: ReactNode;
+  initialSubjectId?: number;
   onSave: (
     title: string,
     questions: Question[],
     visibility: "PUBLIC" | "PRIVATE",
+    subjectId?: number,
   ) => Promise<unknown>;
   pending: boolean;
   error: string;
   label?: string;
 }) {
+  const [subjectId, setSubjectId] = useState(initialSubjectId || 0);
   const [active, setActive] = useState(0);
   const [title, setTitle] = useState(initialTitle),
     [questions, setQuestions] = useState<Question[]>(
@@ -74,6 +82,7 @@ export function QuestionEditor({
   }
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if(subjects && !subjects.some(s => s.id === subjectId)) { setValidation("Hãy chọn môn học do ADMIN tạo."); return; }
     const error = questionError(mode, questions);
     if (!title.trim() || error) {
       setValidation(error || "Cần nhập tiêu đề.");
@@ -82,26 +91,16 @@ export function QuestionEditor({
       return;
     }
     setValidation("");
-    await onSave(
-      title.trim(),
-      questions.map((q) => questionPayload(mode, q)),
-      visibility,
-    );
+    const payload = questions.map((q) => questionPayload(mode, q));
+    if (subjects) await onSave(title.trim(), payload, visibility, subjectId);
+    else await onSave(title.trim(), payload, visibility);
+
   }
   return (
     <form onSubmit={submit} className="space-y-5">
       <fieldset disabled={pending} className="min-w-0 space-y-5">
-        <FormField label="Tiêu đề nội dung">
-          {(p) => (
-            <Input
-              {...p}
-              required
-              maxLength={200}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          )}
-        </FormField>
+        <div className={subjects ? "grid gap-4 md:grid-cols-2" : "space-y-4"}>
+          {modeControl}
         {initialVisibility && (
           <FormField label="Phạm vi ngân hàng">
             {(p) => (
@@ -120,8 +119,27 @@ export function QuestionEditor({
             )}
           </FormField>
         )}
+        {subjects && <FormField label="Môn học">
+          {p => <NativeSelect {...p} required value={subjectId || ""} onChange={e => setSubjectId(Number(e.target.value))}>
+            <option value="" disabled>Chọn môn học</option>
+            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} · {s.code}</option>)}
+          </NativeSelect>}
+        </FormField>}
+        {subjects && !subjects.length && <p role="status" className="text-sm text-muted-foreground">Chưa có môn học. Liên hệ ADMIN để bổ sung danh mục.</p>}
+        <FormField label="Tiêu đề nội dung">
+          {(p) => (
+            <Input
+              {...p}
+              required
+              maxLength={200}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          )}
+        </FormField>
+        </div>
         <p className="text-sm text-muted-foreground">
-          {modeNames[mode]} · {questions.length}{" "}
+          {questions.length}{" "}
           {mode === "ASSIGNMENT" ? "đề" : "câu hỏi"}
           {mode === "FILL_BLANK"
             ? " · Dùng đúng một {{blank}} để đánh dấu ô trống trong mỗi câu."

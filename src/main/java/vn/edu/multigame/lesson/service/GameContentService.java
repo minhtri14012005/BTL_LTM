@@ -10,7 +10,7 @@ import vn.edu.multigame.user.enums.UserRole;
 import vn.edu.multigame.room.repository.ClassRoomStore;
 import vn.edu.multigame.lesson.repository.*;
 import vn.edu.multigame.lesson.dto.*;
-import vn.edu.multigame.game.enums.GameMode;
+import vn.edu.multigame.questionbank.enums.GameMode;
 import vn.edu.multigame.questionbank.service.QuestionBankService;
 
 @Service @Profile("mysql") @Transactional(readOnly=true)
@@ -46,7 +46,8 @@ public class GameContentService {
         if(lessons.lesson(lesson,false).revision()!=input.lessonRevision()) throw LessonFailure.conflict("STALE_REVISION");
         var source=banks.previewLocked(caller,input.quizId());
         if(!source.mode().name().equals(game.mode().name())) throw LessonFailure.conflict("CONTENT_MODE_MISMATCH");
-        contents.select(game.id(),source.id(),source.revision(),source.mode(),source.title(),source.questions());settings.contentChanged(lesson,game,source.questions().size());lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));
+        if(source.subjectId()!=rooms.forClass(lessons.lesson(lesson,false).courseClassId()).orElseThrow().subjectId())throw LessonFailure.conflict("CONTENT_SUBJECT_MISMATCH");
+        contents.select(game.id(),source.id(),source.revision(),source.mode(),source.title(),source.questions(),source.subjectId());settings.contentChanged(lesson,game,source.questions().size());lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));
         return get(caller,lesson,position);
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)

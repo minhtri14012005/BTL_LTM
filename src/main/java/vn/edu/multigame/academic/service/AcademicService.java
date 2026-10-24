@@ -17,6 +17,8 @@ import vn.edu.multigame.user.repository.UserRepository;
 
 @Service @Profile("mysql") @Transactional(readOnly=true)
 public class AcademicService {
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.context.ApplicationEventPublisher events;
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final vn.edu.multigame.room.repository.ClassRoomStore classRooms;
     private final AcademicYearRepository years;
     private final SemesterRepository semesters;
@@ -91,15 +93,17 @@ public class AcademicService {
     @Transactional(isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ClassView assign(Authentication caller,long classId,long teacherId) {
         auth.requireAdmin(caller);
-        var teacher=found(users.findLockedById(teacherId));accounts.requireAvailable(teacherId);
+        var teacher=found(users.findLockedById(teacherId));
+        if(teacher.getDeletedAtMs()!=null || accounts.state(teacherId).banned(System.currentTimeMillis()))throw new AcademicFailure(HttpStatus.CONFLICT,"TEACHER_UNAVAILABLE");
         if(teacher.getRole()!=UserRole.GIANG_VIEN) throw new AcademicFailure(HttpStatus.CONFLICT,"TEACHER_REQUIRED");
         var course=found(classes.findById(classId));
+        jdbc.queryForObject("SELECT id FROM course_class WHERE id=? FOR UPDATE",Long.class,classId);
         // User lock serializes repeated assignments, including assignments in different classes.
         if(!assignments.existsByCourseClassIdAndTeacherId(classId,teacherId)) {
             var assignment=new TeachingAssignment();assignment.setCourseClassId(classId);assignment.setTeacherId(teacherId);
             assignments.saveAndFlush(assignment);
         }
-        return view(course);
+        events.publishEvent(new vn.edu.multigame.room.service.ClassStaffingChanged(classId));return view(course);
     }
     private long teacher(Authentication caller) {
         var user=auth.requireActiveUser(caller);
@@ -120,6 +124,6 @@ public class AcademicService {
         var semester=found(semesters.findById(offering.getSemesterId()));
         return new ClassView(course.getId(),offering.getId(),semester.getAcademicYearId(),semester.getId(),
                 offering.getSubjectId(),course.getCode(),course.getName(),course.getRequiredLessons(),
-                assignments.findByCourseClassIdOrderByTeacherId(course.getId()).stream().map(TeachingAssignment::getTeacherId).toList());
+                classRooms.teachers(course.getId()));
     }
 }

@@ -138,6 +138,6 @@ public class ClassMembershipChecks {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM quiz WHERE title='Retained history'",Integer.class)).isEqualTo(1);
         assertThat(code(teacher,first)).isEqualTo(firstCode);
         // Membership grants no game participation/score rows.
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM player_session",Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_game_participant",Integer.class)).isZero();
     }
 }

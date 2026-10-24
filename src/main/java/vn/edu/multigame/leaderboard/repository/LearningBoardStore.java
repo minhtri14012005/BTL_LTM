@@ -17,7 +17,7 @@ public class LearningBoardStore {
  public List<Student> classroom(long id){return students("c.id=?",id);}
  public List<Student> global(long subject,long year){return students("o.subject_id=? AND sem.academic_year_id=?",subject,year);}
  public boolean scope(long subject,long year){return jdbc.queryForObject("SELECT COUNT(*)"+CLASS_SCOPE+" WHERE o.subject_id=? AND sem.academic_year_id=?",Integer.class,subject,year)>0;}
- private List<Range> read(String value){try{return List.of(json.readValue(value,Range[].class));}catch(Exception e){throw new IllegalStateException(e);}}
+ private List<Range> read(String value){try{return Arrays.stream(json.readValue(value,Range[].class)).sorted(Comparator.comparingInt(Range::from)).toList();}catch(Exception e){throw new IllegalStateException(e);}}
  private String write(List<Range> value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalStateException(e);}}
  public Config config(long course){return jdbc.query("SELECT revision,ranges_json FROM class_rank_settings WHERE course_class_id=?",(r,n)->new Config(r.getLong(1),read(r.getString(2))),course).stream().findFirst().orElse(new Config(0,List.of()));}
  public void save(long course,List<Range> ranges){jdbc.update("INSERT INTO class_rank_settings VALUES(?,1,?) ON DUPLICATE KEY UPDATE revision=revision+1,ranges_json=VALUES(ranges_json)",course,write(ranges));}

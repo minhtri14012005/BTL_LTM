@@ -28,9 +28,12 @@ export function StudentClassPage() {
           "Bạn chưa được duyệt hoặc đã bị thu hồi quyền vào lớp. Lịch sử vẫn có trong hồ sơ.",
         );
       try {
-        const [lessons, board] = await Promise.all([
+        const [lessons, board, room] = await Promise.all([
           api<Lesson[]>(`/api/student/classes/${id}/lessons`, { signal }),
           api<Board>(`/api/learning/classes/${id}/leaderboard`, { signal }),
+          api<{ hasTeacher: boolean }>(`/api/student/classes/${id}/room`, {
+            signal,
+          }),
         ]);
         let completed = 0,
           page = 0,
@@ -48,6 +51,7 @@ export function StudentClassPage() {
         } while (page * 50 < total);
         return {
           member,
+          hasTeacher: room.hasTeacher,
           lessons,
           completed,
           score: board.students.find((s) => s.userId === user!.id)?.score ?? 0,
@@ -76,6 +80,15 @@ export function StudentClassPage() {
       ) : (
         resource.data && (
           <>
+            {!resource.data.hasTeacher && (
+              <div
+                role="status"
+                className="rounded-2xl border border-primary/20 bg-accent p-5 text-sm leading-6"
+              >
+                Lớp chưa có giảng viên tiếp quản. Vui lòng chờ quản trị viên
+                phân công giảng viên mới.
+              </div>
+            )}
             <section className="welcome-banner">
               <p className="eyebrow">{resource.data.member.classCode}</p>
               <h2 className="mt-3 text-2xl font-semibold">

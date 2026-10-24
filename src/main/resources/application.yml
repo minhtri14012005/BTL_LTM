@@ -5,8 +5,8 @@ spring:
     default: mysql
   servlet:
     multipart:
-      max-file-size: 20MB
-      max-request-size: 21MB
+      max-file-size: 2MB
+      max-request-size: 3MB
   jpa:
     open-in-view: false
     hibernate:
@@ -34,11 +34,7 @@ server:
         same-site: lax
 
 quiz:
-  videos:
-    directory: ${QUIZ_VIDEO_DIRECTORY:./data/quiz-videos}
   images:
     directory: ${QUIZ_IMAGE_DIRECTORY:./data/quiz-images}
-  sample:
-    password: ${QUIZ_DEMO_PASSWORD:}
   web:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173}

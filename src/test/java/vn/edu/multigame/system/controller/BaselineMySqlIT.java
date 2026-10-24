@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import vn.edu.multigame.MultigameApplication;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Opt-in baseline: owns a fresh schema; closes the application before dropping it. */
+/** Opt-in baseline: owns schemas on an isolated MySQL instance and clears their tables after use. */
 class BaselineMySqlIT {
     @Test
     void migratesValidatesAndServesHttpOnAnOwnedDatabase() throws Exception {
@@ -35,11 +35,17 @@ class BaselineMySqlIT {
         String schema = "multigame_test_" + UUID.randomUUID().toString().replace("-", "");
         String rootUrl = "jdbc:mysql://" + host + ":" + port + "/?connectionTimeZone=UTC&connectTimeout=3000&socketTimeout=3000";
         String databaseUrl = rootUrl.replace("/?", "/" + schema + "?");
+        Path imageRoot=Path.of(".cache","baseline-media",schema).toAbsolutePath().normalize();
         boolean created = false;
         try (var owner = DriverManager.getConnection(rootUrl, user, password);
                 var statement = owner.createStatement()) {
             try {
-                // Deliberately no IF NOT EXISTS: a pre-existing schema is never ours to drop.
+                try(var check=statement.executeQuery("SELECT @@datadir")) {
+                    check.next();var actualData=Path.of(check.getString(1)).toAbsolutePath().normalize();
+                    if(!actualData.startsWith(Path.of(".cache").toAbsolutePath().normalize()))throw new IllegalStateException("Baseline tests require an isolated MySQL data directory inside the workspace .cache");
+                }
+                // Never reuse a pre-existing schema.
+                CleanupMigrationChecks.verifyFreshChain(rootUrl,user,password);
                 statement.executeUpdate("CREATE DATABASE `" + schema + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
                 created = true;
                 org.flywaydb.core.Flyway.configure().dataSource(databaseUrl,user,password).target("13").load().migrate();
@@ -58,6 +64,7 @@ class BaselineMySqlIT {
                         "--spring.profiles.active=mysql,baseline", "--BASELINE_DB_URL=" + databaseUrl,
                         "--spring.datasource.url=" + databaseUrl,
                         "--spring.datasource.username=" + user, "--spring.datasource.password=" + password,
+                        "--quiz.images.directory="+imageRoot,
                         "--server.address=127.0.0.1", "--server.port=0",
                         "--logging.level.org.springframework=WARN", "--logging.level.org.hibernate=WARN",
                         "--spring.jpa.hibernate.ddl-auto=validate", "--spring.flyway.clean-disabled=true")) {
@@ -66,10 +73,10 @@ class BaselineMySqlIT {
                     var jdbc = new JdbcTemplate(context.getBean(DataSource.class));
                     assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(schema);
                     assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM flyway_schema_history WHERE success=1", Integer.class))
-                            .isEqualTo(28);
+                            .isEqualTo(32);
+                    CleanupMigrationChecks.verifyCleanSchema(jdbc);
                     assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user", Integer.class)).isEqualTo(1);
-                    assertThat(context.getBean(vn.edu.multigame.realtime.session.RoomBoundary.class)).isNotNull();
-                    assertThat(context.getBean(vn.edu.multigame.realtime.session.GameRuntime.class)).isNotNull();
+                    assertThat(context.getBean(vn.edu.multigame.realtime.session.LessonRuntime.class)).isNotNull();
                     int httpPort = ((ServletWebServerApplicationContext) context).getWebServer().getPort();
                     if (!(Boolean.getBoolean("frontend.e2e") && Boolean.getBoolean("frontend.e2e.only"))) {
                     vn.edu.multigame.auth.controller.AccountLifecycleChecks.verify(context, jdbc, httpPort);
@@ -87,7 +94,11 @@ class BaselineMySqlIT {
                     vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifySettingsVisibility(context,jdbc,httpPort);
                     }
                     vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifyManagement(context,jdbc,httpPort);
-                    if(!Boolean.getBoolean("baseline.management.only"))vn.edu.multigame.realtime.session.LessonRealtimeChecks.verify(context,jdbc,httpPort);
+                    ManagementLifecycleChecks.verify(jdbc,httpPort);
+                    if(!Boolean.getBoolean("baseline.management.only")) {
+                        vn.edu.multigame.realtime.session.LessonRealtimeChecks.verify(context,jdbc,httpPort);
+                        ArchitectureSchemaChecks.ownership(context,jdbc);
+                    }
                     }
                     var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
                     for (String path : new String[] {"/", "/api/system/ready"}) {
@@ -106,11 +117,11 @@ class BaselineMySqlIT {
                             || !owner.getMetaData().getURL().equals(rootUrl)) {
                         throw new IllegalStateException("Refusing cleanup: database ownership/URL mismatch");
                     }
-                    statement.executeUpdate("DROP DATABASE `" + schema + "`");
-                    try (var result = statement.executeQuery("SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name='" + schema + "'")) {
-                        assertThat(result.next()).isTrue();
-                        assertThat(result.getInt(1)).isZero();
-                    }
+                    vn.edu.multigame.system.controller.CleanupMigrationChecks.clearOwnedSchema(databaseUrl,user,password,schema);
+                    if(!imageRoot.startsWith(Path.of(".cache","baseline-media").toAbsolutePath().normalize()) || !imageRoot.getFileName().toString().equals(schema))throw new IllegalStateException("Unsafe test image path");
+                    if(Files.exists(imageRoot))try(var files=Files.walk(imageRoot)){for(var file:files.sorted(java.util.Comparator.reverseOrder()).toList())Files.delete(file);}
+
+
                 }
             }
         }

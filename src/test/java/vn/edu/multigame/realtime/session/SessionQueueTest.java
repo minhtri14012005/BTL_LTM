@@ -13,9 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import vn.edu.multigame.game.enums.Phase;
-import vn.edu.multigame.game.runtime.PhaseWindow;
-import vn.edu.multigame.game.runtime.QuestionCloseGate;
+import vn.edu.multigame.realtime.timer.Phase;
+import vn.edu.multigame.realtime.timer.PhaseWindow;
 import vn.edu.multigame.realtime.timer.PhaseTimer;
 import vn.edu.multigame.realtime.timer.ServerClock;
 import vn.edu.multigame.realtime.timer.TimerScheduler;
@@ -107,34 +106,6 @@ class SessionQueueTest {
         }
     }
 
-    @Test void preDeadlineAnswerCannotBeOvertakenWhileProcessorBlocked() throws Exception {
-        try (var f = new Fixture()) {
-            var window = f.open(1, Phase.QUESTION_OPEN, 1, 100);
-            var gate = new QuestionCloseGate(Set.of(1L, 2L));
-            AtomicInteger closes = new AtomicInteger();
-            f.onTimer = timer -> { if (gate.close()) closes.incrementAndGet(); };
-            CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
-            var block = f.submit("block", command -> { entered.countDown(); await(release); });
-            await(entered);
-            try {
-                f.clock.at(99);
-                var answer = f.submit("answer", command -> {
-                    assertThat(gate.isClosed()).isFalse();
-                    assertThat(window.accepts(command.receivedAtMs())).isTrue();
-                    assertThat(gate.recordValidAnswer(1)).isTrue();
-                });
-                f.clock.at(100);
-                f.scheduler.tasks.getFirst().fire();
-                var barrier = f.submit("barrier", command -> {});
-                assertThat(answer.processed()).isNotDone();
-                release.countDown(); done(block); done(answer); done(barrier);
-                assertThat(f.trace).containsExactly("open", "block", "answer", "timer", "barrier");
-                assertThat(f.ingress).extracting(Ingress::sequence).containsExactly(1L, 2L, 3L, 4L, 5L);
-                assertThat(closes).hasValue(1);
-            } finally { release.countDown(); }
-        }
-    }
-
     @Test void sameSessionNeverRunsTwoHandlersAndPreservesAdmissionOrder() throws Exception {
         try (var f = new Fixture()) {
             AtomicInteger active = new AtomicInteger();
@@ -160,7 +131,7 @@ class SessionQueueTest {
             try {
                 var b = f.queue.submit(keyB, new Command("B", command -> {}));
                 done(b); assertThat(a.processed()).isNotDone();
-                assertThat(b.ingress().gameSessionId()).isEqualTo(20); assertThat(b.ingress().sequence()).isEqualTo(1);
+                assertThat(b.ingress().sessionId()).isEqualTo(20); assertThat(b.ingress().sequence()).isEqualTo(1);
             } finally { release.countDown(); }
             done(a);
         }
@@ -200,31 +171,9 @@ class SessionQueueTest {
         }
     }
 
-    @ParameterizedTest @ValueSource(strings = {"question", "phase", "token"})
-    void oldTimerWithWrongQuestionPhaseOrTokenAndRepeatedCloseAreNoOps(String changed) throws Exception {
-        try (var f = new Fixture()) {
-            f.open(1, Phase.QUESTION_OPEN, 1, 100);
-            var old = f.scheduler.tasks.getFirst();
-            PhaseWindow current = f.open(changed.equals("question") ? 2 : 1,
-                    changed.equals("phase") ? Phase.DECISION : Phase.QUESTION_OPEN,
-                    changed.equals("token") ? 2 : 1, 100);
-            var gate = new QuestionCloseGate(Set.of(1L));
-            AtomicInteger closes = new AtomicInteger();
-            f.onTimer = timer -> {
-                assertThat(current.matches(timer.value().questionIndex(), timer.value().phase(), timer.value().token())).isTrue();
-                if (gate.close()) closes.incrementAndGet();
-            };
-            f.clock.at(100); old.fire(); f.barrier();
-            assertThat(old.cancelled).isTrue(); assertThat(closes).hasValue(0);
-            var live = f.scheduler.tasks.getLast(); live.fire(); live.fire(); f.barrier();
-            live.fire(); f.barrier();
-            assertThat(closes).hasValue(1); assertThat(f.trace).filteredOn("timer"::equals).hasSize(1);
-        }
-    }
-
     @Test void queuedOldTimerCannotCloseNewPhase() throws Exception {
         try (var f = new Fixture()) {
-            f.open(1, Phase.DECISION, 1, 100);
+            f.open(1, Phase.QUESTION_CLOSED, 1, 100);
             var old = f.scheduler.tasks.getFirst();
             CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
             var blocked = f.submit("block", command -> { entered.countDown(); await(release); }); await(entered);
@@ -259,7 +208,7 @@ class SessionQueueTest {
                 f.clock.at(10);
                 var open = f.submit("open", command -> {
                     var now = f.clock.sample();
-                    var window = PhaseWindow.open(1, Phase.DECISION, 1, now.monotonicMs(), now.epochMs(), 5_000);
+                    var window = PhaseWindow.open(1, Phase.QUESTION_CLOSED, 1, now.monotonicMs(), now.epochMs(), 5_000);
                     opened.set(window); f.queue.armTimer(f.key, window);
                 });
                 f.clock.at(500); release.countDown(); done(block); done(open);
@@ -269,44 +218,6 @@ class SessionQueueTest {
                 assertThat(opened.get().deadlineEpochMs()).isEqualTo(1_005_500);
                 assertThat(f.scheduler.tasks.getFirst().delay).isEqualTo(5_000);
             } finally { release.countDown(); }
-        }
-    }
-
-    @Test void earlyCloseIncludesDisconnectedPlayerAndAllowsOneCloseScoringCallback() throws Exception {
-        try (var f = new Fixture()) {
-            var window = f.open(1, Phase.QUESTION_OPEN, 1, 100);
-            // Player 3 is disconnected, still PLAYING and therefore still eligible. No connection filter.
-            var gate = new QuestionCloseGate(Set.of(1L, 2L, 3L));
-            AtomicInteger scoreCalls = new AtomicInteger();
-            f.onTimer = timer -> { if (gate.close()) scoreCalls.incrementAndGet(); };
-            f.clock.at(99);
-            for (long id : new long[] {1, 2}) f.run("answer", command -> {
-                assertThat(window.accepts(command.receivedAtMs())).isTrue();
-                gate.recordValidAnswer(id); if (gate.closeIfAllAnswered()) scoreCalls.incrementAndGet();
-            });
-            assertThat(scoreCalls).hasValue(0);
-            f.run("invalid-and-duplicate", command -> {
-                assertThat(gate.recordValidAnswer(1)).isFalse(); assertThat(gate.recordValidAnswer(99)).isFalse();
-                assertThat(gate.closeIfAllAnswered()).isFalse();
-            });
-            f.run("answer-disconnected", command -> {
-                assertThat(gate.recordValidAnswer(3)).isTrue(); if (gate.closeIfAllAnswered()) scoreCalls.incrementAndGet();
-                assertThat(gate.recordValidAnswer(3)).isFalse(); assertThat(gate.close()).isFalse();
-            });
-            f.clock.at(100); f.scheduler.tasks.getFirst().fire(); f.scheduler.tasks.getFirst().fire(); f.barrier();
-            assertThat(scoreCalls).hasValue(1);
-        }
-    }
-
-    @Test void disconnectedUnansweredPlayerWaitsForTimerInsteadOfEarlyClose() throws Exception {
-        try (var f = new Fixture()) {
-            f.open(1, Phase.QUESTION_OPEN, 1, 100);
-            var gate = new QuestionCloseGate(Set.of(1L, 2L, 3L));
-            AtomicInteger closes = new AtomicInteger();
-            f.onTimer = timer -> { if (gate.close()) closes.incrementAndGet(); };
-            f.run("two-answers", command -> { gate.recordValidAnswer(1); gate.recordValidAnswer(2); assertThat(gate.closeIfAllAnswered()).isFalse(); });
-            assertThat(gate.isClosed()).isFalse(); f.clock.at(100); f.scheduler.tasks.getFirst().fire(); f.barrier();
-            assertThat(closes).hasValue(1);
         }
     }
 

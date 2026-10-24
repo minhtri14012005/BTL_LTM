@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import vn.edu.multigame.user.entity.UserAccount;
 import vn.edu.multigame.user.enums.UserRole;
 
-/** Server identity. Host is a Room permission, never a global authority. */
+/** Server identity; class and lesson permissions are checked separately from global roles. */
 public final class AuthPrincipal implements UserDetails, CredentialsContainer {
     private static final long serialVersionUID = 1L;
     private final long userId;

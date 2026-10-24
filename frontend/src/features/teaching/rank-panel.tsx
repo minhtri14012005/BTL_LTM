@@ -1,7 +1,6 @@
 import { EmptyState, ErrorState, Loading } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Table } from "@/components/ui/table";
 import { useResource } from "@/hooks/use-resource";
@@ -10,20 +9,24 @@ import { realtime } from "@/lib/session";
 import { useEffect, useRef, useState } from "react";
 import { type Board, type Range, type RankConfig } from "./teaching-api";
 import { FormError, Notice, useTeachingAction } from "./teaching-shared";
+import { RankRanges } from "./rank-ranges";
 export function rankError(ranges: Range[]) {
-  const sorted = [...ranges].sort((a, b) => a.from - b.from);
-  return sorted.some(
+  const invalid = ranges.some(
     (r, i) =>
       !r.name.trim() ||
-      !Number.isSafeInteger(r.from) ||
-      !Number.isSafeInteger(r.to) ||
+      !Number.isInteger(r.from) ||
       r.from < 1 ||
-      r.to < r.from ||
-      (i > 0 && sorted[i - 1].to >= r.from),
-  )
-    ? "Tên Rank phải có nội dung; khoảng vị trí là số nguyên dương và không được chồng lấn."
+      r.from > 2147483647 ||
+      (r.to === null
+        ? i !== ranges.length - 1
+        : !Number.isInteger(r.to) || r.to < r.from || r.to > 2147483647) ||
+      (i > 0 && (ranges[i - 1].to === null || ranges[i - 1].to! >= r.from)),
+  );
+  return invalid
+    ? "Tên Rank và khoảng hạng chưa hợp lệ. Các mức phải đúng thứ tự, không chồng lấn; chỉ mức cuối được không giới hạn."
     : "";
 }
+
 export function RankPanel({
   classId,
   view = "board",
@@ -155,75 +158,12 @@ function RankEditor({
             <CardTitle>Cấu hình mức Rank</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {ranges.map((r, index) => (
-              <div
-                key={index}
-                className="grid items-end gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
-              >
-                <FormField label={`Tên Rank ${index + 1}`}>
-                  {(p) => (
-                    <Input
-                      {...p}
-                      maxLength={100}
-                      value={r.name}
-                      disabled={action.pending}
-                      onChange={(e) =>
-                        setRanges((old) =>
-                          old.map((v, i) =>
-                            i === index ? { ...v, name: e.target.value } : v,
-                          ),
-                        )
-                      }
-                    />
-                  )}
-                </FormField>
-                {(["from", "to"] as const).map((field) => (
-                  <FormField
-                    key={field}
-                    label={`${field === "from" ? "Từ" : "Đến"} vị trí ${index + 1}`}
-                  >
-                    {(p) => (
-                      <Input
-                        {...p}
-                        type="number"
-                        min={1}
-                        step={1}
-                        value={r[field] || ""}
-                        disabled={action.pending}
-                        onChange={(e) =>
-                          setRanges((old) =>
-                            old.map((v, i) =>
-                              i === index
-                                ? { ...v, [field]: Number(e.target.value) }
-                                : v,
-                            ),
-                          )
-                        }
-                      />
-                    )}
-                  </FormField>
-                ))}
-                <Button
-                  variant="outline"
-                  disabled={action.pending}
-                  onClick={() =>
-                    setRanges((old) => old.filter((_, i) => i !== index))
-                  }
-                >
-                  Xóa mức {index + 1}
-                </Button>
-              </div>
-            ))}
+            <RankRanges
+              ranges={ranges}
+              setRanges={setRanges}
+              pending={action.pending}
+            />
             <div className="flex flex-wrap gap-3">
-              <Button
-                variant="outline"
-                disabled={action.pending || ranges.length >= 100}
-                onClick={() =>
-                  setRanges((old) => [...old, { name: "", from: 0, to: 0 }])
-                }
-              >
-                Thêm mức Rank
-              </Button>
               <Button
                 disabled={action.pending}
                 onClick={() => {

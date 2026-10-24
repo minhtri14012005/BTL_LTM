@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/system")
 public class SystemController {
     private final DatabaseProbe databaseProbe;
-    private final org.springframework.beans.factory.ObjectProvider<vn.edu.multigame.game.service.GameStartupCleanup> gameStartup;
+    private final org.springframework.beans.factory.ObjectProvider<vn.edu.multigame.realtime.session.LessonRuntime> lessonRuntime;
 
-    public SystemController(DatabaseProbe databaseProbe,org.springframework.beans.factory.ObjectProvider<vn.edu.multigame.game.service.GameStartupCleanup> gameStartup) {
+    public SystemController(DatabaseProbe databaseProbe,org.springframework.beans.factory.ObjectProvider<vn.edu.multigame.realtime.session.LessonRuntime> lessonRuntime) {
         this.databaseProbe = databaseProbe;
-        this.gameStartup=gameStartup;
+        this.lessonRuntime=lessonRuntime;
     }
 
     @GetMapping("/status")
@@ -36,9 +36,9 @@ public class SystemController {
     }
 
     private SystemStatus currentStatus() {
-        var startup=gameStartup.getIfAvailable(); boolean ready=startup==null || startup.ready();
-        return new SystemStatus("ClassQuest", ready?"UP":"STARTING", databaseProbe.check(), Instant.now().toEpochMilli(),
-                startup==null?"NOT_IMPLEMENTED":ready?"GAMEPLAY_WS":"LIFECYCLE_INITIALIZING");
+        var runtime=lessonRuntime.getIfAvailable();
+        return new SystemStatus("ClassQuest", "UP", databaseProbe.check(), Instant.now().toEpochMilli(),
+                runtime==null?"NOT_IMPLEMENTED":"GAMEPLAY_WS");
     }
 
 }

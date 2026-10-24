@@ -35,7 +35,6 @@ public class AccountAccessPolicy {
 
     private final ConcurrentHashMap<Long, AtomicReference<Fence>> fences = new ConcurrentHashMap<>();
     private final JdbcTemplate jdbc;
-    private static final ThreadLocal<vn.edu.multigame.auth.security.AuthPrincipal> identity = new ThreadLocal<>();
 
     public AccountAccessPolicy(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
@@ -49,25 +48,9 @@ public class AccountAccessPolicy {
         return read(user, true);
     }
 
-    public <T> T as(org.springframework.security.core.Authentication auth, java.util.function.Supplier<T> operation) {
-        var previous = identity.get();
-        try {
-            identity.set((vn.edu.multigame.auth.security.AuthPrincipal) auth.getPrincipal());
-            return operation.get();
-        } finally {
-            if (previous == null)
-                identity.remove();
-            else
-                identity.set(previous);
-        }
-    }
-
     public void requireLocked(long user) {
         var state = lock(user);
         requireAvailable(state);
-        var principal = identity.get();
-        if (principal != null && principal.userId() == user && principal.authEpoch() != state.epoch())
-            throw AuthService.unauthorized();
     }
 
     private State read(long user, boolean lock) {

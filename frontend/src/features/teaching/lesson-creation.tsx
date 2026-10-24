@@ -134,6 +134,7 @@ function CopiedPlan({
         đầu và không có điểm hay bài nộp. Bài tập cần chọn hạn nộp mới.
       </p>
       <LessonPlan
+        classId={props.classId}
         submitLabel="Tạo buổi học"
         initial={source}
         pending={props.pending}

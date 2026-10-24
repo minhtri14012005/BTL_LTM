@@ -91,6 +91,18 @@ public class AccountLifecycleChecks {
             restored.ok("GET","/api/auth/me",null,401);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM quiz WHERE owner_user_id=?",Integer.class,legacyId)).isEqualTo(1);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM admin_account_action WHERE target_user_id=?",Integer.class,id)).isEqualTo(2);
+            long banId=anonymous.ok("POST","/api/auth/register",Map.of("username","sanction_target","hoTen","Session revocation test","maSinhVien","SANCTION_TARGET","password",PASSWORD),201).get("id").asLong();
+            var banRequest=Map.of("requestId",UUID.randomUUID().toString(),"expectedVersion",0,"reason","Ban without legacy room dependencies");
+            admin.ok("POST","/api/admin/users/"+banId+"/ban",banRequest,200);
+            new Client(port).login("sanction_target",PASSWORD,403);
+            admin.ok("POST","/api/admin/users/"+banId+"/unban",Map.of("requestId",UUID.randomUUID().toString(),"expectedVersion",1,"reason","Unban"),200);
+            var fresh=new Client(port);fresh.login("sanction_target",PASSWORD,200);
+            // Replay the durable revocation after unban: it must not revoke a newer login epoch.
+            jdbc.update("UPDATE account_effect_intent SET state='PENDING',retry_after_ms=0,completed_at_ms=NULL WHERE user_id=?",banId);
+            context.getBean(vn.edu.multigame.admin.service.SessionRevocationWorker.class).reconcile();
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM account_effect_intent WHERE user_id=? AND state='PENDING'",Integer.class,banId)).isZero();
+            fresh.ok("GET","/api/auth/me",null,200);
+            fresh.ok("POST","/api/auth/logout",Map.of(),204);
         } finally {socket.abort();}
     }
 }

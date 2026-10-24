@@ -12,16 +12,16 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import vn.edu.multigame.game.runtime.PhaseWindow;
+import vn.edu.multigame.realtime.timer.PhaseWindow;
 import vn.edu.multigame.realtime.timer.PhaseTimer;
 import vn.edu.multigame.realtime.timer.ScheduledTimerScheduler;
 import vn.edu.multigame.realtime.timer.ServerClock;
 import vn.edu.multigame.realtime.timer.TimerScheduler;
 
-/** Bounded per-game serial processors on a shared pool. Not a receipt cache or a transaction manager. */
+/** Bounded per-session serial processors on a shared pool. Not a receipt cache or a transaction manager. */
 public final class SessionQueue<C> implements AutoCloseable {
     public static final long RETENTION_MS = 600_000;
-    public record SessionKey(long gameSessionId, long generation) {}
+    public record SessionKey(long sessionId, long generation) {}
     public record Submission<T>(Ingress<T> ingress, CompletableFuture<Void> processed) {}
     public interface Handler<T> {
         void onCommand(Ingress<T> command);
@@ -68,24 +68,24 @@ public final class SessionQueue<C> implements AutoCloseable {
         AtomicInteger names = new AtomicInteger();
         workers = new ThreadPoolExecutor(workerCount, workerCount, 0, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(maxSessions), runnable -> {
-                    Thread thread = new Thread(runnable, "game-worker-" + names.incrementAndGet());
+                    Thread thread = new Thread(runnable, "lesson-worker-" + names.incrementAndGet());
                     thread.setDaemon(true);
                     return thread;
                 }, new ThreadPoolExecutor.AbortPolicy());
     }
 
     /** Register only after Start commit in Task 8. Explicit keys prevent implicit recreation by stale commands. */
-    public SessionKey register(long gameSessionId, Handler<C> handler) {
-        if (gameSessionId <= 0) throw new IllegalArgumentException("Invalid GameSession ID");
+    public SessionKey register(long sessionId, Handler<C> handler) {
+        if (sessionId <= 0) throw new IllegalArgumentException("Invalid session ID");
         Objects.requireNonNull(handler, "handler");
         cleanup();
         synchronized (states) {
             if (closed) throw unavailable();
-            if (states.containsKey(gameSessionId)) throw new IllegalStateException("Session already registered");
+            if (states.containsKey(sessionId)) throw new IllegalStateException("Session already registered");
             if (states.size() >= maxSessions) throw unavailable();
-            SessionKey key = new SessionKey(gameSessionId, Math.incrementExact(generation));
+            SessionKey key = new SessionKey(sessionId, Math.incrementExact(generation));
             generation = key.generation();
-            states.put(gameSessionId, new State(key, handler));
+            states.put(sessionId, new State(key, handler));
             return key;
         }
     }
@@ -108,7 +108,7 @@ public final class SessionQueue<C> implements AutoCloseable {
             if (counted && state.pendingCommands >= commandLimit) throw unavailable();
             ServerClock.Sample now = clock.sample();
             long sequence = Math.incrementExact(state.sequence);
-            Ingress<C> ingress = new Ingress<>(key.gameSessionId(), key.generation(), sequence,
+            Ingress<C> ingress = new Ingress<>(key.sessionId(), key.generation(), sequence,
                     now.monotonicMs(), now.epochMs(), command);
             var completion = new CompletableFuture<Void>();
             Work work = new Work(() -> state.handler.onCommand(ingress), null, completion, counted);
@@ -133,7 +133,7 @@ public final class SessionQueue<C> implements AutoCloseable {
             cancelTimer(state);
             // Stale queued timers have no command completion/replay data and can be removed safely.
             state.queue.removeIf(work -> work.timer() != null);
-            PhaseTimer timer = new PhaseTimer(key.gameSessionId(), key.generation(), window.questionIndex(),
+            PhaseTimer timer = new PhaseTimer(key.sessionId(), key.generation(), window.questionIndex(),
                     window.phase(), window.token(), window.deadlineMs());
             state.timer = timer;
             state.ticket = scheduler.schedule(() -> timerIngress(state, timer), window.remainingMs(clock.sample().monotonicMs()));
@@ -204,7 +204,7 @@ public final class SessionQueue<C> implements AutoCloseable {
                 return; // Early scheduler wakeup: never close ahead of the monotonic deadline.
             }
             long sequence = Math.incrementExact(state.sequence);
-            var ingress = new Ingress<>(state.key.gameSessionId(), state.key.generation(), sequence,
+            var ingress = new Ingress<>(state.key.sessionId(), state.key.generation(), sequence,
                     now.monotonicMs(), now.epochMs(), timer);
             state.sequence = sequence; state.timerEnqueued = true;
             // One reserved timer slot per session: a command flood cannot drop the close event.
@@ -260,7 +260,7 @@ public final class SessionQueue<C> implements AutoCloseable {
     private State state(SessionKey key) {
         Objects.requireNonNull(key, "key");
         synchronized (states) {
-            State state = states.get(key.gameSessionId());
+            State state = states.get(key.sessionId());
             if (state == null || !state.key.equals(key)) throw unavailable();
             return state;
         }
@@ -268,16 +268,16 @@ public final class SessionQueue<C> implements AutoCloseable {
     /** Lesson actors have durable receipts; an idle actor with no timer can be recreated safely. */
     public boolean evictIdle(SessionKey key) {
         synchronized(states) {
-            State state=states.get(key.gameSessionId());
+            State state=states.get(key.sessionId());
             if(state==null || !state.key.equals(key))return true;
             synchronized(state) {
                 if(state.running || state.paused || !state.queue.isEmpty() || state.timer!=null)return false;
-                state.disposed=true;states.remove(key.gameSessionId());return true;
+                state.disposed=true;states.remove(key.sessionId());return true;
             }
         }
     }
     public boolean registered(SessionKey key) {
-        synchronized (states) { State state=states.get(key.gameSessionId()); return state!=null && state.key.equals(key); }
+        synchronized (states) { State state=states.get(key.sessionId()); return state!=null && state.key.equals(key); }
     }
     private void requireAvailable(State state) {
         if (closed || state.disposed || state.failed) throw unavailable();

@@ -24,7 +24,7 @@ vi.mock("@/lib/api", async (original) => ({
 afterEach(cleanup);
 it("selects an owned or Public bank, saves its slot and clears it when the game mode changes", async () => {
   const save = vi.fn();
-  render(<LessonPlan onSave={save} pending={false} error="" />);
+  render(<LessonPlan classId={1} onSave={save} pending={false} error="" />);
   await waitFor(() =>
     expect(
       screen.getAllByRole("option", { name: "Bộ riêng · PRIVATE" }),

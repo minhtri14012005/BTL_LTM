@@ -24,8 +24,12 @@ public class QuestionBankController {
     ResponseEntity<QuestionBankListResponse> list(Authentication auth, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "VISIBLE") vn.edu.multigame.questionbank.enums.QuestionBankScope scope,
-            @RequestParam(required = false) vn.edu.multigame.game.enums.GameMode mode, @RequestParam(defaultValue="") String q) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.list(auth, page, size, scope, mode, q));
+            @RequestParam(required = false) vn.edu.multigame.questionbank.enums.GameMode mode, @RequestParam(defaultValue="") String q, @RequestParam(required=false) Long subjectId, @RequestParam(required=false) Long classId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.list(auth, page, size, scope, mode, q, subjectId, classId));
+    }
+    @GetMapping("/subjects")
+    ResponseEntity<java.util.List<vn.edu.multigame.academic.dto.AcademicViews.Subject>> subjects(Authentication auth) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(quizzes.subjects(auth));
     }
     @GetMapping("/{id}")
     ResponseEntity<Object> get(Authentication auth, @PathVariable long id) {
@@ -57,21 +61,5 @@ public class QuestionBankController {
             .header("X-Content-Type-Options","nosniff").body(quizzes.draftImage(auth,hash));
     }
     @GetMapping("/{id}/images/{hash}")
-    ResponseEntity<byte[]> image(Authentication auth, @PathVariable long id, @PathVariable String hash,
-            @RequestParam(required = false) Long gameSessionId) {
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).cacheControl(CacheControl.noStore())
-                .header("X-Content-Type-Options", "nosniff").body(quizzes.image(auth, id, hash, gameSessionId));
-    }
-    @GetMapping("/videos/drafts/{hash}")
-    ResponseEntity<org.springframework.core.io.Resource> draftVideo(Authentication auth,@PathVariable String hash) {
-        return videoResponse(quizzes.draftVideo(auth,hash));
-    }
-    @GetMapping("/{id}/videos/{hash}")
-    ResponseEntity<org.springframework.core.io.Resource> video(Authentication auth,@PathVariable long id,@PathVariable String hash,@RequestParam(required=false) Long gameSessionId) {
-        return videoResponse(quizzes.video(auth,id,hash,gameSessionId));
-    }
-    private ResponseEntity<org.springframework.core.io.Resource> videoResponse(org.springframework.core.io.Resource resource) {
-        return ResponseEntity.ok().contentType(MediaType.valueOf("video/mp4")).cacheControl(CacheControl.noStore())
-            .header("X-Content-Type-Options","nosniff").body(resource);
-    }
+    ResponseEntity<byte[]> image(Authentication auth,@PathVariable long id,@PathVariable String hash){return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).cacheControl(CacheControl.noStore()).header("X-Content-Type-Options","nosniff").body(quizzes.image(auth,id,hash));}
 }

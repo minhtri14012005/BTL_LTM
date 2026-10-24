@@ -12,7 +12,6 @@ frontend/*.tsbuildinfo
 .env.*
 !.env.example
 
-
 *.log
 !experiments/results/**/*.log
 !experiments/handoff/**/*.log

@@ -1,995 +1,993 @@
 {
-  "description": "ClassQuest: 5 bộ Quiz, 5 bộ Điền từ (mỗi bộ 10 câu), 5 bộ Bài tập (mỗi bộ 1 đề). Các bộ là nội dung Public; gửi từng phần tử packs tới POST /api/quizzes bằng tài khoản giảng viên.",
+  "subjectCode": "LTM",
+  "subjectName": "Lập trình mạng",
   "packs": [
     {
-      "title": "Quiz — Bộ 1: Lập trình cơ bản",
-      "visibility": "PUBLIC",
+      "title": "LTM · Quiz · Kiến trúc Client–Server và giao thức",
       "mode": "QUIZ",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Cấu trúc nào dùng để lặp lại một nhóm lệnh khi điều kiện còn đúng?",
+          "content": "Trong kiến trúc Client–Server, thành phần nào thường lắng nghe yêu cầu tại một cổng đã biết?",
           "options": {
-            "A": "Vòng lặp",
-            "B": "Biến hằng",
-            "C": "Chú thích",
-            "D": "Tên tệp"
+            "A": "Server",
+            "B": "Client luôn luôn",
+            "C": "Bộ biên dịch",
+            "D": "Trình soạn thảo"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Kiểu dữ liệu Boolean thường biểu diễn hai giá trị nào?",
+          "content": "Một endpoint TCP thường được xác định bởi cặp thông tin nào?",
           "options": {
-            "A": "Âm và dương",
-            "B": "Đúng và sai",
-            "C": "Chẵn và lẻ",
-            "D": "Nhỏ và lớn"
+            "A": "Tên file và phần mở rộng",
+            "B": "Địa chỉ IP và số cổng",
+            "C": "Tên người dùng và mật khẩu",
+            "D": "Tên lớp và tên biến"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Một hàm nhận dữ liệu đầu vào qua thành phần nào?",
+          "content": "Đặc điểm nào mô tả đúng giao tiếp full-duplex?",
           "options": {
-            "A": "Tên thư mục",
-            "B": "Số dòng mã",
-            "C": "Tham số",
-            "D": "Chú thích cuối tệp"
+            "A": "Chỉ Client được gửi",
+            "B": "Hai phía bắt buộc gửi luân phiên",
+            "C": "Hai phía có thể gửi và nhận đồng thời",
+            "D": "Chỉ Server được gửi"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Trong mảng có chỉ số bắt đầu từ 0, phần tử thứ ba có chỉ số nào?",
+          "content": "Vai trò chính của DNS là gì?",
           "options": {
-            "A": "0",
-            "B": "1",
-            "C": "3",
-            "D": "2"
+            "A": "Mã hóa toàn bộ dữ liệu ứng dụng",
+            "B": "Cấp số thứ tự cho byte TCP",
+            "C": "Biên dịch chương trình Java",
+            "D": "Phân giải tên miền thành thông tin địa chỉ"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Cấu trúc if/else chủ yếu phục vụ việc gì?",
+          "content": "Thông tin nào giúp hệ điều hành chuyển dữ liệu đến đúng dịch vụ mạng trên một máy?",
           "options": {
-            "A": "Chọn nhánh xử lý theo điều kiện",
-            "B": "Lặp vô hạn mọi lệnh",
-            "C": "Lưu toàn bộ chương trình vào cơ sở dữ liệu",
-            "D": "Tự động sửa lỗi cú pháp"
+            "A": "Số cổng",
+            "B": "Tên hiển thị người dùng",
+            "C": "Độ dài tên file",
+            "D": "Phiên bản IDE"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Thuật toán tìm kiếm tuyến tính kiểm tra phần tử như thế nào?",
+          "content": "Địa chỉ IPv4 127.0.0.1 dùng để truy cập đâu?",
           "options": {
-            "A": "Luôn bỏ qua một nửa dữ liệu ngay từ đầu",
-            "B": "Lần lượt từng phần tử cho đến khi tìm thấy hoặc hết dữ liệu",
-            "C": "Chỉ kiểm tra phần tử cuối",
-            "D": "Chỉ hoạt động với số âm"
+            "A": "Máy chủ DNS công cộng bất kỳ",
+            "B": "Chính máy đang thực hiện kết nối",
+            "C": "Mọi thiết bị trên Internet",
+            "D": "Router của mọi mạng"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Một hàm gọi lại chính nó được gọi là gì?",
+          "content": "Để điện thoại cùng LAN truy cập Server trên laptop, thường cần dùng địa chỉ nào?",
           "options": {
-            "A": "Hàm không tham số",
-            "B": "Hàm nhập dữ liệu",
-            "C": "Hàm đệ quy",
-            "D": "Hàm chỉ đọc tệp"
+            "A": "127.0.0.1 của điện thoại",
+            "B": "Tên biến chứa socket trong Java",
+            "C": "Địa chỉ LAN của laptop và cổng dịch vụ",
+            "D": "localhost của điện thoại"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Điều kiện dừng trong hàm đệ quy giúp ích gì?",
+          "content": "Vì sao giao thức ứng dụng cần quy định cấu trúc thông điệp?",
           "options": {
-            "A": "Tăng số lần gọi vô hạn",
-            "B": "Xóa mọi tham số",
-            "C": "Thay thế tất cả biến bằng hằng",
-            "D": "Ngăn việc gọi đệ quy tiếp tục vô hạn"
+            "A": "Để không cần xử lý lỗi mạng",
+            "B": "Để mọi yêu cầu luôn thành công",
+            "C": "Để thay thế địa chỉ IP",
+            "D": "Để hai phía giải mã và hiểu thống nhất dữ liệu"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Hai vòng lặp lồng nhau, mỗi vòng chạy n lần, thực hiện phần thân trong cùng bao nhiêu lần?",
+          "content": "Serialization trong trao đổi dữ liệu là thao tác nào?",
           "options": {
-            "A": "n × n",
-            "B": "n",
-            "C": "2 × n",
-            "D": "n + 1"
+            "A": "Chuyển dữ liệu thành biểu diễn có thể truyền đi",
+            "B": "Đóng tất cả kết nối đang mở",
+            "C": "Cấp quyền quản trị cho Client",
+            "D": "Tăng tốc độ Wi-Fi bằng phần mềm"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Khi hoán đổi hai biến a và b bằng biến tạm t, thứ tự nào đúng?",
+          "content": "Khi hai phía truyền văn bản có dấu tiếng Việt, cần thống nhất điều gì?",
           "options": {
-            "A": "a = b; b = a; t = b",
-            "B": "t = a; a = b; b = t",
-            "C": "t = b; b = t; a = b",
-            "D": "a = a; b = b; t = a"
+            "A": "Hãng sản xuất bàn phím",
+            "B": "Bảng mã ký tự, chẳng hạn UTF-8",
+            "C": "Tên thư mục project",
+            "D": "Màu giao diện"
           },
           "correctAnswer": "B"
         }
       ]
     },
     {
-      "title": "Quiz — Bộ 2: Java cơ bản",
-      "visibility": "PUBLIC",
+      "title": "LTM · Quiz · TCP Socket trong Java",
       "mode": "QUIZ",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Từ khóa nào dùng để tạo một đối tượng Java thông thường?",
+          "content": "Lớp Java nào thường dùng để lắng nghe kết nối TCP đến?",
           "options": {
-            "A": "new",
-            "B": "extends",
-            "C": "package",
-            "D": "return"
+            "A": "ServerSocket",
+            "B": "DatagramPacket",
+            "C": "StringBuilder",
+            "D": "ArrayList"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Đối với hai đối tượng String, phương thức nào thường dùng để so sánh nội dung?",
+          "content": "Phương thức nào của ServerSocket chờ và nhận một kết nối đến?",
           "options": {
-            "A": "wait",
-            "B": "equals",
-            "C": "notify",
-            "D": "getClass"
+            "A": "substring()",
+            "B": "accept()",
+            "C": "send()",
+            "D": "flush()"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Điểm đặc trưng nào đúng với constructor trong Java?",
+          "content": "ServerSocket.accept() trả về đối tượng thuộc lớp nào?",
           "options": {
-            "A": "Luôn có kiểu trả về void",
-            "B": "Bắt buộc tên là main",
-            "C": "Có cùng tên với lớp và không khai báo kiểu trả về",
-            "D": "Chỉ được khai báo trong interface"
+            "A": "DatagramSocket",
+            "B": "ThreadPoolExecutor",
+            "C": "Socket",
+            "D": "ServerSocket"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Từ khóa nào khai báo quan hệ kế thừa giữa hai lớp Java?",
+          "content": "TCP cung cấp cho ứng dụng cách truyền dữ liệu nào?",
           "options": {
-            "A": "implements",
-            "B": "import",
-            "C": "throws",
-            "D": "extends"
+            "A": "Các thông điệp giữ nguyên ranh giới mỗi lần write",
+            "B": "Broadcast đến toàn mạng theo mặc định",
+            "C": "Các gói không có cơ chế truyền lại",
+            "D": "Luồng byte tin cậy và có thứ tự"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Từ khóa nào dùng khi một lớp thực thi interface?",
+          "content": "Vì sao TCP cần framing ở tầng ứng dụng?",
           "options": {
-            "A": "implements",
-            "B": "extends",
-            "C": "instanceof",
-            "D": "synchronized"
+            "A": "TCP không tự giữ ranh giới thông điệp ứng dụng",
+            "B": "TCP chỉ truyền được một byte",
+            "C": "TCP không hỗ trợ tiếng Việt",
+            "D": "TCP không dùng cổng"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Đặc điểm nào đúng với một trường static?",
+          "content": "InputStream.read() trả về -1 có ý nghĩa gì?",
           "options": {
-            "A": "Mỗi lần đọc trường đều tạo một lớp mới",
-            "B": "Trường thuộc lớp và được chia sẻ giữa các đối tượng của lớp",
-            "C": "Chỉ được dùng bên trong constructor",
-            "D": "Không thể truy cập từ phương thức static"
+            "A": "Cần tăng số cổng",
+            "B": "Đã đến cuối luồng",
+            "C": "Đọc được một byte có giá trị âm bất kỳ",
+            "D": "Socket chắc chắn chưa kết nối"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Cấu trúc nào thích hợp để lưu ánh xạ từ khóa đến giá trị trong Java?",
+          "content": "Trong Java Socket, setSoTimeout(...) chủ yếu giới hạn thao tác nào?",
           "options": {
-            "A": "StringBuilder",
-            "B": "Thread",
-            "C": "HashMap",
-            "D": "Scanner"
+            "A": "Thời gian biên dịch Java",
+            "B": "Thời gian mọi lần ghi vào mạng",
+            "C": "Thời gian chờ đọc khi chưa có dữ liệu",
+            "D": "Tổng thời gian chạy của ứng dụng"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Khối nào xử lý một ngoại lệ phù hợp phát sinh trong khối try?",
+          "content": "Khi dùng BufferedWriter, flush() có vai trò gì?",
           "options": {
-            "A": "package",
-            "B": "import",
-            "C": "switch",
-            "D": "catch"
+            "A": "Bảo đảm phía nhận đã xử lý nghiệp vụ",
+            "B": "Tạo một kết nối TCP mới",
+            "C": "Xóa mọi dữ liệu trong database",
+            "D": "Đẩy dữ liệu đệm xuống luồng bên dưới"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Trong Java, chỉ số đầu tiên của một mảng là bao nhiêu?",
+          "content": "Một lần read(byte[]) có thể đọc ít byte hơn kích thước thông điệp mong đợi không?",
           "options": {
-            "A": "0",
-            "B": "1",
-            "C": "-1",
-            "D": "Phụ thuộc vào giá trị phần tử đầu"
+            "A": "Có, ứng dụng phải tích lũy và đọc tiếp",
+            "B": "Không, TCP luôn đọc đủ một thông điệp",
+            "C": "Chỉ khi dùng UDP",
+            "D": "Chỉ khi chạy trên Linux"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Từ khóa nào chỉ tham chiếu đến đối tượng hiện tại trong một phương thức instance?",
+          "content": "Cách nào phù hợp để giải phóng Socket khi kết thúc xử lý?",
           "options": {
-            "A": "superclass",
-            "B": "this",
-            "C": "self",
-            "D": "current"
+            "A": "Tạo thêm Socket để thay thế",
+            "B": "Dùng try-with-resources hoặc đóng trong finally",
+            "C": "Chỉ đặt biến tham chiếu thành null",
+            "D": "Chờ người dùng đóng trình duyệt"
           },
           "correctAnswer": "B"
         }
       ]
     },
     {
-      "title": "Quiz — Bộ 3: Cơ sở dữ liệu và SQL",
-      "visibility": "PUBLIC",
+      "title": "LTM · Quiz · UDP và Datagram trong Java",
       "mode": "QUIZ",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Trong mô hình quan hệ, một hàng của bảng thường biểu diễn điều gì?",
+          "content": "Đơn vị dữ liệu ứng dụng thường gửi qua UDP là gì?",
           "options": {
-            "A": "Một bản ghi",
-            "B": "Một hệ quản trị hoàn chỉnh",
-            "C": "Toàn bộ cơ sở dữ liệu",
-            "D": "Một câu lệnh SQL"
+            "A": "Datagram",
+            "B": "Luồng ký tự vô hạn có bảo đảm thứ tự",
+            "C": "Bảng database",
+            "D": "Phiên đăng nhập HTTP"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Mục đích chính của khóa chính là gì?",
+          "content": "Lớp Java nào thường dùng để gửi và nhận UDP?",
           "options": {
-            "A": "Mã hóa mật khẩu tự động",
-            "B": "Định danh duy nhất một bản ghi trong bảng",
-            "C": "Sắp xếp mọi truy vấn theo tên",
-            "D": "Tự động sao lưu toàn bộ máy chủ"
+            "A": "ObjectOutputStream",
+            "B": "DatagramSocket",
+            "C": "ServerSocket",
+            "D": "FileReader"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Khóa ngoại giúp biểu diễn điều gì?",
+          "content": "Đối tượng Java nào mang dữ liệu và địa chỉ khi gửi UDP?",
           "options": {
-            "A": "Địa chỉ IP của máy khách",
-            "B": "Tên người đăng nhập hệ điều hành",
-            "C": "Liên kết tham chiếu giữa các bảng",
-            "D": "Mọi dữ liệu đều có thể để trống"
+            "A": "StringBuffer",
+            "B": "Semaphore",
+            "C": "DatagramPacket",
+            "D": "HttpSession"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Từ khóa SQL nào dùng để truy vấn dữ liệu?",
+          "content": "UDP có tự bảo đảm thứ tự nhận của mọi datagram không?",
           "options": {
-            "A": "INSERT",
-            "B": "DELETE",
-            "C": "DROP",
-            "D": "SELECT"
+            "A": "Có, trong mọi trường hợp",
+            "B": "Chỉ khi payload là JSON",
+            "C": "Chỉ khi số cổng nhỏ hơn 1024",
+            "D": "Không"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Mệnh đề nào lọc các hàng theo điều kiện trước khi tổng hợp trong truy vấn SQL?",
+          "content": "Nếu ứng dụng UDP cần bảo đảm nhận dữ liệu, cần làm gì?",
           "options": {
-            "A": "WHERE",
-            "B": "ORDER BY",
-            "C": "FROM",
-            "D": "SELECT"
+            "A": "Thiết kế ACK, timeout và gửi lại ở tầng ứng dụng",
+            "B": "Chỉ đổi tên biến chứa dữ liệu",
+            "C": "Chỉ dùng UTF-8",
+            "D": "Chỉ tăng kích thước cửa sổ giao diện"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Câu lệnh SELECT COUNT(*) FROM sinh_vien trả về điều gì?",
+          "content": "Khi giải mã DatagramPacket vừa nhận, nên dùng độ dài nào?",
           "options": {
-            "A": "Tổng độ dài các tên sinh viên",
-            "B": "Số hàng trong bảng sinh_vien",
-            "C": "Tên sinh viên đầu tiên",
-            "D": "Số cột của bảng sinh_vien"
+            "A": "Số cổng đích",
+            "B": "getLength() của gói vừa nhận",
+            "C": "Toàn bộ kích thước buffer cấp phát trong mọi trường hợp",
+            "D": "Độ dài tên máy chủ"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Mệnh đề ORDER BY diem DESC sắp xếp điểm theo hướng nào?",
+          "content": "Mất gói UDP có thể xảy ra không?",
           "options": {
-            "A": "Tăng dần",
-            "B": "Ngẫu nhiên",
-            "C": "Giảm dần",
-            "D": "Không sắp xếp"
+            "A": "Chỉ xảy ra với HTTP",
+            "B": "Chỉ xảy ra khi không dùng Java",
+            "C": "Có",
+            "D": "Không vì UDP luôn truyền lại"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "INNER JOIN trả về những hàng nào theo điều kiện nối?",
+          "content": "Để phát hiện datagram trùng do gửi lại, ứng dụng nên bổ sung gì?",
           "options": {
-            "A": "Tất cả hàng trái bất kể có khớp hay không",
-            "B": "Chỉ những hàng không khớp ở cả hai phía",
-            "C": "Tự động xóa các hàng bị trùng khóa",
-            "D": "Những tổ hợp hàng thỏa điều kiện nối ở cả hai phía"
+            "A": "Màu nền của Client",
+            "B": "Tên project khác nhau",
+            "C": "Tên file log dài hơn",
+            "D": "Mã định danh hoặc số thứ tự thông điệp"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Trong SQL, điều kiện nào kiểm tra một giá trị là NULL?",
+          "content": "DatagramSocket.receive(...) mặc định là loại thao tác nào khi chưa có gói đến?",
           "options": {
-            "A": "IS NULL",
-            "B": "= NULL",
-            "C": "== NULL",
-            "D": "LIKE NULL"
+            "A": "Chờ chặn cho đến khi có dữ liệu hoặc xảy ra lỗi",
+            "B": "Luôn trả về ngay một gói rỗng",
+            "C": "Tự tạo dữ liệu ngẫu nhiên",
+            "D": "Tự chuyển sang TCP"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Trong giao dịch cơ sở dữ liệu, ROLLBACK dùng để làm gì?",
+          "content": "Đặc điểm nào phù hợp với UDP?",
           "options": {
-            "A": "Xác nhận vĩnh viễn các thay đổi",
-            "B": "Hủy các thay đổi chưa được xác nhận của giao dịch",
-            "C": "Xóa định nghĩa mọi bảng",
-            "D": "Đổi tên cơ sở dữ liệu"
+            "A": "Tự lưu mọi datagram vào database",
+            "B": "Ít cơ chế bảo đảm tích hợp hơn TCP",
+            "C": "Tự xác thực danh tính người gửi",
+            "D": "Luôn nhanh hơn TCP trong mọi tình huống"
           },
           "correctAnswer": "B"
         }
       ]
     },
     {
-      "title": "Quiz — Bộ 4: Mạng máy tính cơ bản",
-      "visibility": "PUBLIC",
+      "title": "LTM · Quiz · HTTP, REST API và WebSocket",
       "mode": "QUIZ",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Giao thức nào cung cấp luồng byte tin cậy và có thứ tự?",
+          "content": "HTTP thường tổ chức trao đổi theo mô hình nào?",
           "options": {
-            "A": "TCP",
-            "B": "UDP",
-            "C": "IP",
-            "D": "ARP"
+            "A": "Request–Response",
+            "B": "Chỉ Server gửi một chiều",
+            "C": "Chỉ gửi datagram broadcast",
+            "D": "Chỉ giao tiếp qua file cục bộ"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "UDP thường truyền dữ liệu theo đơn vị nào?",
+          "content": "Phương thức HTTP nào được thiết kế để truy xuất tài nguyên mà không yêu cầu thay đổi trạng thái tài nguyên?",
           "options": {
-            "A": "Bản ghi SQL",
-            "B": "Datagram",
-            "C": "Đối tượng Java",
-            "D": "Commit Git"
+            "A": "DELETE",
+            "B": "GET",
+            "C": "POST",
+            "D": "PATCH"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Vai trò phổ biến của DNS là gì?",
+          "content": "Mã HTTP 401 thường biểu thị điều gì?",
           "options": {
-            "A": "Biên dịch mã Java",
-            "B": "Chấm điểm bài tập",
-            "C": "Phân giải tên miền thành địa chỉ IP",
-            "D": "Nén toàn bộ hệ điều hành"
+            "A": "Server chuyển sang WebSocket thành công",
+            "B": "Nội dung phản hồi luôn rỗng",
+            "C": "Yêu cầu thiếu thông tin xác thực hợp lệ",
+            "D": "Tài nguyên đã được tạo thành công"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Địa chỉ IPv4 có độ dài bao nhiêu bit?",
+          "content": "Mã HTTP 403 thường biểu thị điều gì?",
           "options": {
-            "A": "16",
-            "B": "64",
-            "C": "128",
-            "D": "32"
+            "A": "Server không tìm thấy tên miền DNS",
+            "B": "Client đã nhận đủ mọi gói TCP",
+            "C": "Yêu cầu chắc chắn chưa tới Server",
+            "D": "Server từ chối thực hiện yêu cầu do quyền truy cập"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Địa chỉ IPv6 có độ dài bao nhiêu bit?",
+          "content": "Header Content-Type mô tả điều gì?",
           "options": {
-            "A": "128",
-            "B": "32",
-            "C": "48",
-            "D": "256"
+            "A": "Kiểu biểu diễn của nội dung thông điệp",
+            "B": "Địa chỉ MAC của Server",
+            "C": "Số lượng luồng Java",
+            "D": "Mật khẩu database"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Địa chỉ 127.0.0.1 thường dùng để chỉ điều gì?",
+          "content": "JSON thuộc loại biểu diễn dữ liệu nào?",
           "options": {
-            "A": "Mọi máy chủ trên Internet",
-            "B": "Giao diện loopback của chính máy đang dùng",
-            "C": "Máy chủ DNS duy nhất trên thế giới",
-            "D": "Địa chỉ quảng bá của mọi mạng"
+            "A": "Một giao thức tầng vận chuyển",
+            "B": "Văn bản có cấu trúc",
+            "C": "Mã máy Java",
+            "D": "Định dạng chỉ dành cho video"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Trong mô hình client-server thông thường, bên nào khởi tạo yêu cầu kết nối TCP?",
+          "content": "Sau khi thiết lập, WebSocket hỗ trợ cách giao tiếp nào?",
           "options": {
-            "A": "Server luôn luôn",
-            "B": "Bộ nhớ RAM",
-            "C": "Client",
-            "D": "Tệp cấu hình cơ sở dữ liệu"
+            "A": "Mỗi thông điệp phải tạo TCP mới",
+            "B": "Chỉ truyền dữ liệu khi tải lại trang",
+            "C": "Trao đổi hai chiều trên kết nối duy trì",
+            "D": "Chỉ Client được gửi yêu cầu"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Trong một máy chủ TCP, thao tác accept có tác dụng gì?",
+          "content": "HTTPS bảo vệ dữ liệu truyền bằng cơ chế nào?",
           "options": {
-            "A": "Biên dịch gói tin thành mã nguồn",
-            "B": "Xóa cổng mạng khỏi hệ điều hành",
-            "C": "Chuyển mọi yêu cầu thành UDP",
-            "D": "Chấp nhận một kết nối đang chờ"
+            "A": "Base64 tự nó là mã hóa bảo mật",
+            "B": "Tên miền viết hoa",
+            "C": "Đổi cổng thành một số bất kỳ",
+            "D": "TLS"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Một lần đọc dữ liệu từ luồng TCP có bảo đảm trả về trọn một thông điệp của ứng dụng không?",
+          "content": "Trong ứng dụng trình duyệt, CORS chủ yếu kiểm soát điều gì?",
           "options": {
-            "A": "Không, ứng dụng cần cơ chế xác định ranh giới thông điệp",
-            "B": "Có, mọi lần đọc luôn trùng đúng một lần gửi",
-            "C": "Có, miễn thông điệp chứa tiếng Việt",
-            "D": "Có, nếu dùng cổng có số chẵn"
+            "A": "Quyền truy cập phản hồi giữa các origin theo chính sách trình duyệt",
+            "B": "Quyền của tài khoản ADMIN trong database",
+            "C": "Thứ tự các byte TCP",
+            "D": "Khả năng router cấp địa chỉ IP"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "HTTPS sử dụng cơ chế nào để bảo vệ kênh truyền thông thường?",
+          "content": "Khi Client reconnect sau mất WebSocket, cách khôi phục trạng thái phù hợp là gì?",
           "options": {
-            "A": "SQL",
-            "B": "TLS",
-            "C": "CSV",
-            "D": "JVM"
+            "A": "Xóa kết quả đã lưu trên Server",
+            "B": "Lấy snapshot mới từ Server và đồng bộ lại",
+            "C": "Tự tăng điểm theo thời gian mất mạng",
+            "D": "Giả định mọi yêu cầu trước đó đều thất bại"
           },
           "correctAnswer": "B"
         }
       ]
     },
     {
-      "title": "Quiz — Bộ 5: Git và kiểm thử phần mềm",
-      "visibility": "PUBLIC",
+      "title": "LTM · Quiz · Đồng thời, độ tin cậy và Server Authoritative",
       "mode": "QUIZ",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Lệnh git clone dùng để làm gì?",
+          "content": "Race condition có thể xảy ra khi nào?",
           "options": {
-            "A": "Tạo bản sao repository về máy",
-            "B": "Đẩy commit cục bộ lên remote",
-            "C": "Xóa lịch sử repository",
-            "D": "Tự động gộp mọi nhánh"
+            "A": "Nhiều luồng truy cập trạng thái dùng chung mà thiếu đồng bộ phù hợp",
+            "B": "Chỉ khi mọi Client đã đăng xuất",
+            "C": "Chỉ khi dùng một biến hằng",
+            "D": "Chỉ khi không có kết nối mạng"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Lệnh git status chủ yếu cho biết điều gì?",
+          "content": "Trong Java, synchronized thường dùng để làm gì?",
           "options": {
-            "A": "Dung lượng của mọi ổ đĩa",
-            "B": "Trạng thái working tree và vùng staging",
-            "C": "Danh sách tiến trình mạng",
-            "D": "Mật khẩu tài khoản remote"
+            "A": "Gửi broadcast UDP",
+            "B": "Bảo vệ đoạn mã truy cập trạng thái chung bằng monitor",
+            "C": "Mã hóa payload HTTP",
+            "D": "Tự tạo bảng MySQL"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Lệnh git add đưa thay đổi vào đâu?",
+          "content": "Thread pool giúp Server giải quyết vấn đề nào?",
           "options": {
-            "A": "Database chính",
-            "B": "Thư mục hệ điều hành",
-            "C": "Vùng staging",
-            "D": "Hàng đợi WebSocket"
+            "A": "Loại bỏ nhu cầu phân quyền",
+            "B": "Thay thế hoàn toàn database",
+            "C": "Tái sử dụng và quản lý số lượng luồng xử lý",
+            "D": "Bảo đảm không bao giờ có lỗi nghiệp vụ"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Lệnh git commit tạo ra điều gì?",
+          "content": "Idempotency giúp xử lý tình huống nào?",
           "options": {
-            "A": "Một tài khoản Git mới",
-            "B": "Một database kiểm thử",
-            "C": "Một request HTTP",
-            "D": "Một commit trong repository cục bộ"
+            "A": "Mọi yêu cầu đều phải tạo bản ghi mới",
+            "B": "Không cần kiểm tra deadline",
+            "C": "Client tự quyết định điểm số",
+            "D": "Một thao tác được gửi lại nhưng không gây hiệu ứng nghiệp vụ lặp"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Lệnh git push thường dùng để làm gì?",
+          "content": "Nếu Client không nhận được phản hồi sau khi gửi bài, điều nào có thể đúng?",
           "options": {
-            "A": "Gửi các cập nhật tham chiếu và đối tượng cần thiết lên remote",
-            "B": "Tải một repository mới bằng cách xóa bản cũ",
-            "C": "Tự động sửa mọi xung đột",
-            "D": "Bảo đảm tất cả kiểm thử đều đạt"
+            "A": "Server có thể đã xử lý bài nhưng phản hồi bị mất",
+            "B": "Server chắc chắn chưa nhận yêu cầu",
+            "C": "Client được quyền tự chấm điểm",
+            "D": "Database chắc chắn bị xóa"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Lệnh git diff thường được dùng để xem gì?",
+          "content": "Trong Server Authoritative, bên nào quyết định điểm và tính hợp lệ của đáp án?",
           "options": {
-            "A": "Mật khẩu của người tạo commit",
-            "B": "Sự khác biệt giữa các phiên bản hoặc trạng thái được so sánh",
-            "C": "Nội dung toàn bộ RAM",
-            "D": "Danh sách cổng mạng đang mở"
+            "A": "Thiết bị có Wi-Fi mạnh nhất",
+            "B": "Server",
+            "C": "JavaScript trên trình duyệt sinh viên",
+            "D": "Đồng hồ hệ điều hành của sinh viên"
           },
           "correctAnswer": "B"
         },
         {
-          "content": "Khi merge có xung đột nội dung, thao tác nào phù hợp?",
+          "content": "Để kiểm tra bài nộp có đúng hạn, nên dùng mốc thời gian nào làm thẩm quyền?",
           "options": {
-            "A": "Xóa repository chính ngay lập tức",
-            "B": "Tự động coi mọi dòng của mình là đúng",
-            "C": "Đọc hai phía, chỉnh nội dung thống nhất rồi xác nhận kết quả",
-            "D": "Bỏ qua việc kiểm tra nội dung sau gộp"
+            "A": "Thời điểm người dùng mở bàn phím",
+            "B": "Thời gian render hiệu ứng CSS",
+            "C": "Thời gian và deadline do Server quản lý",
+            "D": "Đồng hồ Client tự gửi mà không kiểm tra"
           },
           "correctAnswer": "C"
         },
         {
-          "content": "Mục tiêu thường gặp của kiểm thử đơn vị là gì?",
+          "content": "Transaction database cung cấp lợi ích nào?",
           "options": {
-            "A": "Thay thế mọi kiểm thử tích hợp",
-            "B": "Chứng minh chương trình không bao giờ có lỗi",
-            "C": "Thay thế phân quyền của server",
-            "D": "Kiểm tra hành vi của một đơn vị nhỏ với đầu vào xác định"
+            "A": "Bảo đảm mọi mạng không mất kết nối",
+            "B": "Tự giải quyết mọi deadlock mà ứng dụng không cần xử lý",
+            "C": "Thay thế việc xác thực",
+            "D": "Nhóm các thay đổi liên quan để commit hoặc rollback cùng nhau"
           },
           "correctAnswer": "D"
         },
         {
-          "content": "Vì sao nên dùng database riêng khi kiểm thử thao tác ghi hoặc xóa?",
+          "content": "Khi một hàng đợi nhận dữ liệu nhanh hơn tốc độ xử lý trong thời gian dài, nên xem xét điều gì?",
           "options": {
-            "A": "Để cô lập dữ liệu kiểm thử khỏi dữ liệu thật",
-            "B": "Để tăng điểm của sinh viên",
-            "C": "Để bỏ qua mọi ràng buộc dữ liệu",
-            "D": "Để không cần kiểm tra kết quả"
+            "A": "Giới hạn hàng đợi và áp dụng backpressure",
+            "B": "Cho phép bộ nhớ tăng không giới hạn",
+            "C": "Tắt kiểm tra quyền để tăng tốc",
+            "D": "Xóa bảng điểm sau mỗi yêu cầu"
           },
           "correctAnswer": "A"
         },
         {
-          "content": "Một kiểm thử hồi quy giúp kiểm tra điều gì?",
+          "content": "Khi thu hồi quyền của người dùng đang kết nối WebSocket, Server nên làm gì?",
           "options": {
-            "A": "Mã nguồn tự có thêm tài liệu",
-            "B": "Chức năng đã có vẫn hoạt động sau khi thay đổi mã",
-            "C": "Mọi thao tác mạng đều nhanh hơn",
-            "D": "Không còn cần review mã"
+            "A": "Chỉ thay đổi màu avatar",
+            "B": "Chặn thao tác tiếp theo và thu hồi hoặc đóng phiên liên quan",
+            "C": "Chỉ ẩn nút trên giao diện",
+            "D": "Chờ Client tự nguyện đăng xuất"
           },
           "correctAnswer": "B"
         }
       ]
     },
     {
-      "title": "Điền từ — Bộ 1: Lập trình cơ bản",
-      "visibility": "PUBLIC",
+      "title": "LTM · Điền từ · Nền tảng mạng",
       "mode": "FILL_BLANK",
-      "questions": [
-        {
-          "content": "Một nhóm lệnh được thực hiện lặp lại thường được tổ chức bằng {{blank}}.",
-          "acceptedAnswers": [
-            "vòng lặp",
-            "loop"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Kiểu dữ liệu biểu diễn đúng hoặc sai thường được gọi là {{blank}}.",
-          "acceptedAnswers": [
-            "boolean",
-            "bool"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Giá trị được truyền vào hàm qua các {{blank}} của hàm.",
-          "acceptedAnswers": [
-            "tham số",
-            "parameters",
-            "parameter"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Với mảng đánh chỉ số từ 0, phần tử đầu tiên có chỉ số {{blank}}.",
-          "acceptedAnswers": [
-            "0"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Trong cấu trúc if/else, nhánh if được thực hiện khi điều kiện nhận giá trị {{blank}}.",
-          "acceptedAnswers": [
-            "đúng",
-            "true"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Hàm gọi lại chính nó là hàm {{blank}}.",
-          "acceptedAnswers": [
-            "đệ quy",
-            "recursive"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Trong đệ quy, cần có điều kiện {{blank}} để tránh gọi tiếp vô hạn.",
-          "acceptedAnswers": [
-            "dừng",
-            "kết thúc"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Tìm kiếm lần lượt từng phần tử được gọi là tìm kiếm {{blank}}.",
-          "acceptedAnswers": [
-            "tuyến tính",
-            "linear"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Biến đếm khởi tạo bằng 0 và tăng 1 đúng n lần; giá trị cuối bằng {{blank}}.",
-          "acceptedAnswers": [
-            "n"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Dữ liệu tạm dùng khi đổi chỗ giá trị hai biến có thể được lưu trong một biến {{blank}}.",
-          "acceptedAnswers": [
-            "tạm",
-            "trung gian"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        }
-      ]
-    },
-    {
-      "title": "Điền từ — Bộ 2: Java cơ bản",
       "visibility": "PUBLIC",
-      "mode": "FILL_BLANK",
       "questions": [
         {
-          "content": "Trong Java, từ khóa dùng để tạo đối tượng từ một lớp là {{blank}}.",
+          "content": "Thành phần chủ động gửi yêu cầu tới dịch vụ thường được gọi là {{blank}}.",
           "acceptedAnswers": [
-            "new"
+            "Client",
+            "máy khách"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Phương thức thường dùng để so sánh nội dung của hai String là {{blank}}.",
+          "content": "Thành phần lắng nghe và cung cấp dịch vụ thường được gọi là {{blank}}.",
           "acceptedAnswers": [
-            "equals",
-            "equals()"
+            "Server",
+            "máy chủ"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Từ khóa khai báo kế thừa một lớp Java là {{blank}}.",
-          "acceptedAnswers": [
-            "extends"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Một lớp khai báo thực thi interface bằng từ khóa {{blank}}.",
-          "acceptedAnswers": [
-            "implements"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Từ khóa tham chiếu đến đối tượng hiện tại trong phương thức instance là {{blank}}.",
-          "acceptedAnswers": [
-            "this"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Khối xử lý ngoại lệ phù hợp sau try được bắt đầu bằng từ khóa {{blank}}.",
-          "acceptedAnswers": [
-            "catch"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Một trường thuộc về lớp thay vì từng đối tượng được khai báo bằng từ khóa {{blank}}.",
-          "acceptedAnswers": [
-            "static"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Trong Java, từ khóa kết thúc phương thức và có thể trả lại giá trị là {{blank}}.",
-          "acceptedAnswers": [
-            "return"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Cấu trúc HashMap lưu các cặp khóa và {{blank}}.",
-          "acceptedAnswers": [
-            "giá trị",
-            "value"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Máy ảo thực thi Java bytecode thường được viết tắt là {{blank}}.",
-          "acceptedAnswers": [
-            "JVM"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        }
-      ]
-    },
-    {
-      "title": "Điền từ — Bộ 3: Cơ sở dữ liệu và SQL",
-      "visibility": "PUBLIC",
-      "mode": "FILL_BLANK",
-      "questions": [
-        {
-          "content": "Câu lệnh truy vấn dữ liệu trong SQL bắt đầu bằng từ khóa {{blank}}.",
-          "acceptedAnswers": [
-            "SELECT"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Mệnh đề lọc các hàng theo điều kiện trước tổng hợp trong SQL là {{blank}}.",
-          "acceptedAnswers": [
-            "WHERE"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Để sắp xếp kết quả SQL, ta dùng mệnh đề {{blank}}.",
-          "acceptedAnswers": [
-            "ORDER BY"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Trong ORDER BY, từ khóa chỉ thứ tự giảm dần là {{blank}}.",
-          "acceptedAnswers": [
-            "DESC"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Hàm đếm số hàng khi dùng dấu * trong SQL là {{blank}}.",
-          "acceptedAnswers": [
-            "COUNT",
-            "COUNT(*)"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Điều kiện kiểm tra giá trị chưa xác định trong SQL được viết là IS {{blank}}.",
-          "acceptedAnswers": [
-            "NULL"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Khóa định danh duy nhất một hàng trong bảng được gọi là khóa {{blank}}.",
-          "acceptedAnswers": [
-            "chính",
-            "primary"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Khóa tham chiếu đến khóa của bảng liên quan được gọi là khóa {{blank}}.",
-          "acceptedAnswers": [
-            "ngoại",
-            "foreign"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Lệnh xác nhận các thay đổi của một giao dịch SQL là {{blank}}.",
-          "acceptedAnswers": [
-            "COMMIT"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Lệnh hủy các thay đổi chưa xác nhận của giao dịch SQL là {{blank}}.",
-          "acceptedAnswers": [
-            "ROLLBACK"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        }
-      ]
-    },
-    {
-      "title": "Điền từ — Bộ 4: Mạng máy tính cơ bản",
-      "visibility": "PUBLIC",
-      "mode": "FILL_BLANK",
-      "questions": [
-        {
-          "content": "Giao thức vận chuyển cung cấp luồng byte tin cậy, có thứ tự là {{blank}}.",
-          "acceptedAnswers": [
-            "TCP"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Giao thức vận chuyển sử dụng datagram và không tự bảo đảm giao hàng là {{blank}}.",
-          "acceptedAnswers": [
-            "UDP"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Hệ thống phân giải tên miền thường được viết tắt là {{blank}}.",
+          "content": "Cơ chế phân giải tên miền có tên viết tắt là {{blank}}.",
           "acceptedAnswers": [
             "DNS"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Địa chỉ IPv4 có độ dài {{blank}} bit.",
+          "content": "Một endpoint thường gồm địa chỉ IP và số {{blank}}.",
           "acceptedAnswers": [
-            "32"
+            "cổng",
+            "port"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Địa chỉ IPv6 có độ dài {{blank}} bit.",
-          "acceptedAnswers": [
-            "128"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Địa chỉ IPv4 loopback thường dùng khi kết nối tới chính máy là {{blank}}.",
+          "content": "Địa chỉ IPv4 loopback thường dùng trong ví dụ lập trình mạng là {{blank}}.",
           "acceptedAnswers": [
             "127.0.0.1"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Trong mô hình client-server thông thường, phía gửi yêu cầu kết nối TCP ban đầu là {{blank}}.",
+          "content": "Để truyền tiếng Việt thống nhất giữa Client và Server, có thể dùng bảng mã {{blank}}.",
           "acceptedAnswers": [
-            "client",
-            "máy khách"
+            "UTF-8",
+            "UTF8"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Thao tác chấp nhận một kết nối TCP đang chờ thường được gọi là {{blank}}.",
+          "content": "Khả năng hai phía gửi và nhận đồng thời được gọi là {{blank}}.",
           "acceptedAnswers": [
-            "accept",
-            "accept()"
+            "full-duplex",
+            "full duplex"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "HTTPS thường sử dụng giao thức {{blank}} để bảo vệ kênh truyền.",
+          "content": "Mạng cục bộ thường được viết tắt là {{blank}}.",
+          "acceptedAnswers": [
+            "LAN"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Quá trình biến đối tượng thành dữ liệu để truyền đi gọi là {{blank}}.",
+          "acceptedAnswers": [
+            "serialization",
+            "tuần tự hóa"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trên điện thoại, localhost trỏ đến chính {{blank}} đang chạy trình duyệt.",
+          "acceptedAnswers": [
+            "điện thoại",
+            "thiết bị"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "LTM · Điền từ · TCP Socket Java",
+      "mode": "FILL_BLANK",
+      "visibility": "PUBLIC",
+      "questions": [
+        {
+          "content": "Lớp Java thường dùng để lắng nghe TCP là {{blank}}.",
+          "acceptedAnswers": [
+            "ServerSocket"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức ServerSocket.{{blank}}() chờ một kết nối TCP đến.",
+          "acceptedAnswers": [
+            "accept"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Đối tượng đại diện cho một kết nối TCP trong Java là {{blank}}.",
+          "acceptedAnswers": [
+            "Socket"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Để lấy luồng đọc của Socket, gọi phương thức {{blank}}().",
+          "acceptedAnswers": [
+            "getInputStream"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Để lấy luồng ghi của Socket, gọi phương thức {{blank}}().",
+          "acceptedAnswers": [
+            "getOutputStream"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "InputStream.read() trả về {{blank}} khi đã đến cuối luồng.",
+          "acceptedAnswers": [
+            "-1"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức {{blank}}() đẩy dữ liệu từ bộ đệm ghi xuống luồng bên dưới.",
+          "acceptedAnswers": [
+            "flush"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức Socket.{{blank}}(...) đặt thời gian chờ đọc dữ liệu.",
+          "acceptedAnswers": [
+            "setSoTimeout"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "TCP cung cấp một luồng {{blank}}, không tự giữ ranh giới thông điệp ứng dụng.",
+          "acceptedAnswers": [
+            "byte"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Để tự đóng Socket khi ra khỏi khối xử lý trong Java, có thể dùng {{blank}}.",
+          "acceptedAnswers": [
+            "try-with-resources",
+            "try with resources"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "LTM · Điền từ · UDP Datagram Java",
+      "mode": "FILL_BLANK",
+      "visibility": "PUBLIC",
+      "questions": [
+        {
+          "content": "Lớp gửi và nhận UDP trong Java là {{blank}}.",
+          "acceptedAnswers": [
+            "DatagramSocket"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lớp chứa dữ liệu cùng địa chỉ của một gói UDP trong Java là {{blank}}.",
+          "acceptedAnswers": [
+            "DatagramPacket"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức DatagramSocket.{{blank}}(...) gửi một datagram.",
+          "acceptedAnswers": [
+            "send"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức DatagramSocket.{{blank}}(...) chờ nhận một datagram.",
+          "acceptedAnswers": [
+            "receive"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức DatagramPacket.{{blank}}() trả về độ dài dữ liệu gói vừa nhận.",
+          "acceptedAnswers": [
+            "getLength"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Thông điệp xác nhận nhận dữ liệu thường được viết tắt là {{blank}}.",
+          "acceptedAnswers": [
+            "ACK"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "UDP không tự bảo đảm gói đến đúng {{blank}} gửi.",
+          "acceptedAnswers": [
+            "thứ tự"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Khi quá thời gian chờ ACK, ứng dụng tin cậy chạy trên UDP có thể {{blank}} thông điệp.",
+          "acceptedAnswers": [
+            "gửi lại",
+            "truyền lại",
+            "retransmit"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Để nhận biết một thông điệp UDP bị gửi trùng, có thể sử dụng mã {{blank}}.",
+          "acceptedAnswers": [
+            "định danh",
+            "ID",
+            "id"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Sau khi dùng xong DatagramSocket, gọi phương thức {{blank}}() để giải phóng tài nguyên.",
+          "acceptedAnswers": [
+            "close"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "LTM · Điền từ · HTTP và WebSocket",
+      "mode": "FILL_BLANK",
+      "visibility": "PUBLIC",
+      "questions": [
+        {
+          "content": "HTTP thường trao đổi theo mô hình Request–{{blank}}.",
+          "acceptedAnswers": [
+            "Response"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức HTTP thường dùng để lấy dữ liệu là {{blank}}.",
+          "acceptedAnswers": [
+            "GET"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức HTTP thường dùng để gửi dữ liệu tạo tài nguyên mới là {{blank}}.",
+          "acceptedAnswers": [
+            "POST"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Mã HTTP {{blank}} biểu thị yêu cầu thiếu thông tin xác thực hợp lệ.",
+          "acceptedAnswers": [
+            "401"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Mã HTTP {{blank}} thường biểu thị không tìm thấy tài nguyên.",
+          "acceptedAnswers": [
+            "404"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Header khai báo kiểu dữ liệu của phần thân là {{blank}}.",
+          "acceptedAnswers": [
+            "Content-Type"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Kiểu nội dung HTTP thường dùng cho JSON là {{blank}}.",
+          "acceptedAnswers": [
+            "application/json"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Giao thức duy trì kết nối và hỗ trợ trao đổi full-duplex giữa trình duyệt và Server là {{blank}}.",
+          "acceptedAnswers": [
+            "WebSocket"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "HTTPS sử dụng {{blank}} để bảo vệ kênh truyền.",
           "acceptedAnswers": [
             "TLS"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Ngoài địa chỉ IP, ứng dụng TCP thường cần số {{blank}} để xác định dịch vụ đích.",
+          "content": "Sau khi reconnect, Client nên lấy {{blank}} từ Server để khôi phục trạng thái hiện tại.",
           "acceptedAnswers": [
-            "cổng",
-            "port"
+            "snapshot",
+            "bản chụp trạng thái"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         }
       ]
     },
     {
-      "title": "Điền từ — Bộ 5: Git và kiểm thử phần mềm",
-      "visibility": "PUBLIC",
+      "title": "LTM · Điền từ · Đồng thời và tính nhất quán",
       "mode": "FILL_BLANK",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Lệnh tạo bản sao repository về máy là git {{blank}}.",
+          "content": "Trong Java, từ khóa {{blank}} có thể bảo vệ một đoạn mã bằng monitor.",
           "acceptedAnswers": [
-            "clone"
+            "synchronized"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh xem trạng thái working tree và staging là git {{blank}}.",
+          "content": "Một nhóm luồng được tái sử dụng để xử lý công việc gọi là {{blank}}.",
           "acceptedAnswers": [
-            "status"
+            "thread pool",
+            "threadpool"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh đưa thay đổi của tệp vào staging là git {{blank}}.",
+          "content": "Tình huống kết quả phụ thuộc vào thứ tự truy cập không được kiểm soát giữa các luồng gọi là {{blank}}.",
           "acceptedAnswers": [
-            "add"
+            "race condition"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh tạo commit cục bộ là git {{blank}}.",
+          "content": "Cơ chế tránh lặp hiệu ứng nghiệp vụ khi nhận lại cùng thao tác gọi là {{blank}}.",
+          "acceptedAnswers": [
+            "idempotency"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong Server Authoritative, bên quyết định điểm số là {{blank}}.",
+          "acceptedAnswers": [
+            "Server",
+            "máy chủ"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Khi một giao dịch thất bại, thao tác hoàn tác thay đổi chưa commit được gọi là {{blank}}.",
+          "acceptedAnswers": [
+            "rollback"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Thao tác xác nhận các thay đổi của giao dịch database được gọi là {{blank}}.",
           "acceptedAnswers": [
             "commit"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh gửi cập nhật cục bộ lên remote là git {{blank}}.",
+          "content": "Để kiểm tra nộp bài đúng hạn, dùng đồng hồ và deadline của {{blank}} làm thẩm quyền.",
           "acceptedAnswers": [
-            "push"
+            "Server",
+            "máy chủ"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh xem khác biệt giữa các trạng thái mã nguồn được so sánh là git {{blank}}.",
+          "content": "Khi bộ nhận không theo kịp bộ gửi, cơ chế phản hồi để hạn chế tốc độ gửi thường gọi là {{blank}}.",
           "acceptedAnswers": [
-            "diff"
+            "backpressure",
+            "back pressure"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         },
         {
-          "content": "Lệnh thường dùng để gộp một nhánh vào nhánh hiện tại là git {{blank}}.",
+          "content": "Một mã {{blank}} cho mỗi thao tác giúp Server nhận diện yêu cầu được gửi lại.",
           "acceptedAnswers": [
-            "merge"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Kiểm thử giúp phát hiện chức năng cũ bị hỏng sau thay đổi được gọi là kiểm thử {{blank}}.",
-          "acceptedAnswers": [
-            "hồi quy",
-            "regression"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Database dùng để chạy kiểm thử thao tác dữ liệu phải được {{blank}} với database chính.",
-          "acceptedAnswers": [
-            "tách riêng",
-            "tách biệt",
-            "cô lập"
-          ],
-          "matchingPolicy": "CASE_INSENSITIVE"
-        },
-        {
-          "content": "Một kiểm thử đơn vị cần so sánh kết quả thực tế với kết quả {{blank}}.",
-          "acceptedAnswers": [
-            "mong đợi",
-            "kỳ vọng",
-            "dự kiến"
+            "requestId",
+            "request ID",
+            "request_id"
           ],
           "matchingPolicy": "CASE_INSENSITIVE"
         }
       ]
     },
     {
-      "title": "Bài tập — Bộ 1: Java — Quản lý danh sách sinh viên",
-      "visibility": "PUBLIC",
+      "title": "LTM · Bài tập · Thiết kế giao thức chat TCP",
       "mode": "ASSIGNMENT",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Thiết kế chương trình Java quản lý sinh viên trong một lớp. Mỗi sinh viên có mã, họ tên và điểm từ 0 đến 100.\nYêu cầu:\n1. Mô tả lớp SinhVien và cấu trúc lưu danh sách. Giải thích cách kiểm tra mã trùng, tên trống và điểm ngoài khoảng.\n2. Viết mã Java hoặc mã giả cho ba thao tác: thêm sinh viên, tìm theo mã, liệt kê theo điểm giảm dần. Với đồng điểm, sắp theo mã tăng dần.\n3. Trình bày ít nhất năm ca kiểm thử, gồm dữ liệu hợp lệ, trùng mã, tên trống, điểm âm và điểm vượt 100. Ghi rõ đầu vào và kết quả mong đợi.\nNộp trực tiếp nội dung giải thích, mã và bảng kiểm thử trong ô bài làm. Không cần tải tệp hoặc liên kết ngoài.\nTiêu chí chấm: mô hình dữ liệu 20%; xử lý và kiểm tra đầu vào 40%; kiểm thử 30%; trình bày 10%. Giảng viên quy đổi theo ngân sách điểm của trò."
+          "content": "Thiết kế ứng dụng chat TCP gồm một Server Java và nhiều Client trong cùng LAN.\nYêu cầu: xác định các loại thông điệp JOIN, CHAT, LEAVE, ERROR; đề xuất framing bằng tiền tố độ dài hoặc ký tự kết thúc; thống nhất UTF-8; giải thích cách xử lý read thiếu byte, nhiều thông điệp trong một lần đọc và ngắt kết nối.\nBài nộp trực tiếp trên web: mô tả giao thức, ví dụ tối thiểu 4 thông điệp, mã Java hoặc giả mã vòng nhận dữ liệu, cách quản lý danh sách Client đồng thời và 3 tình huống kiểm thử.\nTiêu chí chấm: giao thức và framing 35%; xử lý nhiều Client 25%; lỗi mạng và giải phóng tài nguyên 25%; ví dụ và kiểm thử 15%."
         }
       ]
     },
     {
-      "title": "Bài tập — Bộ 2: Cơ sở dữ liệu — Thiết kế lớp học và truy vấn SQL",
-      "visibility": "PUBLIC",
+      "title": "LTM · Bài tập · UDP tin cậy ở tầng ứng dụng",
       "mode": "ASSIGNMENT",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Thiết kế cơ sở dữ liệu quan hệ cho ba đối tượng: SinhVien, LopHoc và DangKy. Một sinh viên có thể đăng ký nhiều lớp; mỗi cặp sinh viên–lớp chỉ xuất hiện một lần trong DangKy.\nYêu cầu:\n1. Nêu các cột, khóa chính, khóa ngoại và ràng buộc chống đăng ký trùng.\n2. Viết SQL CREATE TABLE phù hợp. Dữ liệu minh họa phải là dữ liệu giả và chỉ mô tả trong bài nộp, không yêu cầu thao tác trên database thật.\n3. Viết truy vấn lấy sinh viên của một lớp theo mã lớp, đếm số sinh viên từng lớp kể cả lớp chưa có người đăng ký, và tìm sinh viên chưa đăng ký lớp nào.\n4. Giải thích khác biệt giữa INNER JOIN và LEFT JOIN trong truy vấn đếm số sinh viên.\nNộp toàn bộ thiết kế, SQL và giải thích trực tiếp trên web.\nTiêu chí chấm: thiết kế và ràng buộc 35%; truy vấn 40%; giải thích 15%; trình bày 10%."
+          "content": "Thiết kế chương trình Java gửi thông báo qua UDP có ACK và gửi lại. Mỗi thông báo có messageId; bên nhận không áp dụng lại cùng thông báo khi datagram bị lặp.\nYêu cầu: mô tả cấu trúc DATA và ACK; timeout, giới hạn số lần thử, xử lý ACK đến muộn, datagram sai định dạng và thứ tự nhận khác thứ tự gửi. Không giả định UDP tự bảo đảm giao hàng.\nBài nộp trực tiếp trên web: sơ đồ bước bằng văn bản, ví dụ thông điệp, mã hoặc giả mã bên gửi và nhận, phân tích trường hợp DATA đã được xử lý nhưng ACK bị mất.\nTiêu chí chấm: giao thức 25%; timeout và gửi lại 25%; chống xử lý trùng 30%; xử lý lỗi và kiểm thử 20%."
         }
       ]
     },
     {
-      "title": "Bài tập — Bộ 3: Mạng máy tính — Thiết kế giao thức TCP đơn giản",
-      "visibility": "PUBLIC",
+      "title": "LTM · Bài tập · REST API cho hệ thống lớp học",
       "mode": "ASSIGNMENT",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Thiết kế một ứng dụng client-server TCP gửi một dòng văn bản và nhận lại dòng văn bản đã chuyển thành chữ hoa.\nQuy ước: mỗi thông điệp kết thúc bằng ký tự xuống dòng; dữ liệu văn bản dùng UTF-8. Chỉ thiết kế cho giao tiếp tin cậy trong mạng thực hành, không yêu cầu triển khai dịch vụ công khai.\nYêu cầu:\n1. Mô tả trình tự server tạo socket lắng nghe, chấp nhận kết nối, đọc thông điệp, trả lời và đóng tài nguyên.\n2. Mô tả trình tự client kết nối, gửi thông điệp và đọc phản hồi.\n3. Viết mã giả cho việc nhận dữ liệu khi một thông điệp bị chia qua nhiều lần đọc. Nêu cách xử lý khi kết nối đóng trước ký tự kết thúc.\n4. Đưa ra bốn ca kiểm thử: chuỗi thường, tiếng Việt, thông điệp rỗng và ngắt kết nối giữa chừng.\nNộp mô tả, mã giả và kết quả mong đợi trực tiếp trong ô bài làm.\nTiêu chí chấm: luồng giao tiếp 30%; xử lý ranh giới thông điệp 35%; kiểm thử và lỗi 25%; trình bày 10%."
+          "content": "Thiết kế REST API cho việc xem danh sách buổi học, tham gia buổi và nộp câu trả lời. Server chịu trách nhiệm xác thực, quyền truy cập, deadline và kết quả.\nYêu cầu: nêu method, đường dẫn, request/response JSON và mã HTTP; phân biệt 401, 403, 404, 409; dùng requestId hoặc idempotency key để xử lý nộp lại khi mất phản hồi. Không gửi đáp án đúng cho sinh viên trước thời điểm được phép.\nBài nộp trực tiếp trên web: tối thiểu 3 endpoint, 2 ví dụ lỗi, giả mã transaction nộp bài và phân tích hai request cùng đến cho một sinh viên.\nTiêu chí chấm: thiết kế API 30%; xác thực và phân quyền 25%; deadline và tính nhất quán 30%; ví dụ 15%."
         }
       ]
     },
     {
-      "title": "Bài tập — Bộ 4: Thuật toán — Tìm kiếm và sắp xếp điểm",
-      "visibility": "PUBLIC",
+      "title": "LTM · Bài tập · WebSocket realtime và reconnect",
       "mode": "ASSIGNMENT",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Cho danh sách điểm nguyên [7, 4, 9, 7, 2, 10, 4].\nYêu cầu:\n1. Viết mã giả tìm kiếm tuyến tính giá trị 7 và trả về tất cả chỉ số tìm được, đánh chỉ số từ 0.\n2. Trình bày từng bước của một thuật toán sắp xếp bạn chọn để đưa danh sách về thứ tự tăng dần. Giải thích cách xử lý các điểm trùng.\n3. Nêu điều kiện cần để dùng tìm kiếm nhị phân và giải thích vì sao không thể áp dụng trực tiếp cho danh sách ban đầu.\n4. Đưa ra ít nhất bốn ca kiểm thử, gồm danh sách rỗng, một phần tử, nhiều điểm trùng và giá trị tìm không tồn tại.\nNộp mã giả, các bước xử lý và kết quả mong đợi trực tiếp trên web. Không cần chạy mã trên hệ thống bên ngoài.\nTiêu chí chấm: tìm kiếm 25%; sắp xếp 35%; giải thích điều kiện 20%; kiểm thử 20%."
+          "content": "Thiết kế luồng WebSocket cho một trò Quiz có một giảng viên và nhiều sinh viên. Server tự quản lý câu hiện tại, thời hạn và điểm số.\nYêu cầu: định nghĩa thông điệp bắt đầu câu, nộp đáp án, ACK, lỗi và snapshot; bổ sung mã thao tác và phiên bản trạng thái; mô tả reconnect khi mất mạng giữa câu hoặc sau khi đã gửi đáp án nhưng chưa nhận ACK. Không dùng đồng hồ Client làm thẩm quyền chấm hạn.\nBài nộp trực tiếp trên web: một kịch bản trao đổi tối thiểu 6 bước, JSON minh họa, giả mã xử lý reconnect và cách xử lý sự kiện trùng hoặc phiên bản cũ.\nTiêu chí chấm: giao thức realtime 30%; snapshot và reconnect 30%; Server Authoritative và deadline 25%; tình huống lỗi 15%."
         }
       ]
     },
     {
-      "title": "Bài tập — Bộ 5: Git — Xử lý xung đột và kiểm thử hồi quy",
-      "visibility": "PUBLIC",
+      "title": "LTM · Bài tập · Server đa Client và kiểm soát đồng thời",
       "mode": "ASSIGNMENT",
+      "visibility": "PUBLIC",
       "questions": [
         {
-          "content": "Hai thành viên cùng sửa hàm tinhDiem trên hai nhánh của một repository giả lập. Một người sửa công thức, người còn lại thêm kiểm tra dữ liệu không hợp lệ. Khi gộp nhánh, phần thân hàm xảy ra xung đột.\nYêu cầu:\n1. Mô tả cách xem trạng thái và phần khác biệt trước khi xử lý xung đột.\n2. Nêu trình tự hợp nhất cả công thức mới và kiểm tra đầu vào. Giải thích vì sao không nên tự động bỏ toàn bộ thay đổi của một phía.\n3. Viết mã giả tính điểm = (số câu đúng / số câu sử dụng) × ngân sách. Nêu cách kiểm tra tổng số câu dương, số câu đúng nằm trong khoảng hợp lệ và ngân sách không âm.\n4. Đưa ra kết quả mong đợi cho 7/10 câu đúng với ngân sách 40; 0/10 với ngân sách 40; 10/10 với ngân sách 40; và trường hợp tổng số câu bằng 0.\n5. Liệt kê các kiểm thử hồi quy cần chạy trước khi xác nhận kết quả gộp.\nChỉ nộp phân tích, lệnh minh họa và mã giả trên web; không thực hiện commit/push lên repository thật để làm bài.\nTiêu chí chấm: xử lý xung đột 30%; công thức và kiểm tra đầu vào 35%; kiểm thử 25%; trình bày 10%."
+          "content": "Thiết kế Server Java tiếp nhận câu trả lời từ nhiều Client đồng thời, bảo đảm mỗi sinh viên chỉ được ghi nhận một kết quả cho cùng câu.\nYêu cầu: đề xuất thread pool và hàng đợi có giới hạn; chỉ ra trạng thái dùng chung; kết hợp transaction, unique constraint hoặc locking phù hợp; xác định điểm kiểm tra deadline trên Server; giải thích xử lý retry và thu hồi quyền trong khi Client còn kết nối.\nBài nộp trực tiếp trên web: mô tả kiến trúc, giả mã xử lý nộp bài, phân tích hai request cạnh tranh và kế hoạch kiểm thử nhiều Client trong LAN có mất mạng rồi reconnect.\nTiêu chí chấm: quản lý luồng và hàng đợi 25%; tránh race condition 30%; idempotency và transaction 25%; kiểm thử và xử lý lỗi 20%."
         }
       ]
     }

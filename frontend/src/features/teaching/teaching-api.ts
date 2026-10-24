@@ -32,7 +32,11 @@ export interface Question {
   matchingPolicy?: "EXACT" | "CASE_INSENSITIVE" | null;
   imageRef?: string | null;
 }
+export interface Subject { id: number; code: string; name: string; }
 export interface Bank {
+  subjectId: number;
+  subjectCode: string;
+  subjectName: string;
   id: number;
   ownerUserId: number;
   title: string;
@@ -43,6 +47,8 @@ export interface Bank {
   questions: Question[];
 }
 export interface Content {
+  subjectId: number;
+  subjectName: string;
   gameId: number;
   sourceQuizId: number;
   revision: number;
@@ -143,13 +149,16 @@ export interface Board {
 export interface Range {
   name: string;
   from: number;
-  to: number;
+  to: number | null;
 }
 export interface RankConfig {
   revision: number;
   ranges: Range[];
 }
 const errors: Record<string, string> = {
+  STUDENT_ACCOUNT_UNAVAILABLE: "Tài khoản sinh viên đang bị ADMIN hạn chế hoặc đã xóa. Không thể duyệt hoặc khôi phục thành viên trong trạng thái này.",
+  RESTORE_SOURCE_CLASS_REQUIRED: "Chỉ giảng viên phụ trách lớp đã thực hiện thao tác loại mới được khôi phục trong phạm vi môn/năm học.",
+  CLASS_AWAITING_TEACHER: "Lớp chưa có giảng viên tiếp quản. Vui lòng chờ quản trị viên phân công giảng viên mới.",
   INVALID_RANK_RANGES:
     "Khoảng Rank hoặc tên mức chưa hợp lệ. Kiểm tra thứ tự và khoảng chồng lấn.",
   INVALID_SHARE_CODE: "Mã setting phải gồm 32 ký tự lấy từ chức năng chia sẻ.",
@@ -180,6 +189,8 @@ const errors: Record<string, string> = {
   AUTOMATIC_GAME_CONTROL: "Trò tự chuyển câu theo deadline chung của Server.",
   LESSON_LIMIT: "Lớp đã tạo đủ số buổi quy định.",
   LESSON_CONFIG_FROZEN: "Buổi đã bắt đầu, không thể sửa kế hoạch.",
+  SUBJECT_NOT_FOUND: "Môn học không còn tồn tại. Hãy chọn lại môn do ADMIN tạo.",
+  CONTENT_SUBJECT_MISMATCH: "Bộ nội dung phải thuộc đúng môn học của lớp.",
   CONTENT_FROZEN: "Trò đã bắt đầu, không thể sửa nội dung.",
   GAME_CONTENT_REQUIRED: "Hãy chọn và lưu nội dung trước khi bắt đầu trò.",
   PREVIOUS_GAME_INCOMPLETE: "Cần hoàn tất trò trước.",

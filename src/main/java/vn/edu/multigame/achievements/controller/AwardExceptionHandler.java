@@ -2,12 +2,12 @@ package vn.edu.multigame.achievements.controller;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.multigame.game.service.GameFailure;
+import vn.edu.multigame.common.util.OperationFailure;
 import vn.edu.multigame.auth.service.AuthFailure;
 import vn.edu.multigame.room.dto.response.RoomError;
-@RestControllerAdvice(basePackageClasses={GameAwardsController.class,vn.edu.multigame.leaderboard.controller.LeaderboardController.class}) @Profile("mysql")
+@RestControllerAdvice(basePackageClasses=LearningProfileController.class) @Profile("mysql")
 public class AwardExceptionHandler {
-    @ExceptionHandler(GameFailure.class) ResponseEntity<RoomError> game(GameFailure e){return error(e.status(),e.getMessage());}
+    @ExceptionHandler(OperationFailure.class) ResponseEntity<RoomError> game(OperationFailure e){return error(e.status(),e.getMessage());}
     @ExceptionHandler(AuthFailure.class) ResponseEntity<RoomError> auth(AuthFailure e){return error(e.status(),e.code());}
     @ExceptionHandler({org.springframework.dao.DataAccessException.class,org.springframework.transaction.TransactionException.class})
     ResponseEntity<RoomError> database(Exception e){return error(HttpStatus.SERVICE_UNAVAILABLE,"SERVICE_UNAVAILABLE");}

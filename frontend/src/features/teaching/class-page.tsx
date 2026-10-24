@@ -5,10 +5,10 @@ import { useResource } from "@/hooks/use-resource";
 import { api } from "@/lib/api";
 import { realtime } from "@/lib/session";
 import type { Course } from "@/lib/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ClassLessons } from "./class-lessons";
-import { Members } from "./class-members";
+import { Members, type BulkApprovalResult } from "./class-members";
 import { WheelConfig } from "./class-wheel";
 import { RankPanel } from "./rank-panel";
 import { type Lesson, type Member } from "./teaching-api";
@@ -16,6 +16,14 @@ import { Notice, TeachingFrame } from "./teaching-shared";
 export function TeachingClassPage() {
   const { id, section = "overview", action: routeAction } = useParams();
   const classId = Number(id);
+  const [batch, setBatch] = useState<{
+    classId: number;
+    result: BulkApprovalResult;
+  }>();
+  const memberBusy = useRef(false);
+  const membershipBusy = useCallback((pending: boolean) => {
+    memberBusy.current = pending;
+  }, []);
   const tab = section,
     creating = routeAction === "new";
   const resource = useResource(
@@ -43,10 +51,20 @@ export function TeachingClassPage() {
     () =>
       realtime.listen((event) => {
         if (
-          ["CLASS_MEMBERSHIP_UPDATED", "CLASS_LESSONS_UPDATED"].includes(event.type) &&
+          [
+            "CLASS_MEMBERSHIP_UPDATED",
+            "CLASS_LESSONS_UPDATED",
+            "CLASS_STAFFING_UPDATED",
+          ].includes(event.type) &&
           event.target?.id === classId
         ) {
-          if (creating || tab === "wheel" || tab === "ranks") setChanged(true);
+          if (
+            creating ||
+            tab === "wheel" ||
+            tab === "ranks" ||
+            memberBusy.current
+          )
+            setChanged(true);
           else resource.reload();
         }
       }),
@@ -157,7 +175,15 @@ export function TeachingClassPage() {
               <Members
                 classId={classId}
                 members={resource.data.members}
-                refresh={resource.reload}
+                refresh={() => {
+                  setChanged(false);
+                  resource.reload();
+                }}
+                bulkResult={
+                  batch?.classId === classId ? batch.result : undefined
+                }
+                onBulkResult={(result) => setBatch({ classId, result })}
+                onBusyChange={membershipBusy}
               />
             )}
             {section === "wheel" && <WheelConfig classId={classId} />}

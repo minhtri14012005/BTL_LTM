@@ -2,6 +2,8 @@ import { EmptyState, ErrorState, Loading } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Confirm } from "@/components/ui/confirm";
+import { FormField } from "@/components/ui/form";
+import { BankIdentity, bankDisplayTitle } from "./bank-identity";
 import { Input } from "@/components/ui/input";
 import { useResource } from "@/hooks/use-resource";
 import { api, post } from "@/lib/api";
@@ -20,6 +22,7 @@ import {
 } from "./question-editor";
 import {
   type Bank,
+  type Subject,
   type ContentMode,
   type Question,
   modeNames,
@@ -43,10 +46,12 @@ function BankDirectory() {
     ? (params.get("mode") as ContentMode)
     : "QUIZ";
   const scope = params.get("scope") || "MINE",
+    subjectId = params.get("subjectId") || "",
     search = params.get("q") || "",
     page = Math.max(0, Number(params.get("page")) || 0);
   const [query, setQuery] = useState(search);
   useEffect(() => setQuery(search), [search]);
+  const subjects = useResource(signal => api<Subject[]>("/api/quizzes/subjects", {signal}), []);
   const action = useTeachingAction();
   function patch(key: string, value: string) {
     setParams((old) => {
@@ -64,10 +69,10 @@ function BankDirectory() {
   const resource = useResource(
     (signal) =>
       api<{ items: Bank[]; totalElements: number }>(
-        `/api/quizzes?${new URLSearchParams({ mode, scope, q: search, page: String(page), size: "20" })}`,
+        `/api/quizzes?${new URLSearchParams({ mode, scope, ...(subjectId ? {subjectId} : {}), q: search, page: String(page), size: "20" })}`,
         { signal },
       ),
-    [mode, scope, search, page],
+    [mode, scope, subjectId, search, page],
   );
   return (
     <TeachingFrame title="Ngân hàng câu hỏi & đề bài">
@@ -76,7 +81,7 @@ function BankDirectory() {
         soạn nội dung riêng.
       </p>
       <form
-        className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"
+        className="grid gap-3 rounded-2xl border bg-card/80 p-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_auto_auto]"
         onSubmit={(e) => {
           e.preventDefault();
           setSearch(query);
@@ -84,7 +89,7 @@ function BankDirectory() {
       >
         <NativeSelect
           aria-label="Loại nội dung"
-          className="sm:w-auto"
+          className="min-w-0"
           value={mode}
           onChange={(e) => {
             setMode(e.target.value as ContentMode);
@@ -92,13 +97,13 @@ function BankDirectory() {
         >
           {(["QUIZ", "FILL_BLANK", "ASSIGNMENT"] as ContentMode[]).map((m) => (
             <option key={m} value={m}>
-              {modeNames[m]}
+              {m === "FILL_BLANK" ? "Điền từ" : modeNames[m]}
             </option>
           ))}
         </NativeSelect>
         <NativeSelect
           aria-label="Phạm vi tìm kiếm"
-          className="sm:w-auto"
+          className="min-w-0"
           value={scope}
           onChange={(e) => {
             setScope(e.target.value);
@@ -108,8 +113,12 @@ function BankDirectory() {
           <option value="SHARED">PUBLIC của giảng viên khác</option>
           <option value="VISIBLE">Tất cả được phép xem</option>
         </NativeSelect>
+        <NativeSelect aria-label="Lọc môn học" value={subjectId} disabled={subjects.loading || !!subjects.error} onChange={e => patch("subjectId", e.target.value)}>
+          <option value="">Tất cả môn học</option>
+          {subjects.data?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </NativeSelect>
         <Input
-          className="sm:w-64"
+          className="min-w-0"
           aria-label="Tìm bộ nội dung"
           maxLength={100}
           value={query}
@@ -123,17 +132,18 @@ function BankDirectory() {
           type="button"
           onClick={() => {
             action.setError("");
-            navigate(`/app/giang_vien/banks/new?mode=${mode}`);
+            navigate(`/app/giang_vien/banks/new?mode=${mode}${subjectId ? `&subjectId=${subjectId}` : ""}`);
           }}
         >
           Tạo bộ nội dung
         </Button>
       </form>
+      {subjects.error && <ErrorState message={subjects.error} retry={subjects.reload} />}
       <FormError message={action.error} />
       {resource.loading ? (
         <Loading />
       ) : resource.error ? (
-        <ErrorState message={resource.error} retry={resource.reload} />
+        <ErrorState message={resource.error || subjects.error || ""} retry={() => { resource.reload(); subjects.reload(); }} />
       ) : (
         resource.data && (
           <>
@@ -145,27 +155,26 @@ function BankDirectory() {
             ) : (
               <div className="course-grid">
                 {resource.data.items.map((bank) => (
-                  <Card key={bank.id}>
+                  <Card key={bank.id} className="overflow-hidden">
                     <CardHeader className="tone-1">
-                      <span className="eyebrow">
-                        {bank.visibility} · {modeNames[bank.mode]}
-                      </span>
-                      <CardTitle>{bank.title}</CardTitle>
+                      <BankIdentity bank={bank} />
+                      <CardTitle className="break-words leading-snug">{bankDisplayTitle(bank.title)}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-5">
                       <p className="text-sm text-muted-foreground">
-                        {bank.questionCount} câu/đề
+                        {bank.questionCount} {bank.mode === "ASSIGNMENT" ? "đề bài" : "câu"}
                       </p>
                       <Button
+                        aria-label={`Preview ${bank.title}`}
                         variant="outline"
                         disabled={action.pending}
                         onClick={() => {
                           navigate(
-                            `/app/giang_vien/banks/${bank.id}?mode=${mode}&scope=${scope}&q=${encodeURIComponent(search)}&page=${page}`,
+                            `/app/giang_vien/banks/${bank.id}?mode=${mode}&scope=${scope}&q=${encodeURIComponent(search)}&page=${page}${subjectId ? `&subjectId=${subjectId}` : ""}`,
                           );
                         }}
                       >
-                        Preview {bank.title}
+                        Xem trước
                       </Button>
                     </CardContent>
                   </Card>
@@ -201,7 +210,8 @@ function BankDirectory() {
 }
 function BankDetail() {
   const { bankId, bankAction } = useParams();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const subjects = useResource(signal => api<Subject[]>("/api/quizzes/subjects", {signal}), []);
   const navigate = useNavigate();
   const { user } = useSession();
   const creating = bankId === "new",
@@ -225,15 +235,17 @@ function BankDetail() {
     title: string,
     questions: Question[],
     visibility: "PUBLIC" | "PRIVATE",
+    subjectId?: number,
   ) {
     await action.run(async () => {
       if (creating)
-        await post("/api/quizzes", { title, questions, visibility, mode });
+        await post("/api/quizzes", { title, questions, visibility, mode, subjectId });
       else
         await api(`/api/quizzes/${bankId}`, {
           method: "PUT",
           body: JSON.stringify({
             title,
+            subjectId,
             questions,
             visibility,
             mode: resource.data!.mode,
@@ -247,29 +259,33 @@ function BankDetail() {
     <TeachingFrame
       title={
         creating
-          ? `Tạo bộ ${modeNames[mode]}`
-          : resource.data?.title || "Bộ nội dung"
+          ? "Tạo bộ nội dung"
+          : resource.data ? bankDisplayTitle(resource.data.title) : "Bộ nội dung"
       }
     >
       <Button asChild variant="outline">
         <Link to={back}>Về danh sách</Link>
       </Button>
-      {resource.loading ? (
+      {resource.loading || (editing && subjects.loading) ? (
         <Loading />
-      ) : resource.error ? (
-        <ErrorState message={resource.error} retry={resource.reload} />
+      ) : (resource.error || (editing && subjects.error)) ? (
+        <ErrorState message={resource.error || subjects.error || ""} retry={() => { resource.reload(); subjects.reload(); }} />
       ) : editing ? (
-        <Card className="p-5">
+        <Card className="space-y-5 p-5 sm:p-6">
+
           {!creating && resource.data?.ownerUserId !== user!.id ? (
             <ErrorState message="Chỉ tác giả được chỉnh sửa bộ nội dung gốc." />
           ) : (
             <QuestionEditor
-              key={`${bankId}:${resource.data?.revision}`}
+              key={`${bankId}:${mode}:${resource.data?.revision}`}
               mode={resource.data?.mode || mode}
               initialTitle={resource.data?.title || ""}
               initialQuestions={
                 resource.data?.questions || [emptyQuestion(mode)]
               }
+              modeControl={<FormField label="Loại nội dung">{p => <NativeSelect {...p} disabled={!creating} value={resource.data?.mode || mode} onChange={e => setParams(old => {const next=new URLSearchParams(old);next.set("mode",e.target.value);return next;})}>{(["QUIZ","FILL_BLANK","ASSIGNMENT"] as ContentMode[]).map(m => <option key={m} value={m}>{m === "FILL_BLANK" ? "Điền từ" : modeNames[m]}</option>)}</NativeSelect>}</FormField>}
+              subjects={subjects.data || []}
+              initialSubjectId={resource.data?.subjectId || Number(params.get("subjectId")) || 0}
               initialVisibility={resource.data?.visibility || "PRIVATE"}
               pending={action.pending}
               error={action.error}
@@ -280,12 +296,8 @@ function BankDetail() {
       ) : (
         resource.data && (
           <Card className="space-y-5 p-5">
-            <p className="text-sm text-muted-foreground">
-              {resource.data.visibility === "PUBLIC"
-                ? "Public · Được chia sẻ"
-                : "Riêng tư · Của tác giả"}{" "}
-              · {modeNames[resource.data.mode]}
-            </p>
+            <BankIdentity bank={resource.data} />
+            <p className="text-sm text-muted-foreground">{modeNames[resource.data.mode]} · {resource.data.questionCount} {resource.data.mode === "ASSIGNMENT" ? "đề bài" : "câu"}</p>
             <QuestionPreview
               questions={resource.data.questions}
               bankId={resource.data.id}

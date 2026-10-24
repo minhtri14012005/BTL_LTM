@@ -17,4 +17,7 @@ public class TeacherAccountController {
     ResponseEntity<UserResponse> create(Authentication caller, @Valid @RequestBody TeacherRequest input) {
         return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore()).body(service.create(caller,input));
     }
+    @PutMapping("/{id}") public UserResponse edit(Authentication caller,@PathVariable long id,@Valid @RequestBody vn.edu.multigame.admin.dto.TeacherChanges.Edit input){return service.edit(caller,id,input);}
+    @PostMapping("/{id}/password") public void password(Authentication caller,@PathVariable long id,@Valid @RequestBody vn.edu.multigame.admin.dto.TeacherChanges.Password input){service.password(caller,id,input);}
+    @PostMapping("/{id}/delete") public void delete(Authentication caller,@PathVariable long id,@Valid @RequestBody vn.edu.multigame.admin.dto.TeacherChanges.Delete input){service.delete(caller,id,input);}
 }

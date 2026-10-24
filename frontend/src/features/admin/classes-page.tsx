@@ -16,6 +16,7 @@ export function AdminClassesPage() {
   const resource = useResource(loadClassCatalog, []);
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
+  const [unassigned, setUnassigned] = useState(false);
   const assigning = useLocation().pathname.endsWith("/assignments");
   return (
     <AdminFrame
@@ -58,6 +59,14 @@ export function AdminClassesPage() {
             ) : (
               <>
                 <section className="space-y-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={unassigned}
+                      onChange={(e) => setUnassigned(e.target.checked)}
+                    />
+                    Chỉ lớp chưa có giảng viên hợp lệ
+                  </label>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="text-xl font-semibold">
                       Danh sách lớp ({resource.data.classes.length})
@@ -70,11 +79,17 @@ export function AdminClassesPage() {
                       onChange={(e) => setQuery(e.target.value)}
                     />
                   </div>
-                  {!resource.data.classes.some((c) =>
-                    `${c.code} ${c.name} ${offeringLabel(resource.data!, c.offeringId)}`
-                      .toLocaleLowerCase("vi")
-                      .includes(query.toLocaleLowerCase("vi")),
-                  ) ? (
+                  {!resource.data.classes
+                    .filter(
+                      (c) =>
+                        !unassigned ||
+                        !validTeachers(c, resource.data!.teachers).length,
+                    )
+                    .some((c) =>
+                      `${c.code} ${c.name} ${offeringLabel(resource.data!, c.offeringId)}`
+                        .toLocaleLowerCase("vi")
+                        .includes(query.toLocaleLowerCase("vi")),
+                    ) ? (
                     <EmptyState
                       title={
                         resource.data.classes.length
@@ -96,6 +111,12 @@ export function AdminClassesPage() {
                         </thead>
                         <tbody>
                           {resource.data.classes
+                            .filter(
+                              (c) =>
+                                !unassigned ||
+                                !validTeachers(c, resource.data!.teachers)
+                                  .length,
+                            )
                             .filter((c) =>
                               `${c.code} ${c.name} ${offeringLabel(resource.data!, c.offeringId)}`
                                 .toLocaleLowerCase("vi")
@@ -124,7 +145,16 @@ export function AdminClassesPage() {
                                     ? `${validTeachers(c, resource.data!.teachers).length} giảng viên hợp lệ`
                                     : c.teacherIds.length
                                       ? "Cần phân công giảng viên hợp lệ"
-                                      : "Chưa phân công"}
+                                      : "Chưa có giảng viên phụ trách"}
+                                  {!validTeachers(c, resource.data!.teachers)
+                                    .length && (
+                                    <Link
+                                      className="mt-2 block text-primary underline"
+                                      to="/app/admin/assignments"
+                                    >
+                                      Phân công người tiếp quản
+                                    </Link>
+                                  )}
                                 </td>
                               </tr>
                             ))}

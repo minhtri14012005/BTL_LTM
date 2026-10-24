@@ -52,10 +52,10 @@ class MySqlSmokeIT {
         }
         assertThat(((Number) entityManager.createNativeQuery("SELECT 1").getSingleResult()).intValue()).isEqualTo(1);
         var entities = entityManager.getMetamodel().getEntities();
-        assertThat(entities).hasSize(13).allSatisfy(entity ->
+        assertThat(entities).hasSize(9).allSatisfy(entity ->
                 assertThat(entity.getJavaType().getPackageName()).startsWith("vn.edu.multigame."));
-        assertThat(entities).extracting(entity -> entity.getName()).contains("Quiz", "Question", "GameSession", "Room", "UserAccount");
-        assertThat(context.getBeansOfType(org.springframework.data.repository.Repository.class)).hasSize(13);
+        assertThat(entities).extracting(entity -> entity.getName()).contains("Quiz", "Question", "UserAccount", "CourseClass").doesNotContain("GameSession", "Room");
+        assertThat(context.getBeansOfType(org.springframework.data.repository.Repository.class)).hasSize(9);
         assertThat(context.getBean(vn.edu.multigame.auth.security.AccountUserDetailsService.class)).isNotNull();
         assertThat(context.getBean(vn.edu.multigame.questionbank.service.QuestionBankService.class)).isNotNull();
     }

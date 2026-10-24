@@ -39,7 +39,7 @@ final class FrontendBrowserChecks {
                 "--spring.profiles.active=mysql,baseline","--server.address=0.0.0.0","--server.port="+port,
                 "--spring.datasource.url="+url,"--spring.jpa.hibernate.ddl-auto=validate","--spring.flyway.clean-disabled=true")
                 .redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.DISCARD);
-        var env=builder.environment();env.put("BASELINE_DB_URL",url);env.put("SPRING_DATASOURCE_USERNAME",username);env.put("SPRING_DATASOURCE_PASSWORD",password);
+        var env=builder.environment();env.put("QUIZ_IMAGE_DIRECTORY",Path.of(".cache","baseline-media",URI.create(url.substring(5)).getPath().substring(1)).toAbsolutePath().toString());env.put("BASELINE_DB_URL",url);env.put("SPRING_DATASOURCE_USERNAME",username);env.put("SPRING_DATASOURCE_PASSWORD",password);
         env.put("ALLOWED_ORIGINS",base+",http://localhost:5173,http://127.0.0.1:5173");
         Process server=builder.start();
         try {

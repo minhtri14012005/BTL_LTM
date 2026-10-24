@@ -1,8 +1,6 @@
 package vn.edu.multigame.questionbank.service;
 
 import java.util.*;
-import vn.edu.multigame.common.util.TextNormalizer;
-import vn.edu.multigame.common.util.ArrangementIds;
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
@@ -17,39 +15,47 @@ import vn.edu.multigame.questionbank.dto.response.*;
 import vn.edu.multigame.questionbank.entity.*;
 import vn.edu.multigame.questionbank.enums.*;
 import vn.edu.multigame.quiz.enums.Option;
-import vn.edu.multigame.game.enums.GameMode;
+import vn.edu.multigame.questionbank.enums.GameMode;
 import vn.edu.multigame.questionbank.repository.*;
 
 @Service
 @Profile("mysql")
 @Transactional(readOnly = true)
 public class QuestionBankService {
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.academic.repository.SubjectRepository subjects;
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.room.repository.ClassRoomStore rooms;
     private final QuizRepository quizzes;
     private final QuestionRepository questions;
     private final AuthService users;
     private final QuestionBankAccessPolicy policy;
     private final QuestionImageStore images;
-    private final QuestionVideoStore videos;
     private final EntityManager entities;
-    private final vn.edu.multigame.game.service.GameAccessPolicy gameAccess;
     private final vn.edu.multigame.auth.service.AccountAccessPolicy accounts;
     public QuestionBankService(QuizRepository quizzes, QuestionRepository questions, AuthService users,
-            QuestionBankAccessPolicy policy, QuestionImageStore images, QuestionVideoStore videos, EntityManager entities,vn.edu.multigame.game.service.GameAccessPolicy gameAccess,vn.edu.multigame.auth.service.AccountAccessPolicy accounts) {
+            QuestionBankAccessPolicy policy, QuestionImageStore images, EntityManager entities,vn.edu.multigame.auth.service.AccountAccessPolicy accounts) {
         this.quizzes = quizzes; this.questions = questions; this.users = users; this.policy = policy; this.images = images;
-        this.entities = entities; this.videos=videos;this.gameAccess=gameAccess;
+        this.entities = entities;
         this.accounts=accounts;
     }
-    public QuestionBankListResponse list(Authentication auth, int page, int size) {
-        return list(auth,page,size,QuestionBankScope.VISIBLE,null);
+    public java.util.List<vn.edu.multigame.academic.dto.AcademicViews.Subject> subjects(Authentication auth) {
+        teacherId(auth);return subjects.findAll(org.springframework.data.domain.Sort.by("name","id")).stream().map(vn.edu.multigame.academic.dto.AcademicViews.Subject::from).toList();
     }
-    public QuestionBankListResponse list(Authentication auth,int page,int size,QuestionBankScope scope,GameMode mode) {
-        return list(auth,page,size,scope,mode,"");
+    private vn.edu.multigame.academic.entity.Subject subject(Long id) {
+        if(id==null || id<1) throw invalidRequest();
+        return subjects.findById(id).orElseThrow(()->new QuestionBankFailure(HttpStatus.BAD_REQUEST,"SUBJECT_NOT_FOUND","Môn học không tồn tại."));
     }
-    public QuestionBankListResponse list(Authentication auth,int page,int size,QuestionBankScope scope,GameMode mode,String query) {
+    public QuestionBankListResponse list(Authentication auth,int page,int size,QuestionBankScope scope,GameMode mode,String query,Long subjectId,Long classId) {
         if(query==null || query.length()>200) throw invalidRequest();
         long userId = teacherId(auth);
         if (page < 0 || size < 1 || size > 100 || scope == null || (long)page*size > Integer.MAX_VALUE) throw invalidRequest();
-        var found = quizzes.findScoped(userId, scope.name(), mode, query.strip(), PageRequest.of(page, size));
+        if(subjectId!=null)subject(subjectId);
+        if(classId!=null) {
+            var room=rooms.forClass(classId).orElseThrow(QuestionBankFailure::notFound);
+            if(!rooms.assigned(classId,userId))throw QuestionBankFailure.forbidden();
+            if(subjectId!=null && subjectId!=room.subjectId())throw invalidRequest();
+            subjectId=room.subjectId();
+        }
+        var found = quizzes.findScoped(userId, scope.name(), mode, query.strip(), subjectId, PageRequest.of(page, size));
         return new QuestionBankListResponse(found.getContent().stream().map(this::metadata).toList(), page, size, found.getTotalElements());
     }
     private long teacherId(Authentication auth) {
@@ -77,18 +83,14 @@ public class QuestionBankService {
         policy.requireUse(userId, quiz.getOwnerUserId(), quiz.getVisibility());
         return ownerView(quiz);
     }
-    /** Selection authorization for future Room use-case; no usage endpoint is invented. */
-    public void requireUsable(Authentication auth, long id) {
-        long userId = teacherId(auth); Quiz quiz = active(id, false);
-        policy.requireUse(userId, quiz.getOwnerUserId(), quiz.getVisibility());
-    }
     @Transactional
     public QuestionBankOwnerResponse create(Authentication auth, CreateQuestionBankRequest request) {
         long userId = writingTeacher(auth);
         GameMode mode=request.mode()==null?GameMode.QUIZ:request.mode();
         if(!learningMode(mode)) throw invalidRequest();
         validateQuestions(mode,request.questions());
-        Quiz quiz = new Quiz(); quiz.setMode(mode); quiz.setOwnerUserId(userId); quiz.setTitle(request.title().strip());
+        subject(request.subjectId());
+        Quiz quiz = new Quiz(); quiz.setSubjectId(request.subjectId()); quiz.setMode(mode); quiz.setOwnerUserId(userId); quiz.setTitle(request.title().strip());
         quiz.setVisibility(request.visibility()); quiz.setCreatedAtMs(System.currentTimeMillis());
         quiz = quizzes.saveAndFlush(quiz);
         replaceQuestions(quiz, request.questions());
@@ -101,6 +103,7 @@ public class QuestionBankService {
         if(request.mode()!=null && request.mode()!=quiz.getMode()) throw new QuestionBankFailure(HttpStatus.BAD_REQUEST,"MODE_IMMUTABLE","Không đổi loại bộ câu đã tạo.");
         if(!learningMode(quiz.getMode())) throw invalidRequest();
         validateQuestions(quiz.getMode(),request.questions());
+        subject(request.subjectId());quiz.setSubjectId(request.subjectId());
         replaceQuestions(quiz, request.questions());
         quiz.setTitle(request.title().strip()); quiz.setVisibility(request.visibility());
         // A question-only edit must also increment aggregate revision.
@@ -138,36 +141,11 @@ public class QuestionBankService {
         if(!hash.matches("[0-9a-f]{64}")) throw invalidRequest();
         return images.readDraft(userId,"sha256:"+hash);
     }
-    public byte[] image(Authentication auth, long id, String hash, Long gameSessionId) {
-        long userId = users.requireActiveUser(auth).getId();
-        if(gameSessionId!=null)requireGameMedia(gameSessionId,userId);
-        Quiz quiz = quizzes.findById(id).orElseThrow(QuestionBankFailure::notFound); // Deleted Quiz is retained for history images.
-        String reference = "sha256:" + hash;
-        if (!hash.matches("[0-9a-f]{64}")) throw invalidRequest();
-        boolean teacher=users.requireActiveUser(auth).getRole()==vn.edu.multigame.user.enums.UserRole.GIANG_VIEN;
-        if (!(teacher && (userId==quiz.getOwnerUserId() || quiz.getVisibility()==Visibility.PUBLIC)) && (gameSessionId == null
-                || questions.countReleasedImageForMember(id, gameSessionId, userId, reference) == 0)) {
-            throw QuestionBankFailure.forbidden();
-        }
-        return images.read(id, reference);
+    public byte[] image(Authentication auth,long id,String hash) {
+        long user=teacherId(auth);Quiz quiz=active(id,false);policy.requireUse(user,quiz.getOwnerUserId(),quiz.getVisibility());
+        if(!hash.matches("[0-9a-f]{64}"))throw invalidRequest();
+        return images.read(id,"sha256:"+hash);
     }
-    @Transactional
-    public VideoResponse uploadVideo(Authentication auth,long id,MultipartFile file) {
-        long userId=teacherId(auth);Quiz quiz=active(id,true);policy.requireOwner(userId,quiz.getOwnerUserId());
-        if(quiz.getMode()!=GameMode.SONG)throw invalidRequest();return videos.save(id,file);
-    }
-    public VideoResponse uploadDraftVideo(Authentication auth,MultipartFile file){return videos.saveDraft(teacherId(auth),file);}
-    public org.springframework.core.io.Resource draftVideo(Authentication auth,String hash){requireHash(hash);return videos.readDraft(teacherId(auth),"sha256:"+hash);}
-    public org.springframework.core.io.Resource video(Authentication auth,long id,String hash,Long gameId) {
-        long userId=users.requireActiveUser(auth).getId();requireHash(hash);Quiz quiz=quizzes.findById(id).orElseThrow(QuestionBankFailure::notFound);
-        if(gameId!=null)requireGameMedia(gameId,userId);
-        if(userId!=quiz.getOwnerUserId() && (gameId==null || questions.countReleasedVideoForMember(id,gameId,userId,"sha256:"+hash)==0))throw QuestionBankFailure.forbidden();
-        return videos.read(id,"sha256:"+hash);
-    }
-    private void requireGameMedia(long game,long user){
-        try{gameAccess.requireMediaAllowed(game,user);}catch(vn.edu.multigame.game.service.GameFailure denied){throw QuestionBankFailure.forbidden();}
-    }
-    private void requireHash(String hash){if(hash==null || !hash.matches("[0-9a-f]{64}"))throw invalidRequest();}
     private Quiz active(long id, boolean lock) {
         return (lock ? quizzes.findLockedById(id) : quizzes.findById(id))
                 .filter(q -> q.getDeletedAtMs() == null).orElseThrow(QuestionBankFailure::notFound);
@@ -178,7 +156,10 @@ public class QuestionBankService {
     }
     private void replaceQuestions(Quiz quiz, List<QuestionRequest> input) {
         // Never delete/update historical question content. New generation uses unused order indexes.
-        input.forEach(q -> images.requireExists(quiz.getId(), q.imageRef()));
+        input.forEach(q -> {
+            if(q.imageRef()!=null)images.attachDraft(quiz.getId(),quiz.getOwnerUserId(),q.imageRef());
+            images.requireExists(quiz.getId(),q.imageRef());
+        });
         int index = questions.maximumOrderIndex(quiz.getId());
         if (index > Integer.MAX_VALUE - input.size()) throw new QuestionBankFailure(HttpStatus.CONFLICT, "QUIZ_LIMIT_REACHED", "Quiz đã đạt giới hạn phiên bản câu hỏi.");
         long now = System.currentTimeMillis();
@@ -192,7 +173,6 @@ public class QuestionBankService {
             question.setOptionC(request.options().get(Option.C).strip()); question.setOptionD(request.options().get(Option.D).strip());
             question.setCorrectOption(request.correctAnswer());
             } else {
-                question.setSchemaVersion(3);
                 question.setPayload(quiz.getMode()==GameMode.ASSIGNMENT?Map.of():Map.of("acceptedAnswers",List.copyOf(request.acceptedAnswers()),"matchingPolicy",request.matchingPolicy().name()));
             }
             question.setMode(quiz.getMode()); question.setImageRef(request.imageRef()); question.setCreatedAtMs(now);
@@ -202,44 +182,23 @@ public class QuestionBankService {
     }
     private QuestionBankMetadataResponse metadata(Quiz quiz) {
         return new QuestionBankMetadataResponse(quiz.getId(), quiz.getOwnerUserId(), quiz.getTitle(), quiz.getVisibility(),
-                (int) questions.countByQuizIdAndDeletedAtMsIsNull(quiz.getId()), quiz.getCreatedAtMs(), quiz.getRevision(), quiz.getMode());
+                (int) questions.countByQuizIdAndDeletedAtMsIsNull(quiz.getId()), quiz.getCreatedAtMs(), quiz.getRevision(), quiz.getMode(),quiz.getSubjectId(),subject(quiz.getSubjectId()).getCode(),subject(quiz.getSubjectId()).getName());
     }
     private QuestionBankOwnerResponse ownerView(Quiz quiz) {
         var stored = questions.findByQuizIdAndDeletedAtMsIsNullOrderByOrderIndex(quiz.getId());
         List<QuestionResponse> output = new ArrayList<>();
-        for (Question q : stored) output.add(new QuestionResponse(q.getId(), output.size() + 1, q.getContent(),
-                quiz.getMode()==GameMode.QUIZ?Map.of(Option.A, q.getOptionA(), Option.B, q.getOptionB(), Option.C, q.getOptionC(), Option.D, q.getOptionD()):null, q.getCorrectOption(), q.getMode()==GameMode.IMAGE_WORD?(String)q.getPayload().get("mediaRef"):q.getImageRef(), quiz.getMode()==GameMode.CLUES || quiz.getMode()==GameMode.RIDDLE || quiz.getMode()==GameMode.IMAGE_WORD || quiz.getMode()==GameMode.SONG || quiz.getMode()==GameMode.VIETNAMESE_PUZZLE || quiz.getMode()==GameMode.FILL_BLANK?storedAnswers(q):null, storedItems(q,"pieces"),storedItems(q,"items"),storedOrder(q),q.getMode()==GameMode.SONG?(String)q.getPayload().get("mediaRef"):null,storedHints(q),q.getMode()==GameMode.FILL_BLANK?TextMatchPolicy.valueOf((String)q.getPayload().get("matchingPolicy")):null));
+        for(Question q:stored)output.add(new QuestionResponse(q.getId(),output.size()+1,q.getContent(),quiz.getMode()==GameMode.QUIZ?Map.of(Option.A,q.getOptionA(),Option.B,q.getOptionB(),Option.C,q.getOptionC(),Option.D,q.getOptionD()):null,q.getCorrectOption(),q.getImageRef(),quiz.getMode()==GameMode.FILL_BLANK?storedAnswers(q):null,quiz.getMode()==GameMode.FILL_BLANK?TextMatchPolicy.valueOf((String)q.getPayload().get("matchingPolicy")):null));
         return new QuestionBankOwnerResponse(quiz.getId(), quiz.getOwnerUserId(), quiz.getTitle(), quiz.getVisibility(),
-                output.size(), quiz.getCreatedAtMs(), quiz.getRevision(), List.copyOf(output),quiz.getMode());
+                output.size(), quiz.getCreatedAtMs(), quiz.getRevision(), List.copyOf(output),quiz.getMode(),quiz.getSubjectId(),subject(quiz.getSubjectId()).getCode(),subject(quiz.getSubjectId()).getName());
     }
-    @SuppressWarnings("unchecked")
-    private List<HintRequest> storedHints(Question q) {
-        if(q.getMode()!=GameMode.CLUES) return null;
-        return ((List<Map<String,Object>>)q.getPayload().get("hints")).stream().map(h -> new HintRequest(((Number)h.get("offsetMs")).longValue(),(String)h.get("text"))).toList();
-    }
-    private List<String> storedAnswers(Question question) {
-        Object value=question.getPayload().get("acceptedAnswers");
-        if(!(value instanceof List<?>)) {
-            if(question.getMode()==GameMode.VIETNAMESE_PUZZLE) {var text=new HashMap<String,String>();storedItems(question,"pieces").forEach(v -> text.put(v.id(),v.text()));return List.of(TextNormalizer.normalize(storedOrder(question).stream().map(text::get).collect(java.util.stream.Collectors.joining())));}
-            throw new IllegalStateException("Invalid stored text answers");
-        }
-        var answers=(List<?>)value;
-        return answers.stream().map(String.class::cast).toList();
-    }
-    @SuppressWarnings("unchecked")
-    private List<ArrangementItemResponse> storedItems(Question q,String key) {
-        if(q.getPayload()==null || !(q.getPayload().get(key) instanceof List<?> data)) return null;
-        return data.stream().map(v -> {var m=(Map<String,Object>)v;return new ArrangementItemResponse((String)m.get("id"),(String)m.get("text"));}).toList();
-    }
-    @SuppressWarnings("unchecked")
-    private List<String> storedOrder(Question q) {return q.getPayload()==null?null:(List<String>)q.getPayload().get("correctOrder");}
+    private List<String> storedAnswers(Question question){return ((List<?>)question.getPayload().get("acceptedAnswers")).stream().map(String.class::cast).toList();}
     public void validateQuestions(GameMode mode,List<QuestionRequest> input) {
         if(!learningMode(mode) || input==null || input.isEmpty() || input.size()>50 || input.stream().anyMatch(Objects::isNull)) throw invalidRequest();
         if(mode==GameMode.ASSIGNMENT && input.size()!=1) throw invalidRequest();
         for(var q:input) {
             if(q.content()==null || q.content().isBlank() || q.content().length()>5000) throw invalidRequest();
             if(mode==GameMode.FILL_BLANK || mode==GameMode.ASSIGNMENT) {
-                if(q.options()!=null || q.correctAnswer()!=null || q.imageRef()!=null || q.mediaRef()!=null || q.pieces()!=null || q.items()!=null || q.correctOrder()!=null || q.hints()!=null) throw invalidRequest();
+                if(q.options()!=null || q.correctAnswer()!=null || q.imageRef()!=null) throw invalidRequest();
                 if(mode==GameMode.ASSIGNMENT) {
                     if(q.acceptedAnswers()!=null || q.matchingPolicy()!=null) throw invalidRequest();
                 } else {
@@ -247,7 +206,7 @@ public class QuestionBankService {
                 }
                 continue;
             }
-            if(mode!=GameMode.QUIZ || q.matchingPolicy()!=null || q.hints()!=null || q.mediaRef()!=null || q.pieces()!=null || q.items()!=null || q.correctOrder()!=null || q.acceptedAnswers()!=null || q.options()==null || !q.options().keySet().equals(EnumSet.allOf(Option.class)) || q.correctAnswer()==null || q.options().values().stream().anyMatch(v->v==null || v.isBlank() || v.length()>2000)) throw invalidRequest();
+            if(mode!=GameMode.QUIZ || q.matchingPolicy()!=null || q.acceptedAnswers()!=null || q.options()==null || !q.options().keySet().equals(EnumSet.allOf(Option.class)) || q.correctAnswer()==null || q.options().values().stream().anyMatch(v->v==null || v.isBlank() || v.length()>2000)) throw invalidRequest();
         }
     }
     public List<QuestionResponse> snapshotQuestions(GameMode mode,List<QuestionRequest> input) {
@@ -255,7 +214,7 @@ public class QuestionBankService {
         validateQuestions(mode,input);
         var output=new ArrayList<QuestionResponse>();
         for(var q:input) output.add(new QuestionResponse(0,output.size()+1,q.content(),q.options(),q.correctAnswer(),q.imageRef(),
-                q.acceptedAnswers(),null,null,null,null,null,q.matchingPolicy()));
+                q.acceptedAnswers(),q.matchingPolicy()));
         return List.copyOf(output);
     }
     private QuestionBankFailure invalidRequest() { return new QuestionBankFailure(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "Dữ liệu Quiz không hợp lệ."); }

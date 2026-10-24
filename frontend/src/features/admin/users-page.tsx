@@ -23,6 +23,7 @@ import {
   Pagination,
 } from "./admin-shared";
 import { CreateTeacher } from "./create-teacher";
+import { TeacherActions } from "./teacher-actions";
 
 export function AdminUsersPage() {
   const [params, setParams] = useSearchParams();
@@ -183,7 +184,9 @@ export function AdminUsersPage() {
                         <th>Tài khoản</th>
                         {!role && <th>Vai trò</th>}
                         <th>Trạng thái</th>
-                        {role === "SINH_VIEN" && <th>Thao tác</th>}
+                        {(role === "SINH_VIEN" || role === "GIANG_VIEN") && (
+                          <th>Thao tác</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -208,6 +211,14 @@ export function AdminUsersPage() {
                                     : statusNames[user.status] || user.status}
                             </span>
                           </td>
+                          {role === "GIANG_VIEN" && (
+                            <td>
+                              <TeacherActions
+                                user={user}
+                                saved={resource.reload}
+                              />
+                            </td>
+                          )}
                           {role === "SINH_VIEN" && (
                             <td>
                               <Button

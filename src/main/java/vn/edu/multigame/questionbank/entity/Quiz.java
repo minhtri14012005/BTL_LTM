@@ -35,7 +35,13 @@ public class Quiz extends IdentityEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "mode", nullable = false, length = 24)
-    private vn.edu.multigame.game.enums.GameMode mode = vn.edu.multigame.game.enums.GameMode.QUIZ;
+    private vn.edu.multigame.questionbank.enums.GameMode mode = vn.edu.multigame.questionbank.enums.GameMode.QUIZ;
+
+    @Column(name = "subject_id", nullable = false)
+    private Long subjectId;
+
+    public Long getSubjectId() { return subjectId; }
+    public void setSubjectId(Long value) { subjectId = value; }
 
     public Quiz() {}
 
@@ -58,7 +64,7 @@ public class Quiz extends IdentityEntity {
     public void setRevision(Long value) { this.revision = value; }
 
 
-    public vn.edu.multigame.game.enums.GameMode getMode() { return mode; }
-    public void setMode(vn.edu.multigame.game.enums.GameMode value) { this.mode = value; }
+    public vn.edu.multigame.questionbank.enums.GameMode getMode() { return mode; }
+    public void setMode(vn.edu.multigame.questionbank.enums.GameMode value) { this.mode = value; }
 
 }

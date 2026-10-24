@@ -4,6 +4,7 @@ param(
     [uri] $BaseUrl,
     [System.Management.Automation.PSCredential] $Credential,
     [string] $DataFile,
+    [long] $SubjectId,
     [switch] $ValidateOnly
 )
 $ErrorActionPreference = 'Stop'
@@ -58,6 +59,12 @@ finally { $loginBody = $null }
 if ($identity.role -ne 'GIANG_VIEN') { throw 'Only a teacher account can import learning banks.' }
 $csrf = Invoke-LearningApi '/api/auth/csrf'
 $headers = @{ ($csrf.headerName) = $csrf.token }
+$subjects = @(Invoke-LearningApi '/api/quizzes/subjects')
+if (-not $SubjectId) {
+    if ($subjects.Count -eq 1) { $SubjectId = $subjects[0].id }
+    else { throw 'Choose an existing subject with -SubjectId.' }
+}
+if (-not @($subjects | Where-Object { $_.id -eq $SubjectId }).Count) { throw 'SubjectId is not an existing subject.' }
 $created = 0
 $skipped = 0
 foreach ($pack in $dataset.packs) {
@@ -66,7 +73,7 @@ foreach ($pack in $dataset.packs) {
     $page = 0
     $exists = $false
     do {
-        $result = Invoke-LearningApi "/api/quizzes?scope=MINE&mode=$($pack.mode)&q=$search&page=$page&size=100"
+        $result = Invoke-LearningApi "/api/quizzes?scope=MINE&mode=$($pack.mode)&subjectId=$SubjectId&q=$search&page=$page&size=100"
         $exists = @($result.items | Where-Object { $_.title -ceq $pack.title -and $_.mode -eq $pack.mode }).Count -gt 0
         $page++
     } while (-not $exists -and $page * 100 -lt $result.totalElements)
@@ -75,6 +82,7 @@ foreach ($pack in $dataset.packs) {
         Write-Host "Skipped existing owned bank: $($pack.title)"
         continue
     }
+    $pack | Add-Member -NotePropertyName subjectId -NotePropertyValue $SubjectId -Force
     $bank = Invoke-LearningApi "/api/quizzes" "Post" $pack
     $created++
     Write-Host "Created bank #$($bank.id): $($pack.title)"

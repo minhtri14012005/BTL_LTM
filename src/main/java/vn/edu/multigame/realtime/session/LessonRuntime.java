@@ -11,8 +11,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.socket.WebSocketSession;
-import vn.edu.multigame.game.runtime.PhaseWindow;
-import vn.edu.multigame.game.enums.Phase;
+import vn.edu.multigame.realtime.timer.PhaseWindow;
+import vn.edu.multigame.realtime.timer.Phase;
 import vn.edu.multigame.lesson.service.*;
 import vn.edu.multigame.lesson.repository.LessonRealtimeStore;
 import vn.edu.multigame.realtime.message.command.LessonCommand;
@@ -32,7 +32,7 @@ public class LessonRuntime implements AutoCloseable {
     private final AuthenticatedSocketRegistry sockets;
     public LessonRuntime(ServerClock clock,LessonRealtimeStore store,LessonRealtimeTransactions transactions,AuthenticatedSocketRegistry sockets) {
         this.clock=clock;this.store=store;this.transactions=transactions;this.sockets=sockets;
-        queue=GameRuntime.sessionQueue(clock,new ScheduledTimerScheduler());
+        queue=new SessionQueue<>(clock,new ScheduledTimerScheduler(),4,512,64,32);
     }
     private synchronized Node node(long lesson) {
         queue.cleanup();nodes.entrySet().removeIf(e->queue.evictIdle(e.getValue().key));

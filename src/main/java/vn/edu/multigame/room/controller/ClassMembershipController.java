@@ -25,4 +25,8 @@ public class ClassMembershipController {
     public ClassMembershipView reject(Authentication caller,@PathVariable long classId,@PathVariable long student,@Valid @RequestBody Decision input) {return service.decide(caller,classId,student,"REJECT",input);}
     @PostMapping("/api/teaching/classes/{classId}/members/{student}/remove")
     public ClassMembershipView remove(Authentication caller,@PathVariable long classId,@PathVariable long student,@Valid @RequestBody Decision input) {return service.decide(caller,classId,student,"REMOVE",input);}
+    @PostMapping("/api/teaching/classes/{classId}/members/{student}/restore")
+    public ClassMembershipView restore(Authentication caller,@PathVariable long classId,@PathVariable long student,@Valid @RequestBody Decision input){return service.decide(caller,classId,student,"RESTORE",input);}
+    @PostMapping("/api/teaching/classes/{classId}/members/approve-all")
+    public ClassMembershipService.BulkResult approveAll(Authentication caller,@PathVariable long classId,@Valid @RequestBody Batch input){return service.approveAll(caller,classId,input.requestId());}
 }

@@ -2,7 +2,7 @@
     "configurations": [
         {
             "type": "java",
-            "name": "MultiGame - Run Server",
+            "name": "ClassQuest - Run Server",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "vn.edu.multigame.MultigameApplication",

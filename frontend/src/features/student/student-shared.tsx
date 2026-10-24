@@ -66,6 +66,7 @@ export function useStudentUpdates(reload: () => void) {
             "SCORES_INVALIDATED",
             "CLASS_LESSONS_UPDATED",
             "CLASS_MEMBERSHIP_UPDATED",
+            "CLASS_STAFFING_UPDATED",
             "LESSON_ACCESS_REVOKED",
           ].includes(e.type)
         )
@@ -80,6 +81,8 @@ export function studentError(e: unknown) {
   return (
     (
       {
+        CLASS_AWAITING_TEACHER:
+          "Lớp chưa có giảng viên tiếp quản. Vui lòng chờ quản trị viên phân công giảng viên mới.",
         WINDOW_CLOSED:
           "Hạn đã đóng hoặc đã đổi. Đọc lại trạng thái trước khi gửi tiếp.",
         ALREADY_SUBMITTED:

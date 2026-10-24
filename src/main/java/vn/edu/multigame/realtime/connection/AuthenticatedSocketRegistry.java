@@ -3,7 +3,6 @@ package vn.edu.multigame.realtime.connection;
 import java.io.IOException;
 import java.util.Set;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -19,47 +18,27 @@ import vn.edu.multigame.auth.security.AuthSessionRegistry;
 import vn.edu.multigame.auth.service.AuthService;
 import vn.edu.multigame.auth.service.AuthFailure;
 import org.springframework.security.core.Authentication;
-import vn.edu.multigame.room.service.RoomChanged;
-import vn.edu.multigame.room.enums.RoomStatus;
-import vn.edu.multigame.realtime.message.common.RoomTarget;
-import vn.edu.multigame.realtime.message.event.RoomEvent;
 
 @Component
 @Profile("mysql")
 public class AuthenticatedSocketRegistry {
     private final ConcurrentHashMap<String, Set<WebSocketSession>> sockets = new ConcurrentHashMap<>();
-    private record Binding(String sessionId,long userId,long generation,WebSocketSession outbound,SocketOutbound sender,Set<Long> rooms,Set<Long> lessons) {}
+    private record Binding(String sessionId,long userId,long generation,WebSocketSession outbound,SocketOutbound sender,Set<Long> lessons) {}
     private final Map<String,Binding> bindings=new ConcurrentHashMap<>();
     private final Map<Long,Binding> active=new ConcurrentHashMap<>();
     private final java.util.concurrent.atomic.AtomicLong generations=new java.util.concurrent.atomic.AtomicLong();
     private final ObjectMapper json;
     private final AuthSessionRegistry sessions;
     private final AuthService users;
-    private final vn.edu.multigame.game.service.GameAccessPolicy gameAccess;
     @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.auth.service.AccountAccessPolicy accountAccess;
     private final ExecutorService writers=Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("socket-writer-",0).factory());
     private final ScheduledThreadPoolExecutor watchdog=new ScheduledThreadPoolExecutor(1,runnable->{
         var thread=new Thread(runnable,"socket-send-watchdog");thread.setDaemon(true);return thread;
     });
-    public record PresenceChange(long userId,boolean connected) {}
     private final Object presenceLock=new Object();
     private final Map<Long,Long> connectedGenerations=new java.util.HashMap<>();
-    private final Set<java.util.function.Consumer<PresenceChange>> presenceListeners=new java.util.HashSet<>();
-    public void onPresence(java.util.function.Consumer<PresenceChange> listener) {
-        synchronized(presenceLock) {presenceListeners.add(listener);}
-    }
-    public void removePresenceListener(java.util.function.Consumer<PresenceChange> listener) {
-        synchronized(presenceLock) {presenceListeners.remove(listener);}
-    }
-    /** Bootstrap and installation are atomic with transition admission into each Game queue. */
-    public void withPresence(java.util.function.Consumer<Set<Long>> install) {
-        synchronized(presenceLock) {install.accept(onlineUsers());}
-    }
-    private void presence(long userId,boolean connected) {
-        presenceListeners.forEach(listener -> listener.accept(new PresenceChange(userId,connected)));
-    }
-    public AuthenticatedSocketRegistry(ObjectMapper json,AuthSessionRegistry sessions,AuthService users,vn.edu.multigame.game.service.GameAccessPolicy gameAccess) {
-        this.json=json; this.sessions=sessions; this.users=users;this.gameAccess=gameAccess;
+    public AuthenticatedSocketRegistry(ObjectMapper json,AuthSessionRegistry sessions,AuthService users) {
+        this.json=json; this.sessions=sessions; this.users=users;
         watchdog.setRemoveOnCancelPolicy(true);
         watchdog.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     }
@@ -74,7 +53,7 @@ public class AuthenticatedSocketRegistry {
                 // decorator would overwrite our explicit timeout close status.
                 var outbound=socket;
                 var sender=new SocketOutbound(outbound,writers,watchdog,status->remove(sessionId,socket));
-                var created=new Binding(sessionId,userId,generations.incrementAndGet(),outbound,sender,ConcurrentHashMap.newKeySet(),ConcurrentHashMap.newKeySet());
+                var created=new Binding(sessionId,userId,generations.incrementAndGet(),outbound,sender,ConcurrentHashMap.newKeySet());
                 bindings.put(socket.getId(),created);
                 sockets.compute(sessionId,(id,existing) -> {
                     Set<WebSocketSession> set=existing==null?ConcurrentHashMap.newKeySet():existing;
@@ -98,7 +77,7 @@ public class AuthenticatedSocketRegistry {
         synchronized(presenceLock) {
             long generation=requireCurrent(socket);var binding=bindings.get(socket.getId());
             var previous=connectedGenerations.put(binding.userId(),generation);
-            if(previous==null || previous!=generation) presence(binding.userId(),true);
+
         }
     }
     /** Bootstrap/diagnostics only; ongoing gameplay consumes ordered presence transitions. */
@@ -120,7 +99,7 @@ public class AuthenticatedSocketRegistry {
     private Binding detach(String sessionId,WebSocketSession socket) {
         synchronized(presenceLock) {
             var binding=bindings.remove(socket.getId());
-            if(binding!=null && active.remove(binding.userId(),binding) && connectedGenerations.remove(binding.userId())!=null) presence(binding.userId(),false);
+            if(binding!=null && active.remove(binding.userId(),binding))connectedGenerations.remove(binding.userId());
             sockets.computeIfPresent(sessionId, (id, existing) -> { existing.removeIf(s->s.getId().equals(socket.getId())); return existing.isEmpty() ? null : existing; });
             return binding;
         }
@@ -140,20 +119,6 @@ public class AuthenticatedSocketRegistry {
             event.deliveredAfter(close(socket,new CloseStatus(4001,event.reason())));
         }
     }
-    public void subscribe(WebSocketSession socket,long roomId) {
-        Binding binding=bindings.get(socket.getId());
-        if(binding==null) return;
-        requireSubscriptionCapacity(socket,roomId);
-        binding.rooms().add(roomId);
-    }
-    public void requireSubscriptionCapacity(WebSocketSession socket,long roomId) {
-        Binding binding=bindings.get(socket.getId()); if(binding==null) return;
-        if(!binding.rooms().contains(roomId) && binding.rooms().size()>=32)
-            throw new vn.edu.multigame.room.service.RoomFailure(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,"SUBSCRIPTION_LIMIT_REACHED");
-    }
-    public void unsubscribe(WebSocketSession socket,long roomId) {
-        Binding binding=bindings.get(socket.getId()); if(binding!=null) binding.rooms().remove(roomId);
-    }
     /** Network failure closes this connection, never rolls back or repeats a committed operation. */
     public void send(WebSocketSession socket,Object message) {
         send(socket,message,()->true);
@@ -168,8 +133,6 @@ public class AuthenticatedSocketRegistry {
             var auth=socket.getPrincipal() instanceof Authentication a?a:null;
             users.requireActiveUser(auth);sessions.requireValid(binding.sessionId(),binding.userId());
             if(!permission.getAsBoolean())return;
-            Long game=gameScope(message);
-            if(game!=null && gameAccess.restricted(game,binding.userId()))return;
             binding.sender().send(new TextMessage(json.writeValueAsString(message)),()->{
                 if(active.get(binding.userId())!=binding)return false;
                 try{
@@ -178,7 +141,7 @@ public class AuthenticatedSocketRegistry {
                     if(accountAccess!=null && socket.getPrincipal() instanceof Authentication a && a.getPrincipal() instanceof vn.edu.multigame.auth.security.AuthPrincipal p && !accountAccess.beginSend(binding.userId(),p.authEpoch()))return false;
                 }catch(AuthFailure expired){close(socket,new CloseStatus(4001,expired.socketReason()));return false;}
                 catch(org.springframework.dao.DataAccessException unavailable){close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));return false;}
-                return permission.getAsBoolean() && (game==null || gameAccess.beginSend(game,binding.userId()));
+                return permission.getAsBoolean();
             });
         }
         catch(AuthFailure failure){close(socket,new CloseStatus(4001,failure.socketReason()));}
@@ -198,62 +161,6 @@ public class AuthenticatedSocketRegistry {
     public Map<Long,java.util.List<WebSocketSession>> lessonSubscriptions() {
         Map<Long,java.util.List<WebSocketSession>> result=new java.util.HashMap<>();
         bindings.values().forEach(b->b.lessons().forEach(id->result.computeIfAbsent(id,k->new java.util.ArrayList<>()).add(b.outbound())));return result;
-    }
-    private Long gameScope(Object message){
-        if(message instanceof vn.edu.multigame.realtime.message.event.GameEvent e)return e.target().id();
-        if(message instanceof vn.edu.multigame.realtime.message.common.ReconnectAck a)return a.target().id();
-        if(message instanceof vn.edu.multigame.realtime.message.common.GameAck a)return a.target().id();
-        return null;
-    }
-    /** Security notice is a control frame: it contains no snapshot or private reason.
-     * Run synchronously after Kick commit in the Game turn; enqueue only, never I/O. */
-    public void gameRestricted(long game,long room,long user){
-        var binding=active.get(user);if(binding==null)return;
-        send(binding.outbound(),new vn.edu.multigame.realtime.message.event.GameAccessRevoked(1,"EVENT","GAME_ACCESS_REVOKED",vn.edu.multigame.realtime.message.common.GameTarget.of(game),"GAME_KICKED",System.currentTimeMillis()));
-        binding.rooms().remove(room);
-    }
-    @EventListener
-    public void roomChanged(RoomChanged changed) {
-        var room=changed.snapshot();
-        String eventId=UUID.randomUUID().toString(); long now=System.currentTimeMillis();
-        for(Binding binding:bindings.values()) {
-            if(!binding.rooms().contains(room.id())) continue;
-            WebSocketSession socket=binding.outbound();
-            try {
-                var user=users.requireActiveUser(socket.getPrincipal() instanceof Authentication auth?auth:null);
-                sessions.requireValid(binding.sessionId(),user.getId());
-                boolean joined=room.members().stream().anyMatch(m->m.userId()==user.getId());
-                send(socket,new RoomEvent(1,"EVENT",joined?"ROOM_UPDATED":"ROOM_ACCESS_REVOKED",RoomTarget.of(room.id()),eventId,
-                        room.revision(),now,joined?room:Map.of("reason","NOT_A_MEMBER")));
-                if(!joined || room.status()==RoomStatus.CLOSED) binding.rooms().remove(room.id());
-            } catch(AuthFailure e) {
-                close(socket,new CloseStatus(4001,e.socketReason()));
-            } catch(org.springframework.dao.DataAccessException e) {
-                close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));
-            }
-        }
-    }
-    @EventListener
-    public void gameChanged(vn.edu.multigame.game.service.GameLifecycleEvent changed) {
-        var game=changed.snapshot(); String eventId=UUID.randomUUID().toString();
-        for(Binding binding:bindings.values()) {
-            if(!binding.rooms().contains(game.roomId())) continue;
-            var socket=binding.outbound();
-            try {
-                var user=users.requireActiveUser(socket.getPrincipal() instanceof Authentication auth?auth:null);
-                sessions.requireValid(binding.sessionId(),user.getId());
-                if(game.members().stream().noneMatch(m -> m.userId()==user.getId())) continue;
-                if(gameAccess.restricted(game.gameSessionId(),user.getId()))continue;
-                send(socket,new vn.edu.multigame.realtime.message.event.GameEvent(1,"EVENT",changed.type(),
-                        vn.edu.multigame.realtime.message.common.GameTarget.of(game.gameSessionId()),game.questionIndex()>0?game.questionIndex():null,
-                        eventId,game.revision(),game.serverTimeMs(),game.forPlayer(changed.players().get(user.getId()))));
-            } catch(AuthFailure failure) {
-                close(socket,new CloseStatus(4001,failure.socketReason()));
-            } catch(org.springframework.dao.DataAccessException failure) {
-                close(socket,new CloseStatus(1011,"AUTH_UNAVAILABLE"));
-            }
-        }
-        if(changed.terminalRoom()!=null && changed.type().equals("GAME_END")) roomChanged(new RoomChanged(changed.terminalRoom()));
     }
     @PreDestroy public void shutdown() {
         bindings.values().forEach(binding->close(binding.outbound(),CloseStatus.GOING_AWAY));

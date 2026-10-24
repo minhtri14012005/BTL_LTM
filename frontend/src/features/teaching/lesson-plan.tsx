@@ -16,6 +16,7 @@ import {
 import { NativeSelect, FormError } from "./teaching-shared";
 export function LessonPlan({
   initial,
+  classId,
   children,
   submitLabel,
   lockedModes,
@@ -24,6 +25,7 @@ export function LessonPlan({
   error,
 }: {
   initial?: Lesson;
+  classId?: number;
   children?: ReactNode;
   submitLabel?: string;
   lockedModes?: number[];
@@ -132,6 +134,7 @@ export function LessonPlan({
                 <BankChoice
                   key={slot.mode}
                   mode={slot.mode}
+                  classId={classId}
                   position={index + 1}
                   value={banks[index + 1] || 0}
                   change={(id) =>
@@ -191,11 +194,13 @@ function BankChoice({
   value,
   change,
   position,
+  classId,
 }: {
   mode: Mode;
   value: number;
   change: (id: number) => void;
   position: number;
+  classId?: number;
 }) {
   const [scope, setScope] = useState("MINE");
   const [page, setPage] = useState(0);
@@ -204,10 +209,10 @@ function BankChoice({
       api<{
         items: { id: number; title: string; visibility: string }[];
         totalElements: number;
-      }>(`/api/quizzes?mode=${mode}&scope=${scope}&size=100&page=${page}`, {
+      }>(`/api/quizzes?mode=${mode}&scope=${scope}&size=100&page=${page}&classId=${classId}`, {
         signal,
       }),
-    [mode, scope, page],
+    [mode, scope, page, classId],
   );
   return (
     <div className="space-y-3">

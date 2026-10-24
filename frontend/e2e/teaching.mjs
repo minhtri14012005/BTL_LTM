@@ -75,6 +75,7 @@ export async function verifyTeaching(browser, base, variant) {
     const admin = await context();
     await login(admin, "ui_admin");
     const offerings = await call(admin, "GET", "/api/admin/academic/offerings");
+    const subjectId = offerings[0].subjectId;
     const teacher = await context();
     await login(teacher, "ui_teacher");
     const me = await call(teacher, "GET", "/api/auth/me");
@@ -257,6 +258,7 @@ export async function verifyTeaching(browser, base, variant) {
     const source = await context();
     await login(source, sourceName);
     const quiz = await call(source, "POST", "/api/quizzes", {
+      subjectId,
       title: `Quiz Public ${tag}`,
       visibility: "PUBLIC",
       mode: "QUIZ",
@@ -286,7 +288,7 @@ export async function verifyTeaching(browser, base, variant) {
       );
       const saved =
         list.items.find((p) => p.title === pack.title) ||
-        (await call(teacher, "POST", "/api/quizzes", pack));
+        (await call(teacher, "POST", "/api/quizzes", {...pack, subjectId}));
       const preview = await call(
         source,
         "GET",
@@ -310,7 +312,7 @@ export async function verifyTeaching(browser, base, variant) {
       const scriptPath = fileURLToPath(
         new URL("../../scripts/Import-LearningBanks.ps1", import.meta.url),
       );
-      const code = `[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $fixtureCredential=[pscredential]::new(${literal(sourceName)},(ConvertTo-SecureString 'BrowserPass123!' -AsPlainText -Force)); & ${literal(scriptPath)} -BaseUrl ${literal(base)} -Credential $fixtureCredential;`;
+      const code = `[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $fixtureCredential=[pscredential]::new(${literal(sourceName)},(ConvertTo-SecureString 'BrowserPass123!' -AsPlainText -Force)); & ${literal(scriptPath)} -BaseUrl ${literal(base)} -Credential $fixtureCredential -SubjectId ${subjectId};`;
       const execute = promisify(execFile);
       const first = await execute(
         "powershell.exe",
@@ -346,6 +348,28 @@ export async function verifyTeaching(browser, base, variant) {
         `${variant}: Windows importer UTF-8 and duplicate-free second import PASS`,
       );
     }
+    const extraSubject = await call(admin, "POST", "/api/admin/academic/subjects", {code:`S_${tag}`,name:`Môn riêng ${tag}`});
+    const foreignTitle = `Khác môn ${tag}`;
+    await call(teacher, "POST", "/api/quizzes", {subjectId:extraSubject.id,title:foreignTitle,mode:"QUIZ",visibility:"PUBLIC",questions:[{content:"Foreign question",options:{A:"A",B:"B",C:"C",D:"D"},correctAnswer:"A"}]});
+    await page.goto(`${base}/app/giang_vien/banks?mode=QUIZ&scope=VISIBLE&q=${tag}`);
+    await expect(page.getByRole("button", {name:`Preview ${foreignTitle}`,exact:true})).toBeVisible();
+    await expect(page.getByRole("button", {name:`Preview ${quiz.title}`,exact:true})).toBeVisible();
+    await page.getByLabel("Lọc môn học").selectOption(String(extraSubject.id));
+    await expect(page.getByRole("button", {name:`Preview ${quiz.title}`,exact:true})).toHaveCount(0);
+    await page.getByLabel("Lọc môn học").selectOption(String(subjectId));
+    await expect(page.getByRole("button", {name:`Preview ${foreignTitle}`,exact:true})).toHaveCount(0);
+    await expect(page.getByRole("button", {name:`Preview ${quiz.title}`,exact:true})).toBeVisible();
+    await page.getByLabel("Lọc môn học").selectOption("");
+    await expect(page.getByRole("button", {name:`Preview ${foreignTitle}`,exact:true})).toBeVisible();
+    await page.goto(`${base}/app/giang_vien/banks?mode=FILL_BLANK&scope=MINE&subjectId=${subjectId}`);
+    await expect(page.getByRole("heading", {name: seeds.packs.filter(p=>p.mode==="FILL_BLANK").at(-1).title,exact:true})).toBeVisible();
+    for (const [layout,width,height] of [["desktop",1440,1000],["mobile",390,844]]) {
+      await page.setViewportSize({width,height});
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+      await page.screenshot({path:`.cache/subject-banks-${variant}-${layout}.png`,fullPage:true});
+    }
+    await page.setViewportSize({width:1440,height:1000});
+    console.log(`${variant}: subject catalog, combined bank filters, compact cards and responsive layout PASS`);
     async function createBank(mode, title) {
       await page.goto(`${base}/app/giang_vien/banks`);
       await page
@@ -354,7 +378,9 @@ export async function verifyTeaching(browser, base, variant) {
       await page
         .getByRole("button", { name: "Tạo bộ nội dung", exact: true })
         .click();
+      await page.getByLabel("Môn học", {exact: true}).selectOption(String(subjectId));
       await page.getByLabel("Tiêu đề nội dung", { exact: true }).fill(title);
+      if(mode === "FILL_BLANK") await page.screenshot({path:`.cache/subject-form-${variant}.png`,fullPage:true});
       if (mode === "FILL_BLANK") {
         await page
           .getByLabel("Nội dung câu 1", { exact: true })
@@ -433,6 +459,8 @@ export async function verifyTeaching(browser, base, variant) {
           .getByLabel(`Ngân sách trò ${p}`, { exact: true })
           .fill(String(p === 1 ? 20 : 40));
       }
+      await expect(page.getByRole("option", {name: `${foreignTitle} · PUBLIC`,exact:true})).toHaveCount(0);
+      if(lessonNumber === 1) await page.screenshot({path:`.cache/subject-lesson-setup-${variant}.png`,fullPage:true});
       await page
         .getByRole("button", { name: "Tạo buổi học", exact: true })
         .click();
@@ -1107,9 +1135,9 @@ export async function verifyTeaching(browser, base, variant) {
     await page
       .getByRole("button", { name: "Thêm mức Rank", exact: true })
       .click();
-    await page.getByLabel("Tên Rank 1", { exact: true }).fill("Tiên phong");
-    await page.getByLabel("Từ vị trí 1", { exact: true }).fill("1");
-    await page.getByLabel("Đến vị trí 1", { exact: true }).fill("4");
+    await page.getByLabel("Tên Rank mức 1", { exact: true }).fill("Tiên phong");
+    await page.getByLabel("Từ hạng mức 1", { exact: true }).fill("1");
+    await page.getByLabel("Đến hạng mức 1", { exact: true }).fill("4");
     await students[0].page.goto(
       `${base}/app/sinh_vien/boards?classId=${course.id}`,
     );
@@ -1139,7 +1167,7 @@ export async function verifyTeaching(browser, base, variant) {
     await page
       .getByRole("button", { name: "Import Rank", exact: true })
       .click();
-    await expect(page.getByLabel("Tên Rank 1", { exact: true })).toHaveValue(
+    await expect(page.getByLabel("Tên Rank mức 1", { exact: true })).toHaveValue(
       "Tiên phong",
     );
     await page.goto(`${classUrl}/scores`);

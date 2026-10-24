@@ -11,7 +11,7 @@ import vn.edu.multigame.lesson.dto.*;
 import vn.edu.multigame.realtime.message.command.LessonCommand;
 import vn.edu.multigame.realtime.idempotency.CommandFingerprint;
 import vn.edu.multigame.realtime.timer.ServerClock;
-import vn.edu.multigame.game.runtime.PhaseWindow;
+import vn.edu.multigame.realtime.timer.PhaseWindow;
 import vn.edu.multigame.realtime.session.Ingress;
 import vn.edu.multigame.questionbank.dto.response.StudentQuestion;
 
@@ -75,6 +75,9 @@ public class LessonRealtimeTransactions {
         var before=snapshot(caller,id);String type=command.type();var payload=command.payload();
         boolean teacher=java.util.Set.of("SET_ASSIGNMENT_DEADLINE","GRADE_ASSIGNMENT","FINALIZE_ASSIGNMENT","START_LESSON","START_LESSON_GAME","OPEN_LESSON_WINDOW","CLOSE_LESSON_WINDOW","CANCEL_LESSON_WINDOW").contains(type);
         boolean student=java.util.Set.of("ATTEND_LESSON","PARTICIPATE_LESSON_GAME","SUBMIT_LESSON_ACTION").contains(type);
+        // Existing participants may finish server-timed questions/submissions; admitting new
+        // participation waits for a valid teacher. Neither timers nor results are reset.
+        if(java.util.Set.of("ATTEND_LESSON","PARTICIPATE_LESSON_GAME").contains(type))memberships.requireStaff(before.lesson().courseClassId());
         if(teacher && user.getRole()!=UserRole.GIANG_VIEN || student && user.getRole()!=UserRole.SINH_VIEN) throw new LessonFailure(org.springframework.http.HttpStatus.FORBIDDEN,"ROLE_FORBIDDEN");
         String hash=fingerprints.of(type,"LESSON",id,null,payload);
         var prior=realtime.receipt(user.getId(),command.requestId());
@@ -94,9 +97,9 @@ public class LessonRealtimeTransactions {
                 if(deadline-now.epochMs()>Integer.MAX_VALUE)throw LessonFailure.conflict("INVALID_DEADLINE");
                 assignments.deadline(game.id(),deadline);if(draft){store.bump(id);break;}
                 long opened=Math.min(now.epochMs(),deadline-1);long token=expected+1;
-                realtime.open(id,game.id(),game.position(),token,1,opened,deadline);
+                realtime.open(id,game.id(),token,1,opened,deadline);
                 if(deadline<=now.epochMs()){realtime.close(id,token,"CLOSED");active=null;}
-                else active=PhaseWindow.open(1,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),deadline-now.epochMs());
+                else active=PhaseWindow.open(1,vn.edu.multigame.realtime.timer.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),deadline-now.epochMs());
                 store.bump(id);
             }
             case "GRADE_ASSIGNMENT" -> {
@@ -149,8 +152,8 @@ public class LessonRealtimeTransactions {
 
                 } else if(index!=1) throw LessonFailure.conflict("QUESTION_NOT_FOUND");
                 var now=clock.sample();long token=old.map(w->w.token()+1).orElse(1L);
-                active=PhaseWindow.open(index,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),objective(game.mode())?game.durationMs():payload.path("durationMs").longValue());
-                realtime.open(id,game.id(),position,token,index,active.openedEpochMs(),active.deadlineEpochMs());if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT)assignments.deadline(game.id(),active.deadlineEpochMs());store.bump(id);
+                active=PhaseWindow.open(index,vn.edu.multigame.realtime.timer.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),payload.path("durationMs").longValue());
+                realtime.open(id,game.id(),token,index,active.openedEpochMs(),active.deadlineEpochMs());if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT)assignments.deadline(game.id(),active.deadlineEpochMs());store.bump(id);
             }
             case "CLOSE_LESSON_WINDOW","CANCEL_LESSON_WINDOW" -> {
                 var window=realtime.window(id).orElseThrow(()->LessonFailure.conflict("WINDOW_NOT_OPEN"));
@@ -261,8 +264,8 @@ public class LessonRealtimeTransactions {
     private PhaseWindow openWindowAt(long lesson,LessonView.Game game,int position,int questionIndex,long previousToken) {
         var now=clock.sample();long token=previousToken+1;
         if(questionIndex>1) quiz.open(game.id(),questionIndex);
-        var active=PhaseWindow.open(questionIndex,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),game.durationMs());
-        realtime.open(lesson,game.id(),position,token,questionIndex,active.openedEpochMs(),active.deadlineEpochMs());
+        var active=PhaseWindow.open(questionIndex,vn.edu.multigame.realtime.timer.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),game.durationMs());
+        realtime.open(lesson,game.id(),token,questionIndex,active.openedEpochMs(),active.deadlineEpochMs());
         store.bump(lesson);
         return active;
     }

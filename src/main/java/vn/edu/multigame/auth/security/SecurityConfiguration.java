@@ -44,7 +44,6 @@ public class SecurityConfiguration {
             access.requestMatchers(HttpMethod.GET, "/", "/index.html", "/login", "/app", "/app/**", "/assets/**",
                     "/api/system/status", "/api/system/ready").permitAll().requestMatchers("/error").permitAll();
             if (mysql) {
-                access.requestMatchers(HttpMethod.POST,"/api/rooms","/api/rooms/*/start","/api/rooms/*/open","/api/games/*/cancel").denyAll();
                 access.requestMatchers(HttpMethod.GET,"/api/learning/**").authenticated();
                 access.requestMatchers("/api/teaching/classes/*/rank-config","/api/teaching/classes/*/rank-config/**").hasRole("GIANG_VIEN");
                 access.requestMatchers("/api/admin/academic/**").hasRole("ADMIN");
@@ -53,7 +52,8 @@ public class SecurityConfiguration {
                 access.requestMatchers("/api/student/classes","/api/student/classes/**").hasRole("SINH_VIEN");
                 access.requestMatchers("/api/teaching/classes/*/room","/api/teaching/classes/*/members","/api/teaching/classes/*/members/**").hasRole("GIANG_VIEN");
                 access.requestMatchers(HttpMethod.GET,"/api/teaching/classes","/api/teaching/classes/*").hasRole("GIANG_VIEN");
-                access.requestMatchers(HttpMethod.POST,"/api/admin/teachers","/api/admin/users/*/expel","/api/admin/users/*/restore","/api/admin/games/*/kick","/api/admin/users/*/temporary-ban","/api/admin/users/*/ban","/api/admin/users/*/unban","/api/admin/rooms/*/close-orphan").hasRole("ADMIN")
+                access.requestMatchers("/api/admin/teachers/**").hasRole("ADMIN");
+                access.requestMatchers(HttpMethod.POST,"/api/admin/teachers","/api/admin/users/*/expel","/api/admin/users/*/restore","/api/admin/users/*/ban","/api/admin/users/*/unban").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,"/api/admin/**","/admin","/admin/**","/ws/admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**","/admin","/admin/**","/ws/admin").denyAll();
                 access.requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
@@ -63,18 +63,9 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, "/api/auth/profile").authenticated();
                 access.requestMatchers(HttpMethod.GET,"/api/quizzes","/api/quizzes/*","/api/quizzes/*/preview").hasRole("GIANG_VIEN")
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/quizzes", "/api/quizzes/*/images", "/api/quizzes/images/drafts", "/api/quizzes/*/videos", "/api/quizzes/videos/drafts").hasRole("GIANG_VIEN")
+                        .requestMatchers(HttpMethod.POST, "/api/quizzes", "/api/quizzes/*/images", "/api/quizzes/images/drafts").hasRole("GIANG_VIEN")
                         .requestMatchers(HttpMethod.PUT, "/api/quizzes/*").hasRole("GIANG_VIEN")
                         .requestMatchers(HttpMethod.DELETE, "/api/quizzes/*").hasRole("GIANG_VIEN");
-                access.requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/*/open", "/api/rooms/*/close", "/api/rooms/*/start").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/rooms/*").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/*").authenticated();
-                access.requestMatchers(HttpMethod.GET,"/api/games/*/snapshot").authenticated();
-                access.requestMatchers(HttpMethod.GET,"/api/games/*/awards","/api/awards/policy").authenticated();
-                access.requestMatchers(HttpMethod.GET,"/api/profiles/me","/api/profiles/me/awards","/api/profiles/*","/api/leaderboard").authenticated();
-                access.requestMatchers(HttpMethod.GET,"/api/games/history","/api/games/history/*").authenticated()
-                        .requestMatchers(HttpMethod.POST,"/api/games/*/cancel").authenticated();
             }
             access.anyRequest().denyAll();
         });

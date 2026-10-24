@@ -1,5 +1,8 @@
-# Copy to config/application-local.properties (ignored by Git).
-# Supply only local credentials. Never commit the filled file.
+# Optional alternative to the shared config/application-local.properties.
+# Copy this file only when you want to replace the provided local setup.
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=quizz
 DB_USER=quiz_app
 DB_PASSWORD=
 
@@ -10,8 +13,3 @@ DB_PASSWORD=
 
 # Optional immutable image storage; keep the same directory when restarting.
 # QUIZ_IMAGE_DIRECTORY=./data/quiz-images
-# Only used with --spring.profiles.active=mysql,sample-data; supply a demo password.
-# QUIZ_DEMO_PASSWORD=
-
-# SONG: immutable local MP4; back up with DB.
-QUIZ_VIDEO_DIRECTORY=./data/quiz-videos

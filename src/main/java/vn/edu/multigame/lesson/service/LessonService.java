@@ -94,7 +94,7 @@ public class LessonService {
                 if(from.mode()!=to.mode())continue;
                 store.configure(to.id(),to.budget(),from.durationMs(),from.questionCount(),from.wheelCells(),from.selectedCount());
                 store.gameVisibility(to.id(),from.visible());
-                content.get(from.id()).ifPresent(c->content.select(to.id(),c.sourceQuizId(),c.sourceRevision(),c.mode(),c.title(),c.questions()));
+                content.get(from.id()).ifPresent(c->content.select(to.id(),c.sourceQuizId(),c.sourceRevision(),c.mode(),c.title(),c.questions(),c.subjectId()));
             }
         }
         if(input.gameSettings()!=null)for(var configuration:input.gameSettings()) {
@@ -165,12 +165,13 @@ public class LessonService {
         settings.initializeWheel(lesson.courseClassId(),game);
         content.get(game.id()).ifPresent(c->settings.contentChanged(id,game,c.questions().size()));
         store.gameStatus(game.id(),"RUNNING");
-        if(game.mode()==LessonMode.ASSIGNMENT)assignments.deadline(game.id()).ifPresent(deadline->{long now=clock.sample().epochMs();long token=realtime.window(id).map(w->w.token()+1).orElse(1L);realtime.open(id,game.id(),position,token,1,Math.min(now,deadline-1),deadline);if(deadline<=now)realtime.close(id,token,"CLOSED");});
+        if(game.mode()==LessonMode.ASSIGNMENT)assignments.deadline(game.id()).ifPresent(deadline->{long now=clock.sample().epochMs();long token=realtime.window(id).map(w->w.token()+1).orElse(1L);realtime.open(id,game.id(),token,1,Math.min(now,deadline-1),deadline);if(deadline<=now)realtime.close(id,token,"CLOSED");});
         store.bump(id);return changed(view(store.lesson(id,false),0));
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
     public LessonView attend(Authentication caller,long id,Integer position) {
         lockCaller(caller);var lesson=store.lesson(id,true);student(caller,lesson.courseClassId());
+        rooms.requireStaff(lesson.courseClassId());
         if(!lesson.visible()) throw new LessonFailure(HttpStatus.NOT_FOUND,"LESSON_NOT_FOUND");
         if(!lesson.status().equals("RUNNING")) throw LessonFailure.conflict("LESSON_NOT_RUNNING");
         long student=user(caller);

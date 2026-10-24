@@ -16,6 +16,7 @@ import vn.edu.multigame.realtime.idempotency.CommandFingerprint;
 
 @Service @Profile("mysql") @Transactional(readOnly=true)
 public class ClassMembershipService {
+    @org.springframework.beans.factory.annotation.Autowired private com.fasterxml.jackson.databind.ObjectMapper json;
     private final org.springframework.context.ApplicationEventPublisher events;
     private final ClassRoomStore rooms;
     private final AuthService auth;
@@ -43,7 +44,9 @@ public class ClassMembershipService {
         accounts.lock(Math.min(actor,target));
         if(actor!=target) accounts.lock(Math.max(actor,target));
         auth.requireActiveUser(caller); // Recheck the epoch after waiting for either account lock.
-        accounts.requireAvailable(target);
+        var targetState=accounts.state(target);
+        if(actor==target)accounts.requireAvailable(targetState);
+        else if(targetState.deletedAtMs()!=null || targetState.banned(System.currentTimeMillis()))throw RoomFailure.conflict("STUDENT_ACCOUNT_UNAVAILABLE");
     }
     public List<ClassMembershipView> mine(Authentication caller) {return rooms.mine(student(caller));}
     public List<ClassMembershipView> roster(Authentication caller,long classId) {return rooms.roster(teacherRoom(caller,classId).id());}
@@ -60,6 +63,7 @@ public class ClassMembershipService {
         return room;
     }
     private boolean replay(long actor,String request,String hash) {
+        if(rooms.batch(actor,request).isPresent())throw RoomFailure.conflict("REQUEST_ID_REUSED");
         var prior=rooms.receipt(actor,request);
         if(prior.isPresent() && !prior.get().equals(hash)) throw RoomFailure.conflict("REQUEST_ID_REUSED");
         return prior.isPresent();
@@ -78,13 +82,13 @@ public class ClassMembershipService {
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
     public ClassMembershipView decide(Authentication caller,long classId,long student,String command,Decision input) {
-        var room=teacherRoom(caller,classId);lock(caller,student);
+        var room=teacherRoom(caller,classId);lock(caller,student);teacherRoom(caller,classId);
         long teacher=((AuthPrincipal)caller.getPrincipal()).userId();
         var member=found(rooms.member(room.id(),student));
         String hash=fingerprints.of(command,"CLASS",classId,student,input);
         // A replay returns current authority, so an earlier APPROVED receipt cannot resurrect removal.
         if(replay(teacher,input.requestId(),hash)) return member;
-        allowed(student,room);
+        if(!command.equals("RESTORE"))allowed(student,room);
         if(member.revision()!=input.revision()) throw RoomFailure.conflict("STALE_REVISION");
         long now=Math.max(System.currentTimeMillis(),member.requestedAtMs());
         switch(command) {
@@ -96,9 +100,42 @@ public class ClassMembershipService {
                 if(!member.status().equals("APPROVED")) throw RoomFailure.conflict("MEMBERSHIP_NOT_APPROVED");
                 rooms.exclude(student,room,teacher,now);
             }
+            case "RESTORE" -> {
+                if(!member.status().equals("REMOVED"))throw RoomFailure.conflict("MEMBERSHIP_NOT_REMOVED");
+                rooms.restore(student,room,teacher);
+            }
             default -> throw RoomFailure.invalid();
         }
         var result=found(rooms.member(room.id(),student));rooms.record(teacher,input.requestId(),hash,command,result,now);events.publishEvent(new ClassMembershipChanged(student));
+        return result;
+    }
+    public record Skipped(long studentId,String reason){}
+    public record BulkResult(int approved,int invalid,List<Skipped> skipped){}
+    @Transactional(timeout=20,isolation=Isolation.READ_COMMITTED)
+    public BulkResult approveAll(Authentication caller,long classId,String request) {
+        var room=teacherRoom(caller,classId);long teacher=((AuthPrincipal)caller.getPrincipal()).userId();
+        var candidates=rooms.roster(room.id()).stream().filter(m->m.status().equals("PENDING")).map(ClassMembershipView::studentId).toList();
+        var ids=new TreeSet<>(candidates);ids.add(teacher);for(long id:ids)accounts.lock(id);
+        teacherRoom(caller,classId);
+        String hash=fingerprints.of("APPROVE_ALL","CLASS",classId,null,request);
+        if(rooms.receipt(teacher,request).isPresent())throw RoomFailure.conflict("REQUEST_ID_REUSED");
+        var prior=rooms.batch(teacher,request);
+        if(prior.isPresent()) {
+            if(!hash.equals(prior.get().get("fingerprint")))throw RoomFailure.conflict("REQUEST_ID_REUSED");
+            try{return json.readValue((String)prior.get().get("result_json"),BulkResult.class);}catch(java.io.IOException e){throw new IllegalStateException(e);}
+        }
+        int approved=0;var skipped=new ArrayList<Skipped>();
+        for(long student:candidates) {
+            var member=found(rooms.member(room.id(),student));String reason=null;
+            if(!member.status().equals("PENDING"))reason="ALREADY_REVIEWED";
+            else if(rooms.excluded(student,room))reason="SUBJECT_YEAR_REMOVED";
+            else {var state=accounts.state(student);if(state.deletedAtMs()!=null || state.banned(System.currentTimeMillis()))reason="ACCOUNT_UNAVAILABLE";}
+            if(reason!=null){skipped.add(new Skipped(student,reason));continue;}
+            rooms.review(member.id(),"APPROVED",teacher,Math.max(System.currentTimeMillis(),member.requestedAtMs()));approved++;
+            events.publishEvent(new ClassMembershipChanged(student));
+        }
+        var result=new BulkResult(approved,skipped.size(),List.copyOf(skipped));
+        try{rooms.recordBatch(teacher,request,classId,hash,json.writeValueAsString(result));}catch(java.io.IOException e){throw new IllegalStateException(e);}
         return result;
     }
 }

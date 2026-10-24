@@ -28,7 +28,6 @@ public class AuthService {
             throw new AuthFailure(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "Mật khẩu vượt quá 72 byte UTF-8.");
         }
     }
-    public <T> T executeAs(Authentication authentication,java.util.function.Supplier<T> operation){return access.as(authentication,operation);}
     @Transactional
     public UserResponse register(RegisterRequest request) {
         validatePassword(request.password());

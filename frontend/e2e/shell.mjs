@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import { verifyAdmin } from "./admin.mjs";
 import { verifyTeaching } from "./teaching.mjs";
+import { verifyAccountManagement } from "./account-management.mjs";
 
 const [backend, classId] = process.argv.slice(2);
 if (
@@ -13,11 +14,15 @@ if (
 )
   throw new Error("Requires the owned baseline HTTP fixture");
 const browser = await chromium.launch({ headless: true });
+const managementOnly = process.env.UI_MANAGEMENT_ONLY === "1";
 let vite;
 try {
-  await verify(backend, "packaged");
-  await verifyAdmin(browser, backend, "packaged");
-  await verifyTeaching(browser, backend, "packaged");
+  if (!managementOnly) {
+    await verify(backend, "packaged");
+    await verifyAdmin(browser, backend, "packaged");
+    await verifyTeaching(browser, backend, "packaged");
+  }
+  await verifyAccountManagement(browser, backend, "packaged");
   process.env.BACKEND_URL = backend;
   vite = await createServer({
     configFile: resolve("frontend/vite.config.ts"),
@@ -25,11 +30,14 @@ try {
     server: { host: "127.0.0.1", port: 5173, strictPort: true },
   });
   await vite.listen();
-  await verify("http://127.0.0.1:5173", "vite");
-  await verifyAdmin(browser, "http://127.0.0.1:5173", "vite");
-  await verifyTeaching(browser, "http://127.0.0.1:5173", "vite");
+  if (!managementOnly) {
+    await verify("http://127.0.0.1:5173", "vite");
+    await verifyAdmin(browser, "http://127.0.0.1:5173", "vite");
+    await verifyTeaching(browser, "http://127.0.0.1:5173", "vite");
+  }
+  await verifyAccountManagement(browser, "http://127.0.0.1:5173", "vite");
   console.log(
-    "Frontend browser acceptance PASS: packaged + Vite, desktop + mobile, real HTTP/session/CSRF/WS.",
+    `${managementOnly ? "Management" : "Frontend"} browser acceptance PASS: packaged + Vite, desktop + mobile, real HTTP/session/CSRF/WS.`,
   );
 } finally {
   await vite?.close();

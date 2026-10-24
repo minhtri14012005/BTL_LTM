@@ -120,7 +120,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","FILL_BLANK","title","Fill blank","budget",40),Map.of("mode","QUIZ","title","Quiz","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","FILL_BLANK","visibility","PRIVATE","questions",List.of(
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","FILL_BLANK","visibility","PRIVATE","questions",List.of(
                 Map.of("content","L\u1ecbch s\u1eed \u0110\u1ea3ng: {{blank}}","acceptedAnswers",List.of("\u0110\u1ea3ng C\u1ed9ng s\u1ea3n Vi\u1ec7t Nam","\u0110CSVN"),"matchingPolicy","CASE_INSENSITIVE"),
                 Map.of("content","Java: {{blank}} loads classes","acceptedAnswers",List.of("ClassLoader","java.lang.ClassLoader"),"matchingPolicy","EXACT"),
                 Map.of("content","L\u1ecbch s\u1eed: {{blank}}","acceptedAnswers",List.of("H\u1ed3 Ch\u00ed Minh"),"matchingPolicy","EXACT"))),201).path("id").asLong();
@@ -180,10 +180,6 @@ public class LessonRealtimeChecks {
             assertThat(jdbc.queryForObject("SELECT status FROM lesson_game WHERE id=?",String.class,game)).isEqualTo("COMPLETED");
             for(int i=0;i<3;i++)assertThat(jdbc.queryForObject("SELECT score FROM lesson_game_score WHERE game_id=? AND student_id=?",java.math.BigDecimal.class,game,ids.get(i))).isEqualByComparingTo(new String[]{"40.00","13.33","0.00"}[i]);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_answer WHERE game_id=?",Integer.class,game)).isEqualTo(7);
-            var legacy=JSON.createObjectNode().put("v",1).put("kind","COMMAND").put("requestId",UUID.randomUUID().toString()).put("type","USE_SPIN").put("questionIndex",1);
-            legacy.set("target",JSON.valueToTree(Map.of("kind","GAME","id",1)));legacy.set("payload",JSON.createObjectNode());
-            host.socket.sendText(legacy.toString(),true).get(5,TimeUnit.SECONDS);
-            assertThat(host.await(n->n.path("kind").asText().equals("ERROR")).path("code").asText()).isEqualTo("LEGACY_GAME_DISABLED");
             assertThat(students.getFirst().send("POST","/api/rooms/1/start",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"questionCount",1),true).statusCode()).isEqualTo(403);
         }finally{wires.forEach(Wire::close);}
     }
@@ -278,7 +274,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40),Map.of("mode","QUIZ","title","Quiz","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain network sessions"))),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain network sessions"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
         jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
@@ -361,7 +357,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,10).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,10).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
         jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
@@ -419,10 +415,6 @@ public class LessonRealtimeChecks {
             assertThat(jdbc.queryForObject("SELECT status FROM lesson_game WHERE id=?",String.class,game)).isEqualTo("COMPLETED");
             for(int i=0;i<3;i++)assertThat(jdbc.queryForObject("SELECT score FROM lesson_game_score WHERE game_id=? AND student_id=?",java.math.BigDecimal.class,game,ids.get(i))).isEqualByComparingTo(new String[]{"40.00","4.00","0.00"}[i]);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_answer WHERE game_id=?",Integer.class,game)).isEqualTo(21);
-            var legacy=JSON.createObjectNode().put("v",1).put("kind","COMMAND").put("requestId",UUID.randomUUID().toString()).put("type","USE_SPIN").put("questionIndex",1);
-            legacy.set("target",JSON.valueToTree(Map.of("kind","GAME","id",1)));legacy.set("payload",JSON.createObjectNode());
-            host.socket.sendText(legacy.toString(),true).get(5,TimeUnit.SECONDS);
-            assertThat(host.await(n->n.path("kind").asText().equals("ERROR")).path("code").asText()).isEqualTo("LEGACY_GAME_DISABLED");
             assertThat(students.getFirst().send("POST","/api/rooms/1/start",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"questionCount",1),true).statusCode()).isEqualTo(403);
             var profile=students.getFirst().call("GET","/api/learning/profile",null,200);
             assertThat(profile.path("hoTen").asText()).isEqualTo("perfect_a");assertThat(profile.path("maSinhVien").asText()).isEqualTo("PERFECT_A");
@@ -434,7 +426,7 @@ public class LessonRealtimeChecks {
             // A one-question Quiz cannot add another PERFECT, even with full marks and three players.
             var secondPlan=new HashMap<String,Object>(plan);secondPlan.put("requestId",UUID.randomUUID().toString());
             long single=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",secondPlan,201).path("id").asLong();
-            long oneBank=teacher.call("POST","/api/quizzes",Map.of("title","One question","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","One question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
+            long oneBank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","One question","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","One question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
             teacher.call("POST","/api/teaching/lessons/"+single+"/games/2/content",Map.of("quizId",oneBank,"lessonRevision",0),200);
             jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",single);
             teacher.call("PUT","/api/teaching/lessons/"+single+"/visibility",Map.of("revision",1,"visible",true),200);
@@ -495,7 +487,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,7).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,7).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
         jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
@@ -553,10 +545,6 @@ public class LessonRealtimeChecks {
             assertThat(jdbc.queryForObject("SELECT status FROM lesson_game WHERE id=?",String.class,game)).isEqualTo("COMPLETED");
             for(int i=0;i<3;i++)assertThat(jdbc.queryForObject("SELECT score FROM lesson_game_score WHERE game_id=? AND student_id=?",java.math.BigDecimal.class,game,ids.get(i))).isEqualByComparingTo(new String[]{"40.00","5.71","0.00"}[i]);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_answer WHERE game_id=?",Integer.class,game)).isEqualTo(15);
-            var legacy=JSON.createObjectNode().put("v",1).put("kind","COMMAND").put("requestId",UUID.randomUUID().toString()).put("type","USE_SPIN").put("questionIndex",1);
-            legacy.set("target",JSON.valueToTree(Map.of("kind","GAME","id",1)));legacy.set("payload",JSON.createObjectNode());
-            host.socket.sendText(legacy.toString(),true).get(5,TimeUnit.SECONDS);
-            assertThat(host.await(n->n.path("kind").asText().equals("ERROR")).path("code").asText()).isEqualTo("LEGACY_GAME_DISABLED");
             assertThat(students.getFirst().send("POST","/api/rooms/1/start",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"questionCount",1),true).statusCode()).isEqualTo(403);
         }finally{wires.forEach(Wire::close);}
     }
@@ -576,7 +564,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Public question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Public question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
         jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
@@ -649,7 +637,7 @@ public class LessonRealtimeChecks {
         }
         var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Secret draft title","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40),Map.of("mode","FILL_BLANK","title","Assignment","budget",40)));
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Public question"))),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Public question"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
         jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
         var wires=new ArrayList<Wire>();
@@ -787,8 +775,8 @@ public class LessonRealtimeChecks {
         var editPlan=new HashMap<String,Object>(plan);editPlan.put("title","Edited third");
         teacher.call("PUT",thirdPath,Map.of("revision",revision,"plan",editPlan),200);
         assertThat(teacher.call("GET",thirdPath,null,200).path("number").asInt()).isEqualTo(3);
-        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Managed Quiz","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Managed question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
-        long fill=teacher.call("POST","/api/quizzes",Map.of("title","Managed Fill","mode","FILL_BLANK","visibility","PRIVATE","questions",List.of(Map.of("content","Managed {{blank}}","acceptedAnswers",List.of("answer","alias"),"matchingPolicy","EXACT"))),201).path("id").asLong();
+        long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Managed Quiz","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Managed question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
+        long fill=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Managed Fill","mode","FILL_BLANK","visibility","PRIVATE","questions",List.of(Map.of("content","Managed {{blank}}","acceptedAnswers",List.of("answer","alias"),"matchingPolicy","EXACT"))),201).path("id").asLong();
         var runtime=context.getBean(LessonRuntime.class);var service=context.getBean(LessonService.class);var hostAuth=auth(context,"teacher_test");
         // Complete one source with automatic deadlines and no student answers at all.
         long source=lessons.getFirst();String sourcePath="/api/teaching/lessons/"+source;
@@ -857,7 +845,7 @@ public class LessonRealtimeChecks {
         teacher.call("PUT",targetPath+"/games/2/configuration",Map.of("revision",targetView.path("revision").asLong(),"questionCount",1,"durationMs",15000,"budget",40),200);
         assertThat(teacher.call("GET",sourcePath,null,200).path("games").get(1).path("durationMs").asInt()).isEqualTo(1000);
         // Assignment copies retain their prompt/budget, but never reuse an old runtime deadline.
-        long assignmentBank=teacher.call("POST","/api/quizzes",Map.of("title","Copy assignment","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain the lesson."))),201).path("id").asLong();
+        long assignmentBank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title","Copy assignment","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain the lesson."))),201).path("id").asLong();
         var assignmentPlan=new HashMap<String,Object>(plan);assignmentPlan.put("requestId",UUID.randomUUID().toString());
         assignmentPlan.put("slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40)));
         long assignmentSource=teacher.call("POST",collection,assignmentPlan,201).path("id").asLong();String assignmentPath="/api/teaching/lessons/"+assignmentSource;
@@ -925,7 +913,7 @@ public class LessonRealtimeChecks {
         for(int position:List.of(2,3)){
             String mode=position==2?"QUIZ":"FILL_BLANK";
             Object question=position==2?Map.of("content","Private quiz prompt","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"):Map.of("content","Private {{blank}} prompt","acceptedAnswers",List.of("Exact","Alias"),"matchingPolicy","EXACT");
-            long bank=teacher.call("POST","/api/quizzes",Map.of("title",mode+" settings","mode",mode,"visibility","PRIVATE","questions",java.util.Collections.nCopies(20,question)),201).path("id").asLong();
+            long bank=teacher.call("POST","/api/quizzes",Map.of("subjectId",1,"title",mode+" settings","mode",mode,"visibility","PRIVATE","questions",java.util.Collections.nCopies(20,question)),201).path("id").asLong();
             long rev=teacher.call("GET",path,null,200).path("revision").asLong();
             teacher.call("POST",path+"/games/"+position+"/content",Map.of("quizId",bank,"lessonRevision",rev),200);
             rev=teacher.call("GET",path,null,200).path("revision").asLong();

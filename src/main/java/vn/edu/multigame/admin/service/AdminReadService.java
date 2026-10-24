@@ -20,9 +20,7 @@ public class AdminReadService {
     public void requireAccess(Authentication auth,String sessionId) {
         var user=users.requireAdmin(auth);sessions.requireValid(sessionId,user.getId());
     }
-    public java.util.List<AdminPage.KickTarget> players(Authentication auth,String session,long game){requireAccess(auth,session);if(game<1)throw new AuthFailure(HttpStatus.BAD_REQUEST,"INVALID_REQUEST","Game không hợp lệ.");return reads.players(game);}
     private void page(int page,int size){if(page<0 || size<1 || size>100 || (long)page*size>Integer.MAX_VALUE)throw new AuthFailure(HttpStatus.BAD_REQUEST,"INVALID_REQUEST","Phân trang không hợp lệ.");}
-    public AdminPage<AdminPage.User> users(Authentication auth,String sessionId,int page,int size){requireAccess(auth,sessionId);page(page,size);return reads.users(page,size);}
     public AdminPage<AdminPage.User> users(Authentication auth,String sessionId,int page,int size,vn.edu.multigame.user.enums.UserRole role,String query,String status){
         requireAccess(auth,sessionId);page(page,size);
         String q=query==null?"":query.strip();
@@ -30,6 +28,4 @@ public class AdminReadService {
             throw new AuthFailure(HttpStatus.BAD_REQUEST,"INVALID_REQUEST","Bộ lọc tài khoản không hợp lệ.");
         return reads.users(page,size,role,q,status);
     }
-    public AdminPage<AdminPage.Game> games(Authentication auth,String sessionId,int page,int size){requireAccess(auth,sessionId);page(page,size);return reads.activeGames(page,size);}
-    public AdminPage<AdminPage.OrphanRoom> orphans(Authentication auth,String sessionId,int page,int size){requireAccess(auth,sessionId);page(page,size);return reads.orphanRooms(page,size);}
 }

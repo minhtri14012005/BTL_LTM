@@ -17,4 +17,10 @@ public class ClassMembershipNotifier {
             sockets.sendToUser(event.studentId(),message,()->true);
         }
     }
+    @TransactionalEventListener public void staffing(ClassStaffingChanged event){
+        var room=rooms.forClass(event.classId()).orElseThrow();
+        var message=Map.of("v",1,"kind","EVENT","type","CLASS_STAFFING_UPDATED","target",Map.of("kind","CLASS","id",event.classId()));
+        for(var member:rooms.roster(room.id()))sockets.sendToUser(member.studentId(),message,()->true);
+        for(long teacher:rooms.teachers(event.classId()))sockets.sendToUser(teacher,message,()->rooms.assigned(event.classId(),teacher));
+    }
 }

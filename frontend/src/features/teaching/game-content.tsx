@@ -12,6 +12,7 @@ import {
   type Lesson,
 } from "./teaching-api";
 import { useTeachingAction, FormError, Notice } from "./teaching-shared";
+import { BankIdentity, bankDisplayTitle } from "./bank-identity";
 import { QuestionEditor, QuestionPreview } from "./question-editor";
 export function GameContent({
   lesson,
@@ -68,6 +69,7 @@ export function GameContent({
         <>
           {resource.data ? (
             <>
+              <p className="text-sm font-medium text-primary">{resource.data.subjectName}</p>
               <Notice>
                 BẢN SAO TRONG TRÒ · Ngân hàng nguồn #
                 {resource.data.sourceQuizId}. Sửa ở đây chỉ đổi snapshot của trò
@@ -145,6 +147,7 @@ export function GameContent({
           {choosing && game.status === "READY" && (
             <SourcePicker
               mode={game.mode}
+              classId={lesson.courseClassId}
               pending={busy}
               apply={async (bank) => {
                 await action.run(async () => {
@@ -169,8 +172,10 @@ function SourcePicker({
   mode,
   pending,
   apply,
+  classId,
 }: {
   mode: string;
+  classId: number;
   pending: boolean;
   apply: (bank: Bank) => Promise<void>;
 }) {
@@ -182,10 +187,10 @@ function SourcePicker({
   const resource = useResource(
     (signal) =>
       api<{ items: Bank[]; totalElements: number }>(
-        `/api/quizzes?${new URLSearchParams({ mode, scope: "VISIBLE", q: search, page: String(page), size: "20" })}`,
+        `/api/quizzes?${new URLSearchParams({ mode, classId: String(classId), scope: "VISIBLE", q: search, page: String(page), size: "20" })}`,
         { signal },
       ),
-    [mode, search, page],
+    [mode, classId, search, page],
   );
   return (
     <Card className="space-y-4 bg-accent/20 p-4">
@@ -223,9 +228,11 @@ function SourcePicker({
                 key={bank.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-3"
               >
-                <span>
-                  {bank.title} · {bank.visibility} · {bank.questionCount} câu/đề
-                </span>
+                <div className="min-w-0 space-y-2">
+                  <BankIdentity bank={bank} />
+                  <p className="break-words font-semibold">{bankDisplayTitle(bank.title)}</p>
+                  <p className="text-xs text-muted-foreground">{bank.questionCount} {bank.mode === "ASSIGNMENT" ? "đề bài" : "câu"}</p>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"

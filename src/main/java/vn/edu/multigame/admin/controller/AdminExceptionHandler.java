@@ -12,7 +12,7 @@ import vn.edu.multigame.auth.service.AuthFailure;
 public class AdminExceptionHandler {
     @ExceptionHandler(AuthFailure.class) ResponseEntity<AuthError> auth(AuthFailure e){return error(e.status(),e.code(),e.getMessage());}
     @ExceptionHandler(vn.edu.multigame.room.service.RoomFailure.class) ResponseEntity<AuthError> room(vn.edu.multigame.room.service.RoomFailure e){return error(e.status(),e.code(),e.getMessage());}
-    @ExceptionHandler(vn.edu.multigame.game.service.GameFailure.class) ResponseEntity<AuthError> game(vn.edu.multigame.game.service.GameFailure e){return error(e.status(),e.getMessage(),e.getMessage());}
+    @ExceptionHandler(vn.edu.multigame.common.util.OperationFailure.class) ResponseEntity<AuthError> game(vn.edu.multigame.common.util.OperationFailure e){return error(e.status(),e.getMessage(),e.getMessage());}
     @ExceptionHandler({org.springframework.web.bind.MethodArgumentNotValidException.class,org.springframework.http.converter.HttpMessageNotReadableException.class}) ResponseEntity<AuthError> body(Exception e){return error(HttpStatus.BAD_REQUEST,"INVALID_REQUEST","Dữ liệu quản trị không hợp lệ.");}
     @ExceptionHandler(DataAccessException.class)
     ResponseEntity<AuthError> unavailable(DataAccessException e) {

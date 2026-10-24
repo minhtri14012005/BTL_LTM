@@ -18,13 +18,13 @@ public class AdminSanctionController {
     @PostMapping({"/{id}/ban","/{id}/expel"}) ResponseEntity<SanctionResponse> indefinite(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"INDEFINITE",request);}
     @PostMapping({"/{id}/unban","/{id}/restore"}) ResponseEntity<SanctionResponse> unban(Authentication auth,@PathVariable long id,@Valid @RequestBody SanctionRequest request){return apply(auth,id,"UNBAN",request);}
     private ResponseEntity<SanctionResponse> apply(Authentication auth,long id,String kind,SanctionRequest request){
-        if(id<=0)throw vn.edu.multigame.game.service.GameFailure.conflict("USER_UNAVAILABLE");
+        if(id<=0)throw vn.edu.multigame.common.util.OperationFailure.conflict("USER_UNAVAILABLE");
         String hash=fingerprints.of(kind,"ACCOUNT",id,null,request);
         try{
             var result=transactions.apply(auth,id,kind,request,hash);
             if(kind.equals("INDEFINITE")) sessions.revokeThrough(id,result.current().epoch(),"ACCOUNT_EXPELLED");
             return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(result);
         }
-        catch(org.springframework.dao.DuplicateKeyException concurrentRequest){throw vn.edu.multigame.game.service.GameFailure.conflict("REQUEST_ID_REUSED");}
+        catch(org.springframework.dao.DuplicateKeyException concurrentRequest){throw vn.edu.multigame.common.util.OperationFailure.conflict("REQUEST_ID_REUSED");}
     }
 }
