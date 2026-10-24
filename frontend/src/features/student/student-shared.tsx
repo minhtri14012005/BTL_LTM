@@ -1,16 +1,14 @@
-import { useEffect, type ReactNode } from "react";
-import { Link } from "react-router-dom";
-import { realtime } from "@/lib/session";
-import { ApiError } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-layout";
 import { NativeSelect as Select } from "@/features/admin/admin-shared";
-import { useConnection } from "@/lib/session";
+import { ApiError } from "@/lib/api";
+import { realtime, useConnection } from "@/lib/session";
+import { useEffect, type ReactNode } from "react";
 export {
-  useTeachingAction as useStudentAction,
   FormError,
-  Textarea,
   Notice,
   ServerCountdown,
+  Textarea,
+  useTeachingAction as useStudentAction,
 } from "@/features/teaching/teaching-shared";
 export function NativeSelect({
   label,
@@ -49,18 +47,7 @@ export function StudentFrame({
 }) {
   return (
     <div className="space-y-6">
-      <nav className="flex flex-wrap gap-2" aria-label="Không gian sinh viên">
-        <Button asChild variant="outline">
-          <Link to="/app/sinh_vien">Lớp học của tôi</Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/app/sinh_vien/profile">Hồ sơ & thành tích</Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link to="/app/sinh_vien/boards">Bảng xếp hạng</Link>
-        </Button>
-      </nav>
-      <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
+      <PageHeader title={title} />
       {children}
     </div>
   );

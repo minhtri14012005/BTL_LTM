@@ -79,13 +79,45 @@ export function adminError(error: unknown) {
       ? error.message
       : "Thao tác chưa thành công.";
 }
-export function usersUrl(role: Role, query = "", page = 0, status = "") {
+export function usersUrl(role: Role | "", query = "", page = 0, status = "") {
   const params = new URLSearchParams({
-    role,
     q: query,
     page: String(page),
     size: "20",
   });
+  if (role) params.set("role", role);
   if (status) params.set("status", status);
   return `/api/admin/users?${params}`;
+}
+
+export async function loadClassCatalog(signal: AbortSignal) {
+  const [catalog, teachers] = await Promise.all([
+    loadCatalog(signal),
+    availableTeachers(signal),
+  ]);
+  return { ...catalog, teachers };
+}
+export async function availableTeachers(
+  signal: AbortSignal,
+): Promise<AdminUser[]> {
+  const teachers: AdminUser[] = [];
+  let page = 0,
+    total = 0;
+  do {
+    const result = await api<Page<AdminUser>>(
+      usersUrl("GIANG_VIEN", "", page, "ACTIVE"),
+      { signal },
+    );
+    teachers.push(
+      ...result.items.filter(
+        (t) => !t.banned && !t.deletedAtMs && t.status === "ACTIVE",
+      ),
+    );
+    total = result.totalElements;
+    page++;
+  } while (page * 20 < total);
+  return teachers;
+}
+export function validTeachers(course: Course, teachers: AdminUser[]) {
+  return teachers.filter((t) => course.teacherIds.includes(t.id));
 }

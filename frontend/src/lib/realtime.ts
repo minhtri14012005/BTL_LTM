@@ -7,6 +7,7 @@ export interface Envelope {
   requestId?: string;
   code?: string;
   message?: string;
+  classId?: number;
   target?: { kind: string; id: number };
   payload?: unknown;
 }
@@ -23,6 +24,7 @@ export class RealtimeClient {
   private retry?: ReturnType<typeof setTimeout>;
   private attempts = 0;
   private pending = new Map<string, Pending>();
+  private suspended = new Set<number>();
   private lessons = new Map<number, Set<(event: Envelope) => void>>();
   private listeners = new Set<() => void>();
   private events = new Set<(event: Envelope) => void>();
@@ -60,6 +62,7 @@ export class RealtimeClient {
     socket?.close(1000, "Session ended");
     this.failPending();
     this.lessons.clear();
+    this.suspended.clear();
     this.attempts = 0;
     this.set("closed");
   }
@@ -104,9 +107,33 @@ export class RealtimeClient {
           else request.resolve(event);
         }
       }
+      if (
+        event.type === "RECONNECT_LESSON" &&
+        event.kind === "ACK" &&
+        event.target
+      )
+        this.suspended.delete(event.target.id);
+      if (
+        event.target?.kind === "LESSON" &&
+        this.suspended.has(event.target.id) &&
+        event.type === "LESSON_UPDATED"
+      )
+        return;
       this.dispatch(event);
-      if (event.type === "LESSON_ACCESS_REVOKED" && event.target)
-        this.lessons.delete(event.target.id);
+      if (
+        (event.type === "LESSON_ACCESS_REVOKED" ||
+          event.type === "LESSON_DELETED" ||
+          (event.kind === "ERROR" && event.code === "LESSON_NOT_FOUND")) &&
+        event.target
+      )
+        this.suspended.add(event.target.id);
+      if (event.type === "CLASS_LESSONS_UPDATED")
+        this.suspended.forEach((id) => {
+          if (this.lessons.has(id))
+            void this.command("RECONNECT_LESSON", id)
+              .then(() => this.suspended.delete(id))
+              .catch(() => {});
+        });
     };
     socket.onclose = (event) => {
       if (this.socket !== socket) return;

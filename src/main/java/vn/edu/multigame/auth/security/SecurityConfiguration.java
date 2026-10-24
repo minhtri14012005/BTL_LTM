@@ -48,7 +48,7 @@ public class SecurityConfiguration {
                 access.requestMatchers(HttpMethod.GET,"/api/learning/**").authenticated();
                 access.requestMatchers("/api/teaching/classes/*/rank-config","/api/teaching/classes/*/rank-config/**").hasRole("GIANG_VIEN");
                 access.requestMatchers("/api/admin/academic/**").hasRole("ADMIN");
-                access.requestMatchers("/api/teaching/classes/*/wheel", "/api/teaching/lessons/**","/api/teaching/classes/*/lessons","/api/teaching/classes/*/lesson-progress").hasRole("GIANG_VIEN");
+                access.requestMatchers("/api/teaching/classes/*/wheel", "/api/teaching/lessons/**","/api/teaching/classes/*/lessons","/api/teaching/classes/*/lesson-progress","/api/teaching/classes/*/lesson-templates","/api/teaching/classes/*/lesson-templates/*").hasRole("GIANG_VIEN");
                 access.requestMatchers("/api/student/lessons/**").hasRole("SINH_VIEN");
                 access.requestMatchers("/api/student/classes","/api/student/classes/**").hasRole("SINH_VIEN");
                 access.requestMatchers("/api/teaching/classes/*/room","/api/teaching/classes/*/members","/api/teaching/classes/*/members/**").hasRole("GIANG_VIEN");

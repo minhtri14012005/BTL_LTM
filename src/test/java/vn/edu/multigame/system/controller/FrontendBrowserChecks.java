@@ -76,7 +76,7 @@ final class FrontendBrowserChecks {
         try(var connection=DriverManager.getConnection(url,username,password)){
             assertThat(connection.getCatalog()).matches("multigame_test_[0-9a-f]{32}");
             var jdbc=new org.springframework.jdbc.core.JdbcTemplate(new org.springframework.jdbc.datasource.SingleConnectionDataSource(connection,true));
-            return java.util.List.of(java.util.Map.of("lessons",jdbc.queryForList("SELECT * FROM lesson ORDER BY id"),"scores",jdbc.queryForList("SELECT * FROM lesson_score ORDER BY lesson_id,student_id"),"submissions",jdbc.queryForList("SELECT * FROM lesson_action_input ORDER BY id"),"awards",jdbc.queryForList("SELECT * FROM achievement_award ORDER BY id")));
+            return java.util.List.of(java.util.Map.of("games",jdbc.queryForList("SELECT * FROM lesson_game ORDER BY id"),"lessons",jdbc.queryForList("SELECT * FROM lesson ORDER BY id"),"scores",jdbc.queryForList("SELECT * FROM lesson_score ORDER BY lesson_id,student_id"),"submissions",jdbc.queryForList("SELECT * FROM lesson_action_input ORDER BY id"),"awards",jdbc.queryForList("SELECT * FROM achievement_award ORDER BY id")));
         }
     }
 }

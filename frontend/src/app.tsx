@@ -1,34 +1,37 @@
-import { useEffect } from "react";
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import {
-  initializeSession,
-  refreshSession,
-  useSession,
-  logout,
-} from "@/lib/session";
-import type { Role } from "@/lib/types";
-import { LoginPage } from "@/features/auth/login-page";
-import { AccountPage } from "@/features/auth/account-page";
-import { DashboardPage } from "@/features/dashboard/dashboard-page";
-import { ClassPage } from "@/features/dashboard/class-page";
+import { LessonSettingsPage } from "@/features/teaching/lesson-settings-page";
 import { AppShell } from "@/components/app-shell";
 import { ErrorState, Loading } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { AcademicPage } from "@/features/admin/academic-page";
 import { AdminClassesPage } from "@/features/admin/classes-page";
+import { AdminDashboard } from "@/features/admin/dashboard";
 import { AdminUsersPage } from "@/features/admin/users-page";
-import { TeachingClassPage } from "@/features/teaching/class-page";
-import { TeachingLessonPage } from "@/features/teaching/lesson-page";
-import { BankPage } from "@/features/teaching/bank-page";
-import { StudentDashboard } from "@/features/student/dashboard";
+import { AccountPage } from "@/features/auth/account-page";
+import { LoginPage } from "@/features/auth/login-page";
+import { ClassPage } from "@/features/dashboard/class-page";
+import { DashboardPage } from "@/features/dashboard/dashboard-page";
+import { StudentBoardsPage } from "@/features/student/boards-page";
 import { StudentClassPage } from "@/features/student/class-page";
+import { StudentDashboard } from "@/features/student/dashboard";
+import { StudentIdentityPage } from "@/features/student/identity-page";
 import { StudentLessonPage } from "@/features/student/lesson-page";
 import {
-  StudentProfilePage,
   StudentIdentityEditor,
+  StudentProfilePage,
 } from "@/features/student/profile-page";
-import { StudentBoardsPage } from "@/features/student/boards-page";
+import { BankPage } from "@/features/teaching/bank-page";
+import { TeachingClassPage } from "@/features/teaching/class-page";
+import { TeachingLessonPage } from "@/features/teaching/lesson-page";
+import {
+  initializeSession,
+  logout,
+  refreshSession,
+  useSession,
+} from "@/lib/session";
+import type { Role } from "@/lib/types";
+import { useEffect } from "react";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 
 export function RoleGate({ role }: { role: Role }) {
   const { user } = useSession();
@@ -98,8 +101,28 @@ export function App() {
           <Route path="/app" element={<Home />} />
           <Route element={<RoleGate role="SINH_VIEN" />}>
             <Route
+              path="/app/sinh_vien/lessons/:id/games/:position"
+              element={<StudentLessonPage />}
+            />
+            <Route
               path="/app/sinh_vien/lessons/:id"
               element={<StudentLessonPage />}
+            />
+            <Route
+              path="/app/sinh_vien/classes"
+              element={<StudentDashboard />}
+            />
+            <Route
+              path="/app/sinh_vien/history"
+              element={<StudentProfilePage />}
+            />
+            <Route
+              path="/app/sinh_vien/achievements"
+              element={<StudentProfilePage />}
+            />
+            <Route
+              path="/app/sinh_vien/profile/edit"
+              element={<StudentIdentityPage />}
             />
             <Route
               path="/app/sinh_vien/profile"
@@ -111,7 +134,24 @@ export function App() {
             />
           </Route>
           <Route element={<RoleGate role="GIANG_VIEN" />}>
+            <Route path="/app/giang_vien/classes" element={<DashboardPage />} />
+            <Route
+              path="/app/giang_vien/classes/:id/:section/:action?"
+              element={<TeachingClassPage />}
+            />
+            <Route
+              path="/app/giang_vien/banks/:bankId/:bankAction?"
+              element={<BankPage />}
+            />
             <Route path="/app/giang_vien/banks" element={<BankPage />} />
+            <Route
+              path="/app/giang_vien/lessons/:id/settings"
+              element={<LessonSettingsPage />}
+            />
+            <Route
+              path="/app/giang_vien/lessons/:id/games/:position"
+              element={<TeachingLessonPage />}
+            />
             <Route
               path="/app/giang_vien/lessons/:id"
               element={<TeachingLessonPage />}
@@ -119,6 +159,10 @@ export function App() {
           </Route>
           <Route element={<RoleGate role="ADMIN" />}>
             <Route path="/app/admin/academic" element={<AcademicPage />} />
+            <Route
+              path="/app/admin/assignments"
+              element={<AdminClassesPage />}
+            />
             <Route path="/app/admin/classes" element={<AdminClassesPage />} />
             <Route path="/app/admin/users" element={<AdminUsersPage />} />
           </Route>
@@ -129,6 +173,8 @@ export function App() {
                 element={
                   role === "SINH_VIEN" ? (
                     <StudentDashboard />
+                  ) : role === "ADMIN" ? (
+                    <AdminDashboard />
                   ) : (
                     <DashboardPage />
                   )
@@ -152,6 +198,10 @@ export function App() {
               />
             </Route>
           ))}
+          <Route
+            path="/app/*"
+            element={<ErrorState message="Không tìm thấy trang bạn yêu cầu." />}
+          />
         </Route>
       </Route>
       <Route path="/" element={<Home />} />

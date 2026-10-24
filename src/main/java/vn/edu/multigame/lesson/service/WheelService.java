@@ -39,8 +39,9 @@ public class WheelService {
   ObjectNode state=old==null?json.createObjectNode():(ObjectNode)old.deepCopy();
   switch(action){
    case "select" -> {
-    require(old==null,"WHEEL_ALREADY_SELECTED");require(pool!=null && !pool.isEmpty() && pool.stream().allMatch(Objects::nonNull) && new HashSet<>(pool).size()==pool.size() && participants.containsAll(pool) && pool.stream().allMatch(id->eligible(id,parent.courseClassId())),"INVALID_WHEEL_POOL");require(k!=null && k>=1 && k<=pool.size(),"INVALID_WHEEL_K");
-    var cells=wheel.config(parent.courseClassId()).path("cells");require(!cells.isEmpty(),"WHEEL_CONFIG_REQUIRED");
+    require(old==null,"WHEEL_ALREADY_SELECTED");require(pool!=null && !pool.isEmpty() && pool.stream().allMatch(Objects::nonNull) && new HashSet<>(pool).size()==pool.size() && participants.containsAll(pool) && pool.stream().allMatch(id->eligible(id,parent.courseClassId())),"INVALID_WHEEL_POOL");require(k==null || k==game.selectedCount(),"INVALID_WHEEL_K");k=game.selectedCount();require(k>=1 && k<=pool.size(),"INVALID_WHEEL_K");
+    var cells=game.wheelCells()==null?wheel.config(parent.courseClassId()).path("cells"):json.valueToTree(game.wheelCells());
+    require(!cells.isEmpty(),"WHEEL_CONFIG_REQUIRED");
     var shuffled=new ArrayList<>(pool);Collections.shuffle(shuffled,random);
     state.set("pool",json.valueToTree(pool));state.set("selected",json.valueToTree(shuffled.subList(0,k)));state.set("cells",cells.deepCopy());state.set("grades",json.createObjectNode());state.put("status","SELECTED");
    }
@@ -60,7 +61,7 @@ public class WheelService {
    }
    default -> throw LessonFailure.conflict("INVALID_WHEEL_ACTION");
   }
-  state.put("revision",revision+1);wheel.save(lesson,game.id(),state);wheel.receipt(actor,request,hash);lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));return state;
+  state.put("revision",revision+1);wheel.save(lesson,game.id(),state);wheel.receipt(actor,request,hash,lesson);lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));return state;
  }
  private void credit(long lesson,long game,long student,BigDecimal score){wheel.score(lesson,game,student,score.setScale(2));lessons.total(lesson,student);}
  private boolean contains(JsonNode list,long id){for(var value:list)if(value.asLong()==id)return true;return false;}

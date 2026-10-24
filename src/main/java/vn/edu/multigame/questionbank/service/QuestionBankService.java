@@ -61,6 +61,10 @@ public class QuestionBankService {
         long id=teacherId(auth);accounts.lock(id);return teacherId(auth);
     }
     public static boolean learningMode(GameMode mode) {return mode==GameMode.QUIZ || mode==GameMode.FILL_BLANK || mode==GameMode.ASSIGNMENT;}
+    public boolean canReuse(Authentication auth,long id) {
+        long user=teacherId(auth);
+        return quizzes.findById(id).filter(q->q.getDeletedAtMs()==null && learningMode(q.getMode()) && (q.getOwnerUserId()==user || q.getVisibility()==Visibility.PUBLIC)).isPresent();
+    }
     @Transactional
     public QuestionBankOwnerResponse previewLocked(Authentication auth,long id) {
         long user=teacherId(auth);var quiz=active(id,true);

@@ -1,15 +1,15 @@
-import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useState, type FormEvent } from "react";
 import {
   modeNames,
   questionError,
-  type Question,
   type ContentMode,
+  type Question,
 } from "./teaching-api";
-import { Textarea, NativeSelect, FormError } from "./teaching-shared";
+import { FormError, NativeSelect, Textarea } from "./teaching-shared";
 export function emptyQuestion(mode: ContentMode): Question {
   return mode === "QUIZ"
     ? {
@@ -60,6 +60,7 @@ export function QuestionEditor({
   error: string;
   label?: string;
 }) {
+  const [active, setActive] = useState(0);
   const [title, setTitle] = useState(initialTitle),
     [questions, setQuestions] = useState<Question[]>(
       structuredClone(initialQuestions),
@@ -76,6 +77,8 @@ export function QuestionEditor({
     const error = questionError(mode, questions);
     if (!title.trim() || error) {
       setValidation(error || "Cần nhập tiêu đề.");
+      const invalid = questions.findIndex((q) => !!questionError(mode, [q]));
+      if (invalid >= 0) setActive(invalid);
       return;
     }
     setValidation("");
@@ -124,135 +127,163 @@ export function QuestionEditor({
             ? " · Dùng đúng một {{blank}} để đánh dấu ô trống trong mỗi câu."
             : ""}
         </p>
-        {questions.map((q, index) => (
-          <Card key={index} className="space-y-4 bg-muted/30 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="font-semibold">
-                {mode === "ASSIGNMENT" ? "Đề bài" : `Câu ${index + 1}`}
-              </h3>
-              {questions.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() =>
-                    setQuestions((old) => old.filter((_, i) => i !== index))
-                  }
-                >
-                  Xóa câu {index + 1}
-                </Button>
+        {mode !== "ASSIGNMENT" && (
+          <nav
+            aria-label="Chọn câu hỏi để soạn"
+            className="flex flex-wrap gap-2"
+          >
+            {questions.map((_, i) => (
+              <Button
+                key={i}
+                type="button"
+                size="sm"
+                variant={active === i ? "default" : "outline"}
+                onClick={() => setActive(i)}
+                aria-pressed={active === i}
+              >
+                Câu {i + 1}
+              </Button>
+            ))}
+          </nav>
+        )}
+        {questions
+          .map((q, index) => ({ q, index }))
+          .filter(
+            ({ index }) => index === Math.min(active, questions.length - 1),
+          )
+          .map(({ q, index }) => (
+            <Card key={index} className="space-y-4 bg-muted/30 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-semibold">
+                  {mode === "ASSIGNMENT" ? "Đề bài" : `Câu ${index + 1}`}
+                </h3>
+                {questions.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setQuestions((old) => old.filter((_, i) => i !== index));
+                      setActive(Math.max(0, index - 1));
+                    }}
+                  >
+                    Xóa câu {index + 1}
+                  </Button>
+                )}
+              </div>
+              <FormField
+                label={
+                  mode === "ASSIGNMENT"
+                    ? "Nội dung đề bài"
+                    : `Nội dung câu ${index + 1}`
+                }
+              >
+                {(p) => (
+                  <Textarea
+                    {...p}
+                    required
+                    maxLength={5000}
+                    value={q.content}
+                    onChange={(e) => update(index, { content: e.target.value })}
+                  />
+                )}
+              </FormField>
+              {mode === "QUIZ" && (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {["A", "B", "C", "D"].map((option) => (
+                      <FormField
+                        key={option}
+                        label={`Câu ${index + 1} · Lựa chọn ${option}`}
+                      >
+                        {(p) => (
+                          <Input
+                            {...p}
+                            required
+                            maxLength={2000}
+                            value={q.options?.[option] || ""}
+                            onChange={(e) =>
+                              update(index, {
+                                options: {
+                                  ...q.options,
+                                  [option]: e.target.value,
+                                },
+                              })
+                            }
+                          />
+                        )}
+                      </FormField>
+                    ))}
+                  </div>
+                  <FormField label={`Đáp án đúng câu ${index + 1}`}>
+                    {(p) => (
+                      <NativeSelect
+                        {...p}
+                        value={q.correctAnswer || "A"}
+                        onChange={(e) =>
+                          update(index, { correctAnswer: e.target.value })
+                        }
+                      >
+                        {["A", "B", "C", "D"].map((o) => (
+                          <option key={o}>{o}</option>
+                        ))}
+                      </NativeSelect>
+                    )}
+                  </FormField>
+                </>
               )}
-            </div>
-            <FormField
-              label={
-                mode === "ASSIGNMENT"
-                  ? "Nội dung đề bài"
-                  : `Nội dung câu ${index + 1}`
-              }
-            >
-              {(p) => (
-                <Textarea
-                  {...p}
-                  required
-                  maxLength={5000}
-                  value={q.content}
-                  onChange={(e) => update(index, { content: e.target.value })}
-                />
+              {mode === "FILL_BLANK" && (
+                <>
+                  <FormField
+                    label={`Đáp án hợp lệ câu ${index + 1}`}
+                    hint="Mỗi dòng là một đáp án hợp lệ. Giữ nguyên nội dung/cú pháp cần so khớp."
+                  >
+                    {(p) => (
+                      <Textarea
+                        {...p}
+                        required
+                        value={q.acceptedAnswers?.join("\n") || ""}
+                        onChange={(e) =>
+                          update(index, {
+                            acceptedAnswers: e.target.value.split("\n"),
+                          })
+                        }
+                      />
+                    )}
+                  </FormField>
+                  <FormField label={`So khớp câu ${index + 1}`}>
+                    {(p) => (
+                      <NativeSelect
+                        {...p}
+                        value={q.matchingPolicy || "EXACT"}
+                        onChange={(e) =>
+                          update(index, {
+                            matchingPolicy: e.target
+                              .value as Question["matchingPolicy"],
+                          })
+                        }
+                      >
+                        <option value="EXACT">
+                          Chính xác, phân biệt hoa/thường
+                        </option>
+                        <option value="CASE_INSENSITIVE">
+                          Không phân biệt hoa/thường
+                        </option>
+                      </NativeSelect>
+                    )}
+                  </FormField>
+                </>
               )}
-            </FormField>
-            {mode === "QUIZ" && (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {["A", "B", "C", "D"].map((option) => (
-                    <FormField
-                      key={option}
-                      label={`Câu ${index + 1} · Lựa chọn ${option}`}
-                    >
-                      {(p) => (
-                        <Input
-                          {...p}
-                          required
-                          maxLength={2000}
-                          value={q.options?.[option] || ""}
-                          onChange={(e) =>
-                            update(index, {
-                              options: {
-                                ...q.options,
-                                [option]: e.target.value,
-                              },
-                            })
-                          }
-                        />
-                      )}
-                    </FormField>
-                  ))}
-                </div>
-                <FormField label={`Đáp án đúng câu ${index + 1}`}>
-                  {(p) => (
-                    <NativeSelect
-                      {...p}
-                      value={q.correctAnswer || "A"}
-                      onChange={(e) =>
-                        update(index, { correctAnswer: e.target.value })
-                      }
-                    >
-                      {["A", "B", "C", "D"].map((o) => (
-                        <option key={o}>{o}</option>
-                      ))}
-                    </NativeSelect>
-                  )}
-                </FormField>
-              </>
-            )}
-            {mode === "FILL_BLANK" && (
-              <>
-                <FormField
-                  label={`Đáp án hợp lệ câu ${index + 1}`}
-                  hint="Mỗi dòng là một đáp án hợp lệ. Giữ nguyên nội dung/cú pháp cần so khớp."
-                >
-                  {(p) => (
-                    <Textarea
-                      {...p}
-                      required
-                      value={q.acceptedAnswers?.join("\n") || ""}
-                      onChange={(e) =>
-                        update(index, {
-                          acceptedAnswers: e.target.value.split("\n"),
-                        })
-                      }
-                    />
-                  )}
-                </FormField>
-                <FormField label={`So khớp câu ${index + 1}`}>
-                  {(p) => (
-                    <NativeSelect
-                      {...p}
-                      value={q.matchingPolicy || "EXACT"}
-                      onChange={(e) =>
-                        update(index, {
-                          matchingPolicy: e.target
-                            .value as Question["matchingPolicy"],
-                        })
-                      }
-                    >
-                      <option value="EXACT">
-                        Chính xác, phân biệt hoa/thường
-                      </option>
-                      <option value="CASE_INSENSITIVE">
-                        Không phân biệt hoa/thường
-                      </option>
-                    </NativeSelect>
-                  )}
-                </FormField>
-              </>
-            )}
-          </Card>
-        ))}
+            </Card>
+          ))}
         {mode !== "ASSIGNMENT" && (
           <Button
             type="button"
             variant="outline"
             disabled={questions.length >= 50}
-            onClick={() => setQuestions((old) => [...old, emptyQuestion(mode)])}
+            onClick={() => {
+              setActive(questions.length);
+              setQuestions((old) => [...old, emptyQuestion(mode)]);
+            }}
           >
             Thêm câu hỏi
           </Button>

@@ -16,6 +16,7 @@ import vn.edu.multigame.questionbank.service.QuestionBankService;
 @Service @Profile("mysql") @Transactional(readOnly=true)
 public class GameContentService {
     private final org.springframework.context.ApplicationEventPublisher events;
+    @org.springframework.beans.factory.annotation.Autowired private GameSettingsService settings;
     private final LessonStore lessons;
     private final GameContentStore contents;
     private final AuthService auth;
@@ -45,7 +46,7 @@ public class GameContentService {
         if(lessons.lesson(lesson,false).revision()!=input.lessonRevision()) throw LessonFailure.conflict("STALE_REVISION");
         var source=banks.previewLocked(caller,input.quizId());
         if(!source.mode().name().equals(game.mode().name())) throw LessonFailure.conflict("CONTENT_MODE_MISMATCH");
-        contents.select(game.id(),source.id(),source.revision(),source.mode(),source.title(),source.questions());lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));
+        contents.select(game.id(),source.id(),source.revision(),source.mode(),source.title(),source.questions());settings.contentChanged(lesson,game,source.questions().size());lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));
         return get(caller,lesson,position);
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
@@ -53,6 +54,6 @@ public class GameContentService {
         var game=authorize(caller,lesson,position,true);var existing=contents.get(game.id()).orElseThrow(()->new LessonFailure(HttpStatus.NOT_FOUND,"CONTENT_NOT_FOUND"));
         if(existing.revision()!=input.revision()) throw LessonFailure.conflict("STALE_REVISION");
         var questions=banks.snapshotQuestions(GameMode.valueOf(game.mode().name()),input.questions());
-        contents.edit(game.id(),input.title().strip(),questions);lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));return get(caller,lesson,position);
+        contents.edit(game.id(),input.title().strip(),questions);settings.contentChanged(lesson,game,questions.size());lessons.bump(lesson);events.publishEvent(new LessonChanged(lesson));return get(caller,lesson,position);
     }
 }

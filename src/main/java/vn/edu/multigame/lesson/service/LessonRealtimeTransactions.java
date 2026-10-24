@@ -18,6 +18,7 @@ import vn.edu.multigame.questionbank.dto.response.StudentQuestion;
 @Service @Profile("mysql") @Transactional(readOnly=true)
 public class LessonRealtimeTransactions {
     public record Result(LessonRealtimeView snapshot,long sequence,long receivedAtMs,boolean replay,PhaseWindow phase) {}
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.context.ApplicationEventPublisher events;
     private final AssignmentStore assignments;
     private final QuizPlayStore quiz;
     private final WheelService wheel;
@@ -39,16 +40,21 @@ public class LessonRealtimeTransactions {
         var view=lessons.get(caller,lesson,teacher);
         var window=realtime.window(lesson).orElse(null);
         LessonRealtimeView.Window publicWindow=null;
-        if(window!=null) {
+        if(window!=null && view.games().stream().anyMatch(g->g.id()==window.gameId())) {
             var game=view.games().stream().filter(g->g.id()==window.gameId()).findFirst().orElseThrow();
             StudentQuestion question=null;
             if((window.status().equals("OPEN") || game.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT) && (teacher || game.participating())) {
                 var questions=content.get(game.id()).map(GameContentView::questions).orElse(java.util.List.of());
                 if(window.questionIndex()<=questions.size()) question=StudentQuestion.from(questions.get(window.questionIndex()-1));
             }
-            publicWindow=new LessonRealtimeView.Window(game.id(),game.position(),window.token(),window.questionIndex(),window.status(),window.opened(),window.deadline(),realtime.submitted(game.id(),window.token(),user.getId()),question,content.get(game.id()).map(c->c.questions().size()).orElse(0));
+            publicWindow=new LessonRealtimeView.Window(game.id(),game.position(),window.token(),window.questionIndex(),window.status(),window.opened(),window.deadline(),realtime.submitted(game.id(),window.token(),user.getId()),question,questionCount(game));
         }
-        return new LessonRealtimeView(view,publicWindow,clock.sample().epochMs(),wheel.view(lesson,user.getId(),teacher),view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->quiz.results(g.id(),user.getId()))),view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.FILL_BLANK).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->quiz.results(g.id(),user.getId()))),view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->assignments.view(g.id(),teacher?store.participants(g.id()):java.util.List.of(user.getId())))),teacher?lessons.participants(caller,lesson):java.util.List.of(),view.games().stream().collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->content.get(g.id()).map(c->c.questions().size()).orElse(0))));
+        return new LessonRealtimeView(view,publicWindow,clock.sample().epochMs(),view.games().stream().anyMatch(g->g.position()==1)?wheel.view(lesson,user.getId(),teacher):null,view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->quiz.results(g.id(),user.getId()))),view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.FILL_BLANK).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->quiz.results(g.id(),user.getId()))),view.games().stream().filter(g->g.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT).collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->assignments.view(g.id(),teacher?store.participants(g.id()):java.util.List.of(user.getId())))),teacher?lessons.participants(caller,lesson):java.util.List.of(),view.games().stream().collect(java.util.stream.Collectors.toMap(g->Long.toString(g.id()),g->questionCount(g))));
+    }
+    private int questionCount(LessonView.Game game){return content.get(game.id()).map(c->GameSettingsService.usedCount(game,c.questions().size())).orElse(0);}
+    public boolean canDeliver(Authentication caller,long lesson,LessonRealtimeView pending){
+        try{var current=lessons.get(caller,lesson,auth.requireActiveUser(caller).getRole()==UserRole.GIANG_VIEN);return current.games().stream().map(LessonView.Game::id).toList().containsAll(pending.lesson().games().stream().map(LessonView.Game::id).toList());}
+        catch(RuntimeException denied){return false;}
     }
     public byte[] image(Authentication caller,long lesson,String hash,long token){
         var window=snapshot(caller,lesson).window();
@@ -80,7 +86,7 @@ public class LessonRealtimeTransactions {
         switch(type) {
             case "SET_ASSIGNMENT_DEADLINE" -> {
                 var game=assignmentGame(id,payload.path("position").intValue());
-                boolean draft=before.lesson().status().equals("DRAFT") && game.status().equals("READY");if(!draft)runningAssignment(before,game);
+                boolean draft=game.status().equals("READY");if(!draft)runningAssignment(before,game);
                 content.get(game.id()).orElseThrow(()->LessonFailure.conflict("GAME_CONTENT_REQUIRED"));
                 var old=realtime.window(id);long expected=old.map(w->w.token()).orElse(0L);
                 if(expected!=payload.path("token").longValue())throw LessonFailure.conflict("STALE_WINDOW");
@@ -118,10 +124,16 @@ public class LessonRealtimeTransactions {
                     }
                     store.score(game.id(),studentId,score.setScale(2));store.total(id,studentId);
                 }
-                store.gameStatus(game.id(),"COMPLETED");store.finishIfReady(id);active=null;
+                store.gameStatus(game.id(),"COMPLETED");store.finishIfReady(id);events.publishEvent(new LessonChanged(id));active=null;
             }
             case "START_LESSON" -> lessons.start(caller,id,payload.path("revision").longValue());
-            case "START_LESSON_GAME" -> lessons.startGame(caller,id,payload.path("position").intValue(),payload.path("revision").longValue());
+            case "START_LESSON_GAME" -> {
+                int startPosition=payload.path("position").intValue();
+                var startedLesson=lessons.startGame(caller,id,startPosition,payload.path("revision").longValue());
+                for(var game:startedLesson.games()) if(game.position()==startPosition && objective(game.mode())) {
+                    var opened=openFirstWindow(id,game.id(),startPosition);if(opened!=null)active=opened;
+                }
+            }
             case "ATTEND_LESSON" -> lessons.attend(caller,id,null);
             case "PARTICIPATE_LESSON_GAME" -> lessons.attend(caller,id,payload.path("position").intValue());
             case "OPEN_LESSON_WINDOW" -> {
@@ -129,29 +141,27 @@ public class LessonRealtimeTransactions {
                 if(old.isPresent() && old.get().status().equals("OPEN")) throw LessonFailure.conflict("WINDOW_ALREADY_OPEN");
                 int position=payload.path("position").intValue(),index=payload.path("questionIndex").intValue();
                 var game=before.lesson().games().stream().filter(g->g.position()==position).findFirst().orElseThrow();
+                if(objective(game.mode()))throw LessonFailure.conflict("AUTOMATIC_GAME_CONTROL");
                 if(!before.lesson().status().equals("RUNNING") || !game.status().equals("RUNNING")) throw LessonFailure.conflict("GAME_NOT_RUNNING");
                 if(game.mode()!=vn.edu.multigame.lesson.domain.LessonMode.LUCKY_WHEEL) {
                     var questions=content.get(game.id()).orElseThrow(()->LessonFailure.conflict("GAME_CONTENT_REQUIRED")).questions();
-                    if(index>questions.size()) throw LessonFailure.conflict("QUESTION_NOT_FOUND");
-                    if(objective(game.mode())) {
-                        if(index!=quiz.opened(game.id())+1)throw LessonFailure.conflict("QUIZ_QUESTION_ORDER");
-                        quiz.open(game.id(),index);
-                        if(index==1 && game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ)learningAwards.captureInitialPlayers(game.id());
-                    }
+                    if(index<1 || index>GameSettingsService.usedCount(game,questions.size())) throw LessonFailure.conflict("QUESTION_NOT_FOUND");
+
                 } else if(index!=1) throw LessonFailure.conflict("QUESTION_NOT_FOUND");
                 var now=clock.sample();long token=old.map(w->w.token()+1).orElse(1L);
-                active=PhaseWindow.open(index,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),payload.path("durationMs").longValue());
+                active=PhaseWindow.open(index,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),objective(game.mode())?game.durationMs():payload.path("durationMs").longValue());
                 realtime.open(id,game.id(),position,token,index,active.openedEpochMs(),active.deadlineEpochMs());if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT)assignments.deadline(game.id(),active.deadlineEpochMs());store.bump(id);
             }
             case "CLOSE_LESSON_WINDOW","CANCEL_LESSON_WINDOW" -> {
                 var window=realtime.window(id).orElseThrow(()->LessonFailure.conflict("WINDOW_NOT_OPEN"));
+                if(store.games(id,0).stream().anyMatch(g->g.id()==window.gameId() && objective(g.mode())))throw LessonFailure.conflict("AUTOMATIC_GAME_CONTROL");
                 if(window.token()!=payload.path("token").longValue()) throw LessonFailure.conflict("STALE_WINDOW");
-                if(realtime.close(id,window.token(),type.startsWith("CANCEL")?"CANCELLED":"CLOSED")) {store.bump(id);finishQuestions(window,locked);}
+                if(realtime.close(id,window.token(),type.startsWith("CANCEL")?"CANCELLED":"CLOSED")) {store.bump(id);}
             }
             case "SUBMIT_LESSON_ACTION" -> {
                 var window=realtime.window(id).orElseThrow(()->LessonFailure.conflict("WINDOW_NOT_OPEN"));
                 if(!window.status().equals("OPEN") || phase==null || window.token()!=payload.path("token").longValue() || !phase.accepts(ingress.receivedAtMs())) throw LessonFailure.conflict("WINDOW_CLOSED");
-                var game=before.lesson().games().stream().filter(g->g.id()==window.gameId()).findFirst().orElseThrow();
+                var game=before.lesson().games().stream().filter(g->g.id()==window.gameId()).findFirst().orElseThrow(()->new LessonFailure(org.springframework.http.HttpStatus.NOT_FOUND,"GAME_NOT_FOUND"));
                 if(!game.status().equals("RUNNING") || !game.participating()) throw LessonFailure.conflict("GAME_PARTICIPATION_REQUIRED");
                 if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.LUCKY_WHEEL) throw LessonFailure.conflict("UNSUPPORTED_ACTION");
                 boolean multiple=game.mode()==vn.edu.multigame.lesson.domain.LessonMode.ASSIGNMENT;
@@ -164,7 +174,7 @@ public class LessonRealtimeTransactions {
                     var question=questions.get(window.questionIndex()-1);
                     boolean correct=game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ?question.correctAnswer().name().equals(value):FillBlankMatcher.matches(value,question.acceptedAnswers(),question.matchingPolicy());
                     quiz.answer(game.id(),window.questionIndex(),user.getId(),value,correct,ingress.serverTimeMs());
-                    quiz.score(id,game.id(),user.getId(),QuizScoring.score(quiz.correct(game.id(),user.getId()),questions.size(),game.budget()));store.total(id,user.getId());store.bump(id);
+                    quiz.score(id,game.id(),user.getId(),QuizScoring.score(quiz.correct(game.id(),user.getId()),GameSettingsService.usedCount(game,questions.size()),game.budget()));store.total(id,user.getId());store.bump(id);
                 }
                 realtime.input(window,user.getId(),command.requestId(),multiple?command.requestId():Long.toString(user.getId()),payload.path("value").textValue(),ingress.serverTimeMs(),ingress.sequence());
             }
@@ -182,18 +192,78 @@ public class LessonRealtimeTransactions {
     private void finishQuestions(LessonRealtimeStore.Window window,java.util.Set<Long> locked) {
         var game=store.games(window.lessonId(),0).stream().filter(g->g.id()==window.gameId()).findFirst().orElseThrow();
         if(!objective(game.mode()) || !game.status().equals("RUNNING"))return;
-        if(window.questionIndex()!=content.get(game.id()).orElseThrow().questions().size())return;
+        if(window.questionIndex()!=questionCount(game))return;
         if(!locked.containsAll(store.participants(game.id())))throw LessonFailure.conflict("PARTICIPANTS_CHANGED_RETRY");
         quiz.absent(game.id());for(long student:store.participants(game.id()))store.total(window.lessonId(),student);
-        store.gameStatus(game.id(),"COMPLETED");store.finishIfReady(window.lessonId());
-        if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ)learningAwards.quizCompleted(game.id(),store.lesson(window.lessonId(),false).courseClassId(),content.get(game.id()).orElseThrow().questions().size(),store.participants(game.id()),clock.sample().epochMs());
+        store.gameStatus(game.id(),"COMPLETED");store.finishIfReady(window.lessonId());events.publishEvent(new LessonChanged(window.lessonId()));
+        if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ)learningAwards.quizCompleted(game.id(),store.lesson(window.lessonId(),false).courseClassId(),questionCount(game),store.participants(game.id()),clock.sample().epochMs());
     }
+    /** Returns the next PhaseWindow if a next question was opened, or null if game ended. */
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
-    public void expire(long lesson,long token) {
+    public PhaseWindow expire(long lesson,long token) {
         var locked=new java.util.TreeSet<Long>();realtime.window(lesson).ifPresent(w->locked.addAll(store.participants(w.gameId())));for(long account:locked)accounts.lock(account);
         store.lesson(lesson,true);var window=realtime.window(lesson).orElse(null);
-        if(window!=null && window.token()==token) {
-            if(realtime.close(lesson,token,"CLOSED")) {store.bump(lesson);finishQuestions(window,locked);}
+        if(window==null || window.token()!=token || !window.status().equals("OPEN")) return null;
+        if(!realtime.close(lesson,token,"CLOSED")) return null;
+        store.bump(lesson);
+        var game=store.games(window.lessonId(),0).stream().filter(g->g.id()==window.gameId()).findFirst().orElse(null);
+        if(game==null || !objective(game.mode()) || !game.status().equals("RUNNING")) return null;
+        int totalQuestions=questionCount(game);
+        int nextIndex=window.questionIndex()+1;
+        if(nextIndex>totalQuestions) {
+            // Last question finished – score, complete and close.
+            if(!locked.containsAll(store.participants(game.id())))throw LessonFailure.conflict("PARTICIPANTS_CHANGED_RETRY");
+            quiz.absent(game.id());for(long student:store.participants(game.id()))store.total(window.lessonId(),student);
+            store.gameStatus(game.id(),"COMPLETED");store.finishIfReady(window.lessonId());events.publishEvent(new LessonChanged(window.lessonId()));
+            if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ)learningAwards.quizCompleted(game.id(),store.lesson(window.lessonId(),false).courseClassId(),totalQuestions,store.participants(game.id()),clock.sample().epochMs());
+            return null;
         }
+        // Open the next question automatically.
+        return openWindowAt(lesson,game,window.position(),nextIndex,window.token());
+    }
+
+    @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
+    public PhaseWindow resumeObjective(long lesson) {
+        var candidate=store.games(lesson,0).stream().filter(g->objective(g.mode()) && g.status().equals("RUNNING")).findFirst();
+        if(candidate.isEmpty())return null;
+        var locked=new java.util.TreeSet<>(store.participants(candidate.get().id()));for(long account:locked)accounts.lock(account);
+        store.lesson(lesson,true);
+        var game=store.games(lesson,0).stream().filter(g->g.id()==candidate.get().id() && g.status().equals("RUNNING")).findFirst().orElse(null);
+        if(game==null)return null;
+        var existing=realtime.window(lesson);
+        if(existing.isPresent() && existing.get().status().equals("OPEN"))return null;
+        if(quiz.opened(game.id())==0)return openFirstWindow(lesson,game.id(),game.position());
+        // Older manual-control versions may have stopped between questions. Continue from durable progress.
+        if(existing.isPresent() && existing.get().gameId()==game.id()) {
+            var window=existing.get();
+            if(window.questionIndex()<questionCount(game))return openWindowAt(lesson,game,game.position(),window.questionIndex()+1,window.token());
+            finishQuestions(window,locked);
+        }
+        return null;
+    }
+
+    /** Opens question at given index; called from startGame (index=1) or expire (index=next). */
+    @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
+    public PhaseWindow openFirstWindow(long lesson,long gameId,int position) {
+        var locked=new java.util.TreeSet<Long>();locked.addAll(store.participants(gameId));for(long account:locked)accounts.lock(account);
+        store.lesson(lesson,true);
+        var game=store.games(lesson,0).stream().filter(g->g.id()==gameId).findFirst().orElseThrow();
+        if(!objective(game.mode()) || !game.status().equals("RUNNING")) return null;
+        // Only open if no window is already open for this game.
+        var existing=realtime.window(lesson);
+        if(existing.isPresent() && existing.get().gameId()==gameId) return null;
+        quiz.open(game.id(),1);
+        if(game.mode()==vn.edu.multigame.lesson.domain.LessonMode.QUIZ)learningAwards.captureInitialPlayers(game.id());
+        long existingToken=existing.map(w->w.token()).orElse(0L);
+        return openWindowAt(lesson,game,position,1,existingToken);
+    }
+
+    private PhaseWindow openWindowAt(long lesson,LessonView.Game game,int position,int questionIndex,long previousToken) {
+        var now=clock.sample();long token=previousToken+1;
+        if(questionIndex>1) quiz.open(game.id(),questionIndex);
+        var active=PhaseWindow.open(questionIndex,vn.edu.multigame.game.enums.Phase.QUESTION_OPEN,token,now.monotonicMs(),now.epochMs(),game.durationMs());
+        realtime.open(lesson,game.id(),position,token,questionIndex,active.openedEpochMs(),active.deadlineEpochMs());
+        store.bump(lesson);
+        return active;
     }
 }

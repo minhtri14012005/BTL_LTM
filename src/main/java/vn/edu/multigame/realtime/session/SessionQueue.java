@@ -265,6 +265,17 @@ public final class SessionQueue<C> implements AutoCloseable {
             return state;
         }
     }
+    /** Lesson actors have durable receipts; an idle actor with no timer can be recreated safely. */
+    public boolean evictIdle(SessionKey key) {
+        synchronized(states) {
+            State state=states.get(key.gameSessionId());
+            if(state==null || !state.key.equals(key))return true;
+            synchronized(state) {
+                if(state.running || state.paused || !state.queue.isEmpty() || state.timer!=null)return false;
+                state.disposed=true;states.remove(key.gameSessionId());return true;
+            }
+        }
+    }
     public boolean registered(SessionKey key) {
         synchronized (states) { State state=states.get(key.gameSessionId()); return state!=null && state.key.equals(key); }
     }

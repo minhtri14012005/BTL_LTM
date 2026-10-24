@@ -1,19 +1,17 @@
-import { UserRound } from "lucide-react";
-import { Link } from "react-router-dom";
+import { PageHeader } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { useSession } from "@/lib/session";
-import { roleNames, statusNames } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSession } from "@/lib/session";
+import { roleNames, statusNames } from "@/lib/types";
+import { UserRound } from "lucide-react";
+import { Link } from "react-router-dom";
 export function AccountPage() {
   const { user } = useSession();
   if (!user) return null;
   return (
     <div className="max-w-3xl space-y-6">
-      <div>
-        <span className="eyebrow">KHÔNG GIAN CÁ NHÂN</span>
-        <h1 className="mt-3 text-3xl font-semibold">Tài khoản của bạn</h1>
-      </div>
+      <PageHeader title="Tài khoản của bạn" eyebrow="KHÔNG GIAN CÁ NHÂN" />
       <Card>
         <CardHeader>
           <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-accent text-primary">
@@ -57,7 +55,9 @@ export function AccountPage() {
       </Card>
       {user.role === "SINH_VIEN" && (
         <Button asChild>
-          <Link to="/app/sinh_vien/profile">Hồ sơ, lịch sử & thành tích</Link>
+          <Link to="/app/sinh_vien/profile/edit">
+            Cập nhật thông tin cá nhân
+          </Link>
         </Button>
       )}
     </div>

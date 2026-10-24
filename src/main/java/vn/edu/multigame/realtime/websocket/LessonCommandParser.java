@@ -31,7 +31,7 @@ public class LessonCommandParser {
                 case "START_LESSON" -> {fields(p,Set.of("revision"));if(!number(p.path("revision"),0)) throw invalid();}
                 case "START_LESSON_GAME" -> {fields(p,Set.of("position","revision"));position(p);if(!number(p.path("revision"),0)) throw invalid();}
                 case "PARTICIPATE_LESSON_GAME" -> {fields(p,Set.of("position"));position(p);}
-                case "OPEN_LESSON_WINDOW" -> {fields(p,Set.of("position","questionIndex","durationMs"));position(p);if(!number(p.path("questionIndex"),1) || p.path("questionIndex").longValue()>50 || !number(p.path("durationMs"),1) || p.path("durationMs").longValue()>Integer.MAX_VALUE) throw invalid();}
+                case "OPEN_LESSON_WINDOW" -> {fields(p,p.has("durationMs")?Set.of("position","questionIndex","durationMs"):Set.of("position","questionIndex"));position(p);if(!number(p.path("questionIndex"),1) || p.path("questionIndex").longValue()>50 || (p.has("durationMs") && (!number(p.path("durationMs"),1) || p.path("durationMs").longValue()>Integer.MAX_VALUE))) throw invalid();}
                 case "CLOSE_LESSON_WINDOW","CANCEL_LESSON_WINDOW" -> {fields(p,Set.of("token"));if(!number(p.path("token"),1)) throw invalid();}
                 case "SUBMIT_LESSON_ACTION" -> {fields(p,Set.of("token","value"));if(!number(p.path("token"),1) || !p.path("value").isTextual() || p.path("value").textValue().length()>5000) throw invalid();}
                 default -> throw invalid();

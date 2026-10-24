@@ -73,6 +73,13 @@ export function GameContent({
                 {resource.data.sourceQuizId}. Sửa ở đây chỉ đổi snapshot của trò
                 này, không sửa hay tạo thêm bộ trong ngân hàng.
               </Notice>
+              {["QUIZ", "FILL_BLANK"].includes(game.mode) && (
+                <p className="text-sm text-muted-foreground">
+                  Bản sao có {resource.data.questions.length} câu; trò sử dụng{" "}
+                  {game.questionCount || resource.data.questions.length} câu đầu
+                  theo thứ tự đã lưu. Ngân sách tối đa: {game.budget} điểm.
+                </p>
+              )}
               {editing && game.status === "READY" ? (
                 <QuestionEditor
                   key={resource.data.revision}
@@ -100,7 +107,11 @@ export function GameContent({
                 />
               ) : (
                 <QuestionPreview
-                  questions={resource.data.questions}
+                  key={`${resource.data.revision}:${game.questionCount}`}
+                  questions={resource.data.questions.slice(
+                    0,
+                    game.questionCount || resource.data.questions.length,
+                  )}
                   bankId={resource.data.sourceQuizId}
                 />
               )}

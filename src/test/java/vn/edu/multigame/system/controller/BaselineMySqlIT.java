@@ -61,16 +61,20 @@ class BaselineMySqlIT {
                         "--server.address=127.0.0.1", "--server.port=0",
                         "--logging.level.org.springframework=WARN", "--logging.level.org.hibernate=WARN",
                         "--spring.jpa.hibernate.ddl-auto=validate", "--spring.flyway.clean-disabled=true")) {
+                    var logging=org.springframework.boot.logging.LoggingSystem.get(getClass().getClassLoader());
+                    for(String logger:java.util.List.of("org.springframework","org.springframework.jdbc.core","org.springframework.web","org.springframework.transaction","org.hibernate","org.hibernate.SQL"))logging.setLogLevel(logger,org.springframework.boot.logging.LogLevel.WARN);
                     var jdbc = new JdbcTemplate(context.getBean(DataSource.class));
                     assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(schema);
                     assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM flyway_schema_history WHERE success=1", Integer.class))
-                            .isEqualTo(25);
+                            .isEqualTo(28);
                     assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user", Integer.class)).isEqualTo(1);
                     assertThat(context.getBean(vn.edu.multigame.realtime.session.RoomBoundary.class)).isNotNull();
                     assertThat(context.getBean(vn.edu.multigame.realtime.session.GameRuntime.class)).isNotNull();
                     int httpPort = ((ServletWebServerApplicationContext) context).getWebServer().getPort();
+                    if (!(Boolean.getBoolean("frontend.e2e") && Boolean.getBoolean("frontend.e2e.only"))) {
                     vn.edu.multigame.auth.controller.AccountLifecycleChecks.verify(context, jdbc, httpPort);
                     vn.edu.multigame.academic.controller.AcademicLifecycleChecks.verify(context, jdbc, httpPort);
+                    if(!Boolean.getBoolean("baseline.management.only")) {
                     vn.edu.multigame.room.controller.ClassMembershipChecks.verify(jdbc,httpPort);
                     vn.edu.multigame.lesson.controller.LessonLifecycleChecks.verify(context,jdbc,httpPort);
                     vn.edu.multigame.questionbank.controller.LearningBankChecks.verify(context,jdbc,httpPort);
@@ -80,7 +84,11 @@ class BaselineMySqlIT {
                     vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifyFillBlank(context,jdbc,httpPort);
                     vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifyQuiz(context,jdbc,httpPort);
                     vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifyWheel(context,jdbc,httpPort);
-                    vn.edu.multigame.realtime.session.LessonRealtimeChecks.verify(context,jdbc,httpPort);
+                    vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifySettingsVisibility(context,jdbc,httpPort);
+                    }
+                    vn.edu.multigame.realtime.session.LessonRealtimeChecks.verifyManagement(context,jdbc,httpPort);
+                    if(!Boolean.getBoolean("baseline.management.only"))vn.edu.multigame.realtime.session.LessonRealtimeChecks.verify(context,jdbc,httpPort);
+                    }
                     var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
                     for (String path : new String[] {"/", "/api/system/ready"}) {
                         var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + httpPort + path))

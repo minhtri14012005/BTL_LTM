@@ -13,8 +13,9 @@ public class LessonRealtimeStore {
     private final JdbcTemplate jdbc;
     public LessonRealtimeStore(JdbcTemplate jdbc) {this.jdbc=jdbc;}
     public Optional<Window> window(long lesson) {return jdbc.query("SELECT * FROM lesson_action_window WHERE lesson_id=?",(r,n)->new Window(lesson,r.getLong("game_id"),r.getInt("position"),r.getLong("token"),r.getInt("question_index"),r.getString("status"),r.getLong("opened_at_ms"),r.getLong("deadline_at_ms")),lesson).stream().findFirst();}
-    public List<Long> openLessons() {return jdbc.queryForList("SELECT lesson_id FROM lesson_action_window WHERE status='OPEN'",Long.class);}
-    public boolean completed(long lesson) {return "COMPLETED".equals(jdbc.queryForObject("SELECT status FROM lesson WHERE id=?",String.class,lesson));}
+    public List<Long> openLessons() {return jdbc.queryForList("SELECT id FROM lesson WHERE deleted_at_ms IS NULL AND status='RUNNING'",Long.class);}
+    public List<Long> inClass(long course){return jdbc.queryForList("SELECT id FROM lesson WHERE course_class_id=? AND deleted_at_ms IS NULL",Long.class,course);}
+    public boolean completed(long lesson) {return jdbc.queryForObject("SELECT COUNT(*) FROM lesson WHERE id=? AND deleted_at_ms IS NULL AND status<>'COMPLETED'",Integer.class,lesson)==0;}
     public void open(long lesson,long game,int position,long token,int question,long now,long deadline) {
         jdbc.update("INSERT INTO lesson_action_window(lesson_id,game_id,position,token,question_index,status,opened_at_ms,deadline_at_ms) VALUES(?,?,?,?,?,'OPEN',?,?) ON DUPLICATE KEY UPDATE game_id=VALUES(game_id),position=VALUES(position),token=VALUES(token),question_index=VALUES(question_index),status='OPEN',opened_at_ms=VALUES(opened_at_ms),deadline_at_ms=VALUES(deadline_at_ms)",lesson,game,position,token,question,now,deadline);
     }

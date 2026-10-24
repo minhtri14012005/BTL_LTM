@@ -24,8 +24,15 @@ export async function verifyAdmin(browser, base, variant) {
     await page.getByRole("tab", { name }).click();
   }
   async function go(name) {
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    if (
+      await page
+        .getByRole("button", { name: "Mở menu", exact: true })
+        .isVisible()
+    )
+      await page.getByRole("button", { name: "Mở menu", exact: true }).click();
     await page
-      .getByRole("navigation", { name: "Quản lý đào tạo" })
+      .getByRole("navigation", { name: "Điều hướng chính" })
       .getByRole("link", { name, exact: true })
       .click();
   }
@@ -34,15 +41,20 @@ export async function verifyAdmin(browser, base, variant) {
     await page.getByLabel("Tên đăng nhập", { exact: true }).fill("ui_admin");
     await page.getByLabel("Mật khẩu", { exact: true }).fill("BrowserPass123!");
     await page.getByRole("button", { name: "Vào không gian học tập" }).click();
-    await page.getByRole("link", { name: "Đào tạo", exact: true }).click();
+    await go("Đào tạo");
+    await page
+      .getByRole("button", { name: "Tạo năm học", exact: true })
+      .click();
     await page.getByLabel("Mã năm học", { exact: true }).fill(code);
     await page.getByLabel("Tên năm học", { exact: true }).fill("   ");
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Tạo năm học", exact: true })
       .click();
     await expect(page.getByRole("alert")).toContainText("khoảng trắng");
     await page.getByLabel("Tên năm học", { exact: true }).fill(year);
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Tạo năm học", exact: true })
       .click();
     await expect(
@@ -59,13 +71,22 @@ export async function verifyAdmin(browser, base, variant) {
       page.getByRole("cell", { name: updatedYear, exact: true }),
     ).toBeVisible();
     // A duplicate is rejected by the real server and is never shown as a success.
-    await page.getByLabel("Mã năm học", { exact: true }).fill(code);
-    await page.getByLabel("Tên năm học", { exact: true }).fill(year);
     await page
       .getByRole("button", { name: "Tạo năm học", exact: true })
       .click();
+    await page.getByLabel("Mã năm học", { exact: true }).fill(code);
+    await page.getByLabel("Tên năm học", { exact: true }).fill(year);
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Tạo năm học", exact: true })
+      .click();
     await expect(page.getByRole("alert")).toContainText("đã tồn tại");
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Đóng", exact: true })
+      .click();
     await tab("2. Học kỳ");
+    await page.getByRole("button", { name: "Tạo học kỳ", exact: true }).click();
     await page
       .getByLabel("Năm học", { exact: true })
       .selectOption({ label: `${updatedYear} (${code})` });
@@ -76,15 +97,22 @@ export async function verifyAdmin(browser, base, variant) {
       page.getByRole("cell", { name: semester, exact: true }),
     ).toBeVisible();
     await tab("3. Môn học");
+    await page
+      .getByRole("button", { name: "Tạo môn học", exact: true })
+      .click();
     await page.getByLabel("Mã môn học", { exact: true }).fill(code);
     await page.getByLabel("Tên môn học", { exact: true }).fill(subject);
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Tạo môn học", exact: true })
       .click();
     await expect(
       page.getByRole("cell", { name: subject, exact: true }),
     ).toBeVisible();
     await tab("4. Môn theo học kỳ");
+    await page
+      .getByRole("button", { name: "Mở môn theo học kỳ", exact: true })
+      .click();
     await page
       .getByLabel("Năm học", { exact: true })
       .selectOption({ label: updatedYear });
@@ -95,6 +123,7 @@ export async function verifyAdmin(browser, base, variant) {
       .getByLabel("Môn học", { exact: true })
       .selectOption({ label: `${subject} (${code})` });
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Mở môn theo học kỳ", exact: true })
       .click();
     await expect(
@@ -108,6 +137,9 @@ export async function verifyAdmin(browser, base, variant) {
       .click();
     for (const n of [1, 2]) {
       await page
+        .getByRole("button", { name: "Tạo lớp học", exact: true })
+        .click();
+      await page
         .getByLabel("Môn theo học kỳ", { exact: true })
         .selectOption({ label: `${updatedYear} / ${semester} / ${subject}` });
       await page.getByLabel("Mã lớp", { exact: true }).fill(`${code}_${n}`);
@@ -118,6 +150,7 @@ export async function verifyAdmin(browser, base, variant) {
         .getByLabel("Số buổi bắt buộc", { exact: true })
         .fill(String(n + 5));
       await page
+        .getByRole("dialog")
         .getByRole("button", { name: "Tạo lớp học", exact: true })
         .click();
       await expect(
@@ -134,6 +167,9 @@ export async function verifyAdmin(browser, base, variant) {
     await go("Tài khoản đào tạo");
     await tab("Giảng viên");
     await page
+      .getByRole("button", { name: "Cấp tài khoản giảng viên", exact: true })
+      .click();
+    await page
       .getByLabel("Tên đăng nhập giảng viên", { exact: true })
       .fill(teacher);
     await page
@@ -143,6 +179,7 @@ export async function verifyAdmin(browser, base, variant) {
       .getByLabel("Mật khẩu ban đầu", { exact: true })
       .fill("TeacherPass123!");
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Cấp tài khoản giảng viên", exact: true })
       .click();
     await expect(
@@ -150,12 +187,11 @@ export async function verifyAdmin(browser, base, variant) {
     ).toBeVisible();
     await expect(
       page.getByLabel("Mật khẩu ban đầu", { exact: true }),
-    ).toHaveValue("");
+    ).toHaveCount(0);
     await go("Lớp & phân công");
     await page
-      .getByRole("textbox", { name: "Tìm giảng viên phân công" })
-      .fill(teacher);
-    await page.getByRole("button", { name: "Tìm", exact: true }).click();
+      .getByRole("link", { name: "Phân công giảng viên", exact: true })
+      .click();
     await page
       .getByLabel("Giảng viên được phân công", { exact: true })
       .selectOption({ label: `Giảng viên ${code} (${teacher})` });
@@ -165,6 +201,9 @@ export async function verifyAdmin(browser, base, variant) {
         .check();
     await page
       .getByRole("button", { name: "Phân công 2 lớp", exact: true })
+      .click();
+    await page
+      .getByRole("link", { name: "Danh sách lớp", exact: true })
       .click();
     for (const n of [1, 2])
       await expect(
@@ -185,11 +224,15 @@ export async function verifyAdmin(browser, base, variant) {
       .click();
     await expect(page.getByRole("alert")).toContainText("đang được sử dụng");
     // A separate unused year can be deleted without removing linked data.
+    await page
+      .getByRole("button", { name: "Tạo năm học", exact: true })
+      .click();
     await page.getByLabel("Mã năm học", { exact: true }).fill(`${code}_DEL`);
     await page
       .getByLabel("Tên năm học", { exact: true })
       .fill(`Xóa thử ${code}`);
     await page
+      .getByRole("dialog")
       .getByRole("button", { name: "Tạo năm học", exact: true })
       .click();
     await page
@@ -222,7 +265,7 @@ export async function verifyAdmin(browser, base, variant) {
       .getByLabel("Lý do", { exact: true })
       .fill(`Kiểm thử giao diện ${code}`);
     await dialog.getByRole("button", { name: "Xác nhận", exact: true }).click();
-    await expect(studentRow).toContainText("EXPELLED");
+    await expect(studentRow).toContainText("Đã đuổi học");
     await page.reload();
     await page
       .getByRole("textbox", { name: "Tìm tài khoản" })
@@ -236,7 +279,7 @@ export async function verifyAdmin(browser, base, variant) {
       .getByLabel("Lý do", { exact: true })
       .fill(`Khôi phục sau kiểm thử ${code}`);
     await dialog.getByRole("button", { name: "Xác nhận", exact: true }).click();
-    await expect(studentRow).toContainText("ACTIVE");
+    await expect(studentRow).toContainText("Đang hoạt động");
     await fits();
     await page.setViewportSize({ width: 320, height: 844 });
     await fits();

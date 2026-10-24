@@ -1,3 +1,8 @@
+import { verifyLessonManagement } from "./lesson-management.mjs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import { expect as baseExpect } from "@playwright/test";
 const expect = baseExpect.configure({ timeout: 20000 });
 import { randomUUID } from "node:crypto";
@@ -26,7 +31,8 @@ export async function verifyTeaching(browser, base, variant) {
       ...(body === undefined ? {} : { data: body }),
     });
     expect(r.ok(), `${method} ${path}: ${await r.text()}`).toBe(true);
-    return r.status() === 204 ? null : r.json();
+    const text = await r.text();
+    return text ? JSON.parse(text) : null;
   }
   const login = (c, user, password = "BrowserPass123!") =>
     call(c, "POST", "/api/auth/login", { username: user, password });
@@ -151,11 +157,19 @@ export async function verifyTeaching(browser, base, variant) {
           .getByRole("button", { name: "Tạo tài khoản sinh viên", exact: true })
           .click();
         await student.page
+          .getByRole("button", { name: "Tham gia bằng mã lớp", exact: true })
+          .click();
+        await student.page
           .getByRole("textbox", { name: "Mã tham gia lớp", exact: true })
           .fill(room.joinCode);
         await student.page
           .getByRole("button", { name: "Gửi yêu cầu tham gia", exact: true })
           .click();
+        await expect(
+          student.page.getByText("Đã gửi yêu cầu tham gia lớp.", {
+            exact: true,
+          }),
+        ).toBeVisible();
         await expect(
           student.page
             .locator("span.status-badge")
@@ -169,7 +183,7 @@ export async function verifyTeaching(browser, base, variant) {
       students.push(student);
     }
     await page.goto(classUrl);
-    await page.getByRole("tab", { name: "Thành viên", exact: true }).click();
+    await page.getByRole("link", { name: "Thành viên", exact: true }).click();
     for (let i = 0; i < 4; i++)
       await page
         .getByRole("button", { name: `Duyệt ${students[i].code}`, exact: true })
@@ -219,7 +233,7 @@ export async function verifyTeaching(browser, base, variant) {
         s.page.locator('[title="Đã kết nối trực tiếp"]'),
       ).toBeAttached();
     }
-    await page.getByRole("tab", { name: "Ô vòng quay", exact: true }).click();
+    await page.getByRole("link", { name: "Ô vòng quay", exact: true }).click();
     for (const text of ["Không phải làm gì", "Lên trả lời câu hỏi bài cũ"]) {
       await page
         .getByRole("button", { name: "Thêm ô thử thách", exact: true })
@@ -246,12 +260,92 @@ export async function verifyTeaching(browser, base, variant) {
       title: `Quiz Public ${tag}`,
       visibility: "PUBLIC",
       mode: "QUIZ",
-      questions: [1, 2].map((n) => ({
+      questions: Array.from({ length: 20 }, (_, i) => i + 1).map((n) => ({
         content: `Câu nguồn ${tag} ${n}`,
         options: { A: "Đúng", B: "Sai B", C: "Sai C", D: "Sai D" },
         correctAnswer: "A",
       })),
     });
+    const seeds = JSON.parse(
+      await readFile(
+        new URL(
+          "../../data/learning-banks/question-banks.json",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    );
+    expect(seeds.packs).toHaveLength(15);
+    for (const mode of ["QUIZ", "FILL_BLANK", "ASSIGNMENT"])
+      expect(seeds.packs.filter((p) => p.mode === mode)).toHaveLength(5);
+    for (const pack of seeds.packs) {
+      const list = await call(
+        teacher,
+        "GET",
+        `/api/quizzes?scope=MINE&mode=${pack.mode}&q=${encodeURIComponent(pack.title)}&size=100`,
+      );
+      const saved =
+        list.items.find((p) => p.title === pack.title) ||
+        (await call(teacher, "POST", "/api/quizzes", pack));
+      const preview = await call(
+        source,
+        "GET",
+        `/api/quizzes/${saved.id}/preview`,
+      );
+      expect(preview.mode).toBe(pack.mode);
+      expect(preview.visibility).toBe("PUBLIC");
+      expect(preview.questions).toHaveLength(
+        pack.mode === "ASSIGNMENT" ? 1 : 10,
+      );
+      for (let index = 0; index < pack.questions.length; index++) {
+        for (const [key, value] of Object.entries(pack.questions[index]))
+          expect(preview.questions[index][key]).toEqual(value);
+      }
+    }
+    console.log(
+      `${variant}: 15 Public learning banks imported and validated through the real API PASS`,
+    );
+    if (process.platform === "win32") {
+      const literal = (value) => "'" + value.replaceAll("'", "''") + "'";
+      const scriptPath = fileURLToPath(
+        new URL("../../scripts/Import-LearningBanks.ps1", import.meta.url),
+      );
+      const code = `[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $fixtureCredential=[pscredential]::new(${literal(sourceName)},(ConvertTo-SecureString 'BrowserPass123!' -AsPlainText -Force)); & ${literal(scriptPath)} -BaseUrl ${literal(base)} -Credential $fixtureCredential;`;
+      const execute = promisify(execFile);
+      const first = await execute(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          code,
+        ],
+        { timeout: 60000, encoding: "utf8" },
+      );
+      expect(first.stdout).toContain(
+        "Created: 15; skipped existing owned banks: 0.",
+      );
+      const second = await execute(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          code,
+        ],
+        { timeout: 60000, encoding: "utf8" },
+      );
+      expect(second.stdout).toContain(
+        "Created: 0; skipped existing owned banks: 15.",
+      );
+      console.log(
+        `${variant}: Windows importer UTF-8 and duplicate-free second import PASS`,
+      );
+    }
     async function createBank(mode, title) {
       await page.goto(`${base}/app/giang_vien/banks`);
       await page
@@ -297,7 +391,7 @@ export async function verifyTeaching(browser, base, variant) {
       .getByRole("button", { name: `Preview ${quiz.title}`, exact: true })
       .click();
     await expect(
-      page.getByRole("button", { name: "Sửa bản gốc của tôi", exact: true }),
+      page.getByRole("link", { name: "Sửa bản gốc của tôi", exact: true }),
     ).toHaveCount(0);
     await page
       .getByRole("button", { name: "Hiện đáp án", exact: true })
@@ -319,7 +413,7 @@ export async function verifyTeaching(browser, base, variant) {
         })
         .first();
     for (let lessonNumber = 1; lessonNumber <= 2; lessonNumber++) {
-      await page.goto(classUrl);
+      await page.goto(`${classUrl}/lessons`);
       await page
         .getByRole("button", { name: "Tạo buổi mới", exact: true })
         .click();
@@ -332,7 +426,8 @@ export async function verifyTeaching(browser, base, variant) {
           .selectOption("ASSIGNMENT");
       for (const p of [1, 2, 3]) {
         await page
-          .getByLabel(`Tên trò ${p}`, { exact: true })
+          .getByLabel("Tên hiển thị (tùy chọn)", { exact: true })
+          .nth(p - 1)
           .fill(`Hoạt động ${p}`);
         await page
           .getByLabel(`Ngân sách trò ${p}`, { exact: true })
@@ -368,6 +463,12 @@ export async function verifyTeaching(browser, base, variant) {
         [2, quiz.title],
         [3, lessonNumber === 1 ? fillTitle : assignmentTitle],
       ]) {
+        await page.goto(
+          `${base}/app/giang_vien/lessons/${lessonId}/games/${position}?panel=content`,
+        );
+        await expect(
+          page.locator("main p.eyebrow").filter({ hasText: /TRÒ \d ·/ }),
+        ).toHaveCount(1);
         const card = gameCard(position);
         await card
           .getByRole("button", { name: "Chọn bộ từ ngân hàng", exact: true })
@@ -390,6 +491,9 @@ export async function verifyTeaching(browser, base, variant) {
         await expect(card.getByText(/BẢN SAO TRONG TRÒ/)).toBeVisible();
       }
       if (lessonNumber === 1) {
+        await page.goto(
+          `${base}/app/giang_vien/lessons/${lessonId}/games/2?panel=content`,
+        );
         const card = gameCard(2);
         await card
           .getByRole("button", { name: "Sửa bản sao trong trò", exact: true })
@@ -417,11 +521,30 @@ export async function verifyTeaching(browser, base, variant) {
           ).totalElements,
         ).toBe(0);
       }
+      await page.goto(
+        `${base}/app/giang_vien/lessons/${lessonId}/games/1?panel=configuration`,
+      );
+      await page
+        .getByLabel("Số sinh viên được chọn", { exact: true })
+        .fill("2");
+      await page
+        .getByRole("button", { name: "Lưu cấu hình chung", exact: true })
+        .click();
+      await expect(
+        page.getByText("Đã lưu cấu hình chung.", { exact: true }),
+      ).toBeVisible();
+      await page.goto(`${base}/app/giang_vien/lessons/${lessonId}`);
+      await expect(
+        page.getByRole("button", { name: "Lưu cấu hình chung", exact: true }),
+      ).toHaveCount(0);
       await page
         .getByRole("button", { name: "Công bố buổi học", exact: true })
         .click();
       await page
         .getByRole("button", { name: "Bắt đầu buổi học", exact: true })
+        .click();
+      await page
+        .getByRole("link", { name: "Quản lý trò 1", exact: true })
         .click();
       await expect(
         page.getByRole("button", { name: "Bắt đầu trò 1", exact: true }),
@@ -436,6 +559,9 @@ export async function verifyTeaching(browser, base, variant) {
             .getByRole("button", { name: "Tham dự buổi học", exact: true })
             .click();
           await expect(s.page.getByText(/Bạn đã tham dự buổi/)).toBeVisible();
+          await s.page
+            .getByRole("link", { name: "Vào trò 1", exact: true })
+            .click();
         }),
       );
       await page
@@ -463,7 +589,7 @@ export async function verifyTeaching(browser, base, variant) {
       await page
         .getByRole("button", { name: "Chọn tất cả đủ điều kiện", exact: true })
         .click();
-      await page.getByRole("spinbutton", { name: "Số người k" }).fill("2");
+
       await page
         .getByRole("button", { name: "Server chọn k sinh viên", exact: true })
         .click();
@@ -516,6 +642,7 @@ export async function verifyTeaching(browser, base, variant) {
         .getByRole("alertdialog")
         .getByRole("button", { name: "Xác nhận", exact: true })
         .click();
+      await page.goto(`${base}/app/giang_vien/lessons/${lessonId}/games/2`);
       await expect(
         page.getByRole("button", { name: "Bắt đầu trò 2", exact: true }),
       ).toBeEnabled();
@@ -531,6 +658,44 @@ export async function verifyTeaching(browser, base, variant) {
           selected.selected.includes(p.userId) ? 8 : 20,
         );
       for (const position of [2, 3]) {
+        await page.goto(
+          `${base}/app/giang_vien/lessons/${lessonId}/games/${position}`,
+        );
+        if (position === 2 || lessonNumber === 1) {
+          await page
+            .getByRole("tab", { name: "Cấu hình chung", exact: true })
+            .click();
+          await page
+            .getByLabel("Thời gian mỗi câu (giây)", { exact: true })
+            .fill(lessonNumber === 1 && position === 2 ? "20" : "10");
+          await page
+            .getByLabel("Số câu hỏi sử dụng", { exact: true })
+            .fill(position === 2 ? "2" : "1");
+          await page
+            .getByLabel("Ngân sách điểm của trò", { exact: true })
+            .fill("40");
+          await page
+            .getByRole("button", { name: "Lưu cấu hình chung", exact: true })
+            .click();
+          await page
+            .getByRole("tab", { name: "Điều khiển", exact: true })
+            .click();
+          await expect(
+            page.getByRole("button", {
+              name: `Bắt đầu trò ${position}`,
+              exact: true,
+            }),
+          ).toBeEnabled();
+        }
+        await Promise.all(
+          students
+            .slice(0, 4)
+            .map((s) =>
+              s.page.goto(
+                `${base}/app/sinh_vien/lessons/${lessonId}/games/${position}`,
+              ),
+            ),
+        );
         await page
           .getByRole("button", { name: `Bắt đầu trò ${position}`, exact: true })
           .click();
@@ -562,21 +727,112 @@ export async function verifyTeaching(browser, base, variant) {
         if (position === 2 || lessonNumber === 1) {
           const count = position === 2 ? 2 : 1;
           for (let q = 1; q <= count; q++) {
-            await card
-              .getByRole("spinbutton", {
-                name: `Thời lượng câu trò ${position}`,
-              })
-              .fill("60");
-            await card
-              .getByRole("button", { name: `Mở câu ${q}`, exact: true })
-              .click();
             await expect(
-              card.getByRole("button", {
-                name: "Đóng câu hiện tại",
-                exact: true,
+              card.getByRole("heading", {
+                name: new RegExp(`Tiến trình .*Câu ${q}/${count}`),
               }),
-            ).toBeEnabled();
+            ).toBeVisible({ timeout: 30000 });
+            await expect(
+              card.getByRole("button", { name: /Mở câu|Đóng câu hiện tại/ }),
+            ).toHaveCount(0);
             if (lessonNumber === 1 && position === 2 && q === 1) {
+              const first = students[0];
+              await page
+                .getByRole("button", { name: "Ẩn trò chơi", exact: true })
+                .click();
+              await expect(
+                first.page.getByText("Trò không tồn tại hoặc đang được ẩn.", {
+                  exact: true,
+                }),
+              ).toBeVisible();
+              expect(
+                (
+                  await first.context.request.get(
+                    `${base}/api/student/lessons/${lessonId}/games/2/snapshot`,
+                  )
+                ).status(),
+              ).toBe(404);
+              await expect(
+                first.page.getByRole("radio", {
+                  name: "Đáp án A",
+                  exact: true,
+                }),
+              ).toHaveCount(0);
+              await first.page.goto(
+                `${base}/app/sinh_vien/lessons/${lessonId}/games/2`,
+              );
+              await expect(
+                first.page
+                  .getByText("Trò không tồn tại hoặc đang được ẩn.", {
+                    exact: true,
+                  })
+                  .first(),
+              ).toBeVisible();
+              await page
+                .getByRole("button", { name: "Hiện trò chơi", exact: true })
+                .click();
+              await expect(
+                first.page.getByRole("radio", {
+                  name: "Đáp án A",
+                  exact: true,
+                }),
+              ).toBeEnabled();
+              await first.page
+                .getByRole("radio", { name: "Đáp án A", exact: true })
+                .check();
+              await first.page
+                .getByRole("link", {
+                  name: "Về tổng quan buổi học",
+                  exact: true,
+                })
+                .click();
+              await expect(first.page.getByRole("radio")).toHaveCount(0);
+              await first.page
+                .getByRole("link", { name: "Vào trò 2", exact: true })
+                .click();
+              await expect(
+                first.page.getByRole("radio", {
+                  name: "Đáp án A",
+                  exact: true,
+                }),
+              ).toBeChecked();
+              await page
+                .getByRole("link", {
+                  name: "Về tổng quan buổi học",
+                  exact: true,
+                })
+                .click();
+              await expect(
+                page.getByRole("button", { name: "Mở câu 1", exact: true }),
+              ).toHaveCount(0);
+              await page
+                .getByRole("button", { name: "Ẩn buổi học", exact: true })
+                .click();
+              await expect(
+                first.page.getByText("Quyền xem buổi học đã được thu hồi.", {
+                  exact: true,
+                }),
+              ).toBeVisible();
+              expect(
+                (
+                  await first.context.request.get(
+                    `${base}/api/student/lessons/${lessonId}/games/2/snapshot`,
+                  )
+                ).status(),
+              ).toBe(404);
+              await page
+                .getByRole("button", { name: "Công bố buổi học", exact: true })
+                .click();
+              await expect(
+                first.page.getByRole("radio", {
+                  name: "Đáp án A",
+                  exact: true,
+                }),
+              ).toBeEnabled();
+              await page
+                .getByRole("link", { name: "Quản lý trò 2", exact: true })
+                .click();
+              await expect(page.getByRole("timer")).toBeVisible();
               await students[0].page.evaluate(() =>
                 window.__playSockets
                   .at(-1)
@@ -596,6 +852,12 @@ export async function verifyTeaching(browser, base, variant) {
             }
             await Promise.all(
               students.slice(0, 4).map(async (s) => {
+                await expect(
+                  s.page.getByRole("heading", {
+                    name: `C\u00e2u ${q}/${count}`,
+                    exact: true,
+                  }),
+                ).toBeVisible();
                 if (position === 2)
                   await s.page
                     .getByRole("radio", { name: "Đáp án A", exact: true })
@@ -618,9 +880,23 @@ export async function verifyTeaching(browser, base, variant) {
                 ).toBeDisabled();
               }),
             );
-            await card
-              .getByRole("button", { name: "Đóng câu hiện tại", exact: true })
-              .click();
+            await expect
+              .poll(
+                async () => {
+                  const live = await call(
+                    teacher,
+                    "GET",
+                    `/api/teaching/lessons/${lessonId}/snapshot`,
+                  );
+                  return (
+                    live.window?.questionIndex > q ||
+                    live.lesson.games.find((g) => g.position === position)
+                      .status === "COMPLETED"
+                  );
+                },
+                { timeout: 30000 },
+              )
+              .toBe(true);
           }
           await expect(
             card.getByText("Đã hoàn tất", { exact: false }).first(),
@@ -630,12 +906,43 @@ export async function verifyTeaching(browser, base, variant) {
             const d = new Date(Date.now() + 180000);
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
           });
+          await page
+            .getByRole("tab", { name: "Cấu hình chung", exact: true })
+            .click();
           await card.getByLabel("Hạn nộp trò 3", { exact: true }).fill(future);
           await card
             .getByRole("button", { name: "Đặt / sửa hạn nộp", exact: true })
             .click();
+          await page
+            .getByRole("tab", { name: "Điều khiển", exact: true })
+            .click();
           await expect(
             card.getByRole("button", { name: "Đóng nhận bài", exact: true }),
+          ).toBeEnabled();
+          await page
+            .getByRole("button", { name: "Ẩn trò chơi", exact: true })
+            .click();
+          await expect(
+            students[0].page.getByRole("textbox", {
+              name: "Bài làm của bạn",
+              exact: true,
+            }),
+          ).toHaveCount(0);
+          expect(
+            (
+              await students[0].context.request.get(
+                `${base}/api/student/lessons/${lessonId}/games/3/snapshot`,
+              )
+            ).status(),
+          ).toBe(404);
+          await page
+            .getByRole("button", { name: "Hiện trò chơi", exact: true })
+            .click();
+          await expect(
+            students[0].page.getByRole("textbox", {
+              name: "Bài làm của bạn",
+              exact: true,
+            }),
           ).toBeEnabled();
           for (const s of students.slice(0, 4))
             for (let version = 1; version <= 3; version++) {
@@ -657,16 +964,32 @@ export async function verifyTeaching(browser, base, variant) {
           await page
             .getByRole("button", { name: "Làm mới trạng thái", exact: true })
             .click();
-          for (const s of students.slice(0, 4))
+          for (const s of students.slice(0, 4)) {
+            await card
+              .getByRole("button", { name: `Xem bài ${s.code}`, exact: true })
+              .click();
             await expect(
-              card.getByText(`Bản 3 của ${s.code}`, { exact: true }),
+              page
+                .getByRole("dialog")
+                .getByText(`Bản 3 của ${s.code}`, { exact: true }),
             ).toBeVisible();
+            await page
+              .getByRole("dialog")
+              .getByRole("button", { name: "Đóng", exact: true })
+              .click();
+          }
           await card
             .getByRole("button", { name: "Đóng nhận bài", exact: true })
+            .click();
+          await page
+            .getByRole("tab", { name: "Cấu hình chung", exact: true })
             .click();
           await card.getByLabel("Hạn nộp trò 3", { exact: true }).fill(future);
           await card
             .getByRole("button", { name: "Mở lại / sửa hạn nộp", exact: true })
+            .click();
+          await page
+            .getByRole("tab", { name: "Điều khiển", exact: true })
             .click();
           await expect(
             card.getByRole("button", { name: "Đóng nhận bài", exact: true }),
@@ -683,22 +1006,41 @@ export async function verifyTeaching(browser, base, variant) {
           await page
             .getByRole("button", { name: "Làm mới trạng thái", exact: true })
             .click();
+          await card
+            .getByRole("button", {
+              name: `Xem bài ${students[0].code}`,
+              exact: true,
+            })
+            .click();
           await expect(
-            card.getByText(`Bản mở lại ${tag}`, { exact: true }),
+            page
+              .getByRole("dialog")
+              .getByText(`Bản mở lại ${tag}`, { exact: true }),
           ).toBeVisible();
+          await page
+            .getByRole("dialog")
+            .getByRole("button", { name: "Đóng", exact: true })
+            .click();
           await card
             .getByRole("button", { name: "Đóng nhận bài", exact: true })
             .click();
           for (const s of students.slice(0, 4)) {
             await card
+              .getByRole("button", { name: `Xem bài ${s.code}`, exact: true })
+              .click();
+            await page
+              .getByRole("dialog")
               .getByRole("spinbutton", { name: `Chấm ${s.code}`, exact: true })
               .fill("25");
-            const submissionCard = card
-              .locator("div.rounded-2xl.border")
-              .filter({ hasText: s.code })
-              .last();
+            const submissionCard = page.getByRole("dialog");
             await submissionCard
               .getByRole("button", { name: /Xác nhận chấm bản #/ })
+              .click();
+            await expect(submissionCard).toContainText(
+              "Điểm đã xác nhận cho bản này: 25",
+            );
+            await submissionCard
+              .getByRole("button", { name: "Đóng", exact: true })
               .click();
           }
           await card
@@ -760,7 +1102,7 @@ export async function verifyTeaching(browser, base, variant) {
       page.getByText("Đã tạo 2/2 · Đã hoàn thành 2/2", { exact: true }),
     ).toBeVisible();
     await page
-      .getByRole("tab", { name: "Bảng điểm & Rank", exact: true })
+      .getByRole("link", { name: "Cấu hình Rank", exact: true })
       .click();
     await page
       .getByRole("button", { name: "Thêm mức Rank", exact: true })
@@ -789,7 +1131,7 @@ export async function verifyTeaching(browser, base, variant) {
     expect(code).toMatch(/^[a-f0-9]{32}$/);
     await page.goto(`${base}/app/giang_vien/classes/${courses[1].id}`);
     await page
-      .getByRole("tab", { name: "Bảng điểm & Rank", exact: true })
+      .getByRole("link", { name: "Cấu hình Rank", exact: true })
       .click();
     await page
       .getByRole("textbox", { name: "Mã setting để import" })
@@ -800,6 +1142,20 @@ export async function verifyTeaching(browser, base, variant) {
     await expect(page.getByLabel("Tên Rank 1", { exact: true })).toHaveValue(
       "Tiên phong",
     );
+    await page.goto(`${classUrl}/scores`);
+    await expect(
+      page.getByRole("columnheader", {
+        name: "Rank do giảng viên đặt",
+        exact: true,
+      }),
+    ).toBeVisible();
+    for (const student of students.slice(0, 4))
+      await expect(
+        page.getByRole("cell", { name: student.code, exact: true }),
+      ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Thêm mức Rank", exact: true }),
+    ).toHaveCount(0);
     const learner = students[0].page;
     expect(
       await learner.evaluate(async () => {
@@ -847,16 +1203,35 @@ export async function verifyTeaching(browser, base, variant) {
         students.slice(0, 4).some((s) => s.code === r.maSinhVien),
       ),
     ).toHaveLength(4);
-    await learner.goto(`${base}/app/sinh_vien/profile?classId=${course.id}`);
+    await learner.goto(`${base}/app/sinh_vien/classes/${course.id}`);
+    const ownBoard = await call(
+      students[0].context,
+      "GET",
+      `/api/learning/classes/${course.id}/leaderboard`,
+    );
+    const personal = await call(students[0].context, "GET", "/api/auth/me");
+    const score = ownBoard.students.find((s) => s.userId === personal.id).score;
+    await expect(
+      learner
+        .getByText("Điểm đã ghi nhận trong lớp này", { exact: true })
+        .locator(".."),
+    ).toContainText(String(score));
+    await expect(learner.getByText("2/2", { exact: true })).toBeVisible();
+    await learner.goto(`${base}/app/sinh_vien/history?classId=${course.id}`);
     await expect(
       learner.getByText("Trang 1 · 2 buổi", { exact: true }),
     ).toBeVisible();
+    await learner.goto(`${base}/app/sinh_vien/profile/edit`);
     await learner
       .getByRole("textbox", { name: "Họ và tên trong hồ sơ", exact: true })
       .fill(`Hồ sơ đã sửa ${tag}`);
     await learner
       .getByRole("button", { name: "Lưu hồ sơ", exact: true })
       .click();
+    await expect(
+      learner.getByText("Đã cập nhật hồ sơ.", { exact: true }),
+    ).toBeVisible();
+    await learner.goto(`${base}/app/sinh_vien/profile`);
     await expect(
       learner.getByRole("heading", {
         name: `Hồ sơ đã sửa ${tag}`,
@@ -890,7 +1265,7 @@ export async function verifyTeaching(browser, base, variant) {
       `${base}/app/sinh_vien/lessons/${lastLesson.id}`,
     );
     await page.goto(classUrl);
-    await page.getByRole("tab", { name: "Thành viên", exact: true }).click();
+    await page.getByRole("link", { name: "Thành viên", exact: true }).click();
     await page
       .getByRole("button", { name: `Loại ${students[3].code}`, exact: true })
       .click();
@@ -907,7 +1282,7 @@ export async function verifyTeaching(browser, base, variant) {
       ).status(),
     ).toBe(403);
     await students[3].page.goto(
-      `${base}/app/sinh_vien/profile?classId=${course.id}`,
+      `${base}/app/sinh_vien/history?classId=${course.id}`,
     );
     await expect(
       students[3].page.getByText("Trang 1 · 2 buổi", { exact: true }),
@@ -935,6 +1310,17 @@ export async function verifyTeaching(browser, base, variant) {
         )
       ).status(),
     ).toBe(403);
+    await verifyLessonManagement({
+      page,
+      teacher,
+      admin,
+      student: students[0],
+      base,
+      course,
+      teacherId: me.id,
+      call,
+      tag,
+    });
     expect(errors).toEqual([]);
     console.log(
       `${variant}: TEACHER UI membership, bank preview/copy isolation, 2 lessons/4 modes, 4 concurrent students, wheel/grades, deadlines/resubmissions, ranks/share/import and mobile PASS`,

@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import { useResource } from "@/hooks/use-resource";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form";
@@ -16,11 +16,17 @@ import {
 import { NativeSelect, FormError } from "./teaching-shared";
 export function LessonPlan({
   initial,
+  children,
+  submitLabel,
+  lockedModes,
   onSave,
   pending,
   error,
 }: {
   initial?: Lesson;
+  children?: ReactNode;
+  submitLabel?: string;
+  lockedModes?: number[];
   onSave: (plan: object, banks?: Record<number, number>) => Promise<unknown>;
   pending: boolean;
   error: string;
@@ -86,6 +92,13 @@ export function LessonPlan({
             />
           )}
         </FormField>
+        {initial && (
+          <p className="text-sm text-muted-foreground">
+            Loại trò đã có nội dung được khóa để bảo toàn snapshot. Cấu hình số
+            câu, thời gian, thử thách và hạn nộp nằm ở cấu hình chung của từng
+            trò.
+          </p>
+        )}
         <div className="grid gap-4 lg:grid-cols-3">
           {slots.map((slot, index) => (
             <Card key={index} className={`space-y-4 p-4 tone-${index}`}>
@@ -98,6 +111,9 @@ export function LessonPlan({
                   {(p) => (
                     <NativeSelect
                       {...p}
+                      disabled={
+                        !!initial && (lockedModes?.includes(index + 1) ?? true)
+                      }
                       value={slot.mode}
                       onChange={(e) => patch(index, "mode", e.target.value)}
                     >
@@ -158,13 +174,12 @@ export function LessonPlan({
         >
           Tổng ngân sách: {total.toFixed(2)} / 100 điểm
         </p>
+        {children}
         <FormError message={validation || error} />
         <Button type="submit" disabled={pending}>
           {pending
             ? "Đang lưu…"
-            : initial
-              ? "Lưu kế hoạch buổi"
-              : "Tạo buổi học"}
+            : submitLabel || (initial ? "Lưu kế hoạch buổi" : "Tạo buổi học")}
         </Button>
       </fieldset>
     </form>

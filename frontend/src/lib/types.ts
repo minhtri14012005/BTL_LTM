@@ -61,4 +61,5 @@ export const statusNames: Record<string, string> = {
   RUNNING: "Đang diễn ra",
   COMPLETED: "Đã hoàn tất",
   ACTIVE: "Đang hoạt động",
+  EXPELLED: "Đã đuổi học",
 };

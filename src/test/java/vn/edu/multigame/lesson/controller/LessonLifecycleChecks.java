@@ -96,7 +96,9 @@ public class LessonLifecycleChecks {
         lesson=teacher.call("PUT",path+"/visibility",Map.of("revision",lesson.get("revision").asLong(),"visible",true),200);
         lesson=teacher.call("POST",path+"/start",revision(lesson),200);
         teacher.call("PUT",path,Map.of("revision",lesson.get("revision").asLong(),"plan",plan()),409);
-        teacher.call("PUT",path+"/visibility",Map.of("revision",lesson.get("revision").asLong(),"visible",false),409);
+        lesson=teacher.call("PUT",path+"/visibility",Map.of("revision",lesson.get("revision").asLong(),"visible",false),200);
+        students.getFirst().call("GET",studentPath,null,404);
+        lesson=teacher.call("PUT",path+"/visibility",Map.of("revision",lesson.get("revision").asLong(),"visible",true),200);
         teacher.call("POST",path+"/games/2/start",revision(lesson),409);
         lesson=teacher.call("POST",path+"/games/1/start",revision(lesson),200);
         students.getFirst().call("POST",studentPath+"/games/1/participate",null,409);

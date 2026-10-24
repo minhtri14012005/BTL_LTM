@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import { api } from "@/lib/api";
-import { realtime, useConnection } from "@/lib/session";
+import { PageHeader } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api";
+import { realtime, useConnection } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { teachingError, type Snapshot } from "./teaching-api";
 export { FormError, NativeSelect } from "@/features/admin/admin-shared";
 export function TeachingFrame({
@@ -20,20 +21,12 @@ export function TeachingFrame({
 }) {
   return (
     <div className="space-y-6">
-      <nav className="flex flex-wrap gap-2" aria-label="Không gian giảng viên">
+      {classId && (
         <Button asChild variant="outline">
-          <Link to="/app/giang_vien">Các lớp của tôi</Link>
+          <Link to={`/app/giang_vien/classes/${classId}`}>Về lớp học</Link>
         </Button>
-        {classId && (
-          <Button asChild variant="outline">
-            <Link to={`/app/giang_vien/classes/${classId}`}>Về lớp học</Link>
-          </Button>
-        )}
-        <Button asChild variant="outline">
-          <Link to="/app/giang_vien/banks">Ngân hàng nội dung</Link>
-        </Button>
-      </nav>
-      <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
+      )}
+      <PageHeader title={title} />
       {children}
     </div>
   );
@@ -78,7 +71,9 @@ export function useTeachingAction() {
 export function useTeachingSnapshot(
   id: number,
   scope: "teaching" | "student" = "teaching",
+  position?: number,
 ) {
+  const navigate = useNavigate();
   const connection = useConnection();
   const [data, setData] = useState<Snapshot>(),
     [error, setError] = useState(""),
@@ -100,7 +95,9 @@ export function useTeachingSnapshot(
   };
   async function refresh() {
     try {
-      const s = await api<Snapshot>(`/api/${scope}/lessons/${id}/snapshot`);
+      const s = await api<Snapshot>(
+        `/api/${scope}/lessons/${id}${scope === "student" && position ? `/games/${position}` : ""}/snapshot`,
+      );
       accept(s);
     } catch (e) {
       setFresh(false);
@@ -112,7 +109,15 @@ export function useTeachingSnapshot(
     setFresh(false);
     void refresh();
     return realtime.watchLesson(id, (event) => {
-      if (event.type === "LESSON_ACCESS_REVOKED") {
+      if (event.type === "LESSON_DELETED") {
+        setData(undefined);
+        setFresh(false);
+        toast.info("Buổi học đã được giảng viên xóa.");
+        navigate(
+          `/app/${scope === "teaching" ? "giang_vien" : "sinh_vien"}/classes/${event.classId}${scope === "teaching" ? "/lessons" : ""}`,
+          { replace: true },
+        );
+      } else if (event.type === "LESSON_ACCESS_REVOKED") {
         setData(undefined);
         setFresh(false);
         setError("Quyền xem buổi học đã được thu hồi.");
@@ -121,7 +126,7 @@ export function useTeachingSnapshot(
         setError(teachingError(new Error(event.code || event.message)));
       } else if (event.payload) accept(event.payload as Snapshot);
     });
-  }, [id, scope]);
+  }, [id, scope, position]);
   useEffect(() => {
     if (connection !== "connected") setFresh(false);
   }, [connection]);

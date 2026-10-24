@@ -20,6 +20,14 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
 class LessonRuntimeTest {
+    @Test void visitingMoreThanTheActorCapacityReclaimsIdleLessonsInsteadOfRuntimeBusy() {
+        var store=mock(LessonRealtimeStore.class);var transactions=mock(LessonRealtimeTransactions.class);var sockets=mock(AuthenticatedSocketRegistry.class);
+        when(sockets.lessonSubscriptions()).thenReturn(Map.of());
+        try(var runtime=new LessonRuntime(ServerClock.system(),store,transactions,sockets)) {
+            var caller=mock(Authentication.class);
+            for(long lesson=1;lesson<=600;lesson++)assertThat(runtime.serial(caller,lesson,()->true)).isTrue();
+        }
+    }
     @Test void liveWindowKeepsItsOriginalMonotonicDeadlineWhenWallClockJumps() throws Exception {
         var now=new AtomicReference<>(new ServerClock.Sample(100,10000));ServerClock clock=now::get;
         var store=mock(LessonRealtimeStore.class);var transactions=mock(LessonRealtimeTransactions.class);var sockets=mock(AuthenticatedSocketRegistry.class);

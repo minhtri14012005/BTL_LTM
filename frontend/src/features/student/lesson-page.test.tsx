@@ -186,3 +186,131 @@ it("does not award a non-pool participant maximum points or show a completed whe
   expect(screen.queryByText(/Chờ Server xác nhận tập quay/)).toBeNull();
   expect(screen.queryByText(/được Server ghi nhận mức tối đa/)).toBeNull();
 });
+
+it("preserves an unsent objective answer when returning to the same server window", () => {
+  const send = vi.fn();
+  const view = render(
+    <Objective snapshot={snapshot} game={game} pending={false} send={send} />,
+  );
+  fireEvent.change(screen.getByLabelText("Đáp án điền từ"), {
+    target: { value: "Hà Nội" },
+  });
+  view.unmount();
+  render(
+    <Objective snapshot={snapshot} game={game} pending={false} send={send} />,
+  );
+  expect(
+    (screen.getByLabelText("Đáp án điền từ") as HTMLInputElement).value,
+  ).toBe("Hà Nội");
+  expect(send).not.toHaveBeenCalled();
+});
+
+it.each(["QUIZ", "FILL_BLANK"] as const)(
+  "%s flashes only the submitted answer after server confirmation and resets for next question",
+  async (mode) => {
+    const current = { ...game, mode };
+    const initial = {
+      ...snapshot,
+      window: {
+        ...snapshot.window!,
+        question:
+          mode === "QUIZ"
+            ? {
+                content: "Question",
+                options: { A: "First", B: "Second", C: "Third", D: "Fourth" },
+              }
+            : snapshot.window!.question,
+      },
+    } as Snapshot;
+    const view = render(
+      <Objective
+        snapshot={initial}
+        game={current}
+        pending={false}
+        send={vi.fn()}
+      />,
+    );
+    expect(
+      document.querySelector(".answer-flash-correct,.answer-flash-wrong"),
+    ).toBeNull();
+    const answer = mode === "QUIZ" ? "B" : "Hà Nội";
+    const confirmed = {
+      ...initial,
+      window: { ...initial.window!, submitted: true },
+      [mode === "QUIZ" ? "quiz" : "fillBlank"]: {
+        8: [
+          {
+            questionIndex: 1,
+            correct: true,
+            answerValue: answer,
+            receivedAtMs: 1200,
+          },
+        ],
+      },
+    };
+    view.rerender(
+      <Objective
+        snapshot={confirmed}
+        game={current}
+        pending={false}
+        send={vi.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector(".answer-flash-correct")).not.toBeNull(),
+    );
+    if (mode === "QUIZ")
+      expect(
+        (screen.getByLabelText("Đáp án B") as HTMLInputElement).checked,
+      ).toBe(true);
+    view.rerender(
+      <Objective
+        snapshot={{
+          ...initial,
+          window: { ...initial.window!, token: 4, questionIndex: 2 },
+        }}
+        game={current}
+        pending={false}
+        send={vi.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        document.querySelector(".answer-flash-correct,.answer-flash-wrong"),
+      ).toBeNull(),
+    );
+    const wrong = {
+      ...initial,
+      window: {
+        ...initial.window!,
+        token: 4,
+        questionIndex: 2,
+        submitted: true,
+      },
+      [mode === "QUIZ" ? "quiz" : "fillBlank"]: {
+        8: [
+          {
+            questionIndex: 2,
+            correct: false,
+            answerValue: answer,
+            receivedAtMs: 2200,
+          },
+        ],
+      },
+    };
+    view.rerender(
+      <Objective
+        snapshot={wrong}
+        game={current}
+        pending={false}
+        send={vi.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelector(".answer-flash-wrong")).not.toBeNull(),
+    );
+    expect(
+      screen.queryByText(/Câu 1: Sai|Kết quả đã được Server xác nhận/),
+    ).toBeNull();
+  },
+);

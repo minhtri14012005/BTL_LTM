@@ -1,18 +1,21 @@
-import { Link, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import { type Membership, statusNames } from "@/lib/types";
-import { type Lesson } from "@/features/teaching/teaching-api";
-import { useResource } from "@/hooks/use-resource";
+import { EmptyState, ErrorState, Loading } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loading, ErrorState, EmptyState } from "@/components/feedback";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Board, type Lesson } from "@/features/teaching/teaching-api";
+import { useResource } from "@/hooks/use-resource";
+import { api } from "@/lib/api";
+import { useSession } from "@/lib/session";
+import { type Membership, statusNames } from "@/lib/types";
+import { Link, useParams } from "react-router-dom";
 import {
+  type History,
+  studentError,
   StudentFrame,
   useStudentUpdates,
-  studentError,
 } from "./student-shared";
 export function StudentClassPage() {
   const { id } = useParams();
+  const { user } = useSession();
   const resource = useResource(
     async (signal) => {
       if (!id || !/^\d+$/.test(id)) throw new Error("Mã lớp không hợp lệ.");
@@ -25,11 +28,29 @@ export function StudentClassPage() {
           "Bạn chưa được duyệt hoặc đã bị thu hồi quyền vào lớp. Lịch sử vẫn có trong hồ sơ.",
         );
       try {
+        const [lessons, board] = await Promise.all([
+          api<Lesson[]>(`/api/student/classes/${id}/lessons`, { signal }),
+          api<Board>(`/api/learning/classes/${id}/leaderboard`, { signal }),
+        ]);
+        let completed = 0,
+          page = 0,
+          total = 0;
+        do {
+          const history = await api<History>(
+            `/api/learning/history?classId=${id}&page=${page}&size=50`,
+            { signal },
+          );
+          completed += history.items.filter(
+            (l) => l.status === "COMPLETED",
+          ).length;
+          total = history.totalElements;
+          page++;
+        } while (page * 50 < total);
         return {
           member,
-          lessons: await api<Lesson[]>(`/api/student/classes/${id}/lessons`, {
-            signal,
-          }),
+          lessons,
+          completed,
+          score: board.students.find((s) => s.userId === user!.id)?.score ?? 0,
         };
       } catch (e) {
         throw new Error(studentError(e));
@@ -68,6 +89,30 @@ export function StudentClassPage() {
                 Chỉ các buổi đã được giảng viên công bố xuất hiện dưới đây.
               </p>
             </section>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card className="space-y-2 p-5">
+                <p className="text-sm text-muted-foreground">
+                  Điểm đã ghi nhận trong lớp này
+                </p>
+                <p className="text-2xl font-semibold">{resource.data.score}</p>
+                <p className="text-xs text-muted-foreground">
+                  Theo bảng điểm lớp, gồm các buổi đang diễn ra và đã kết thúc.
+                </p>
+              </Card>
+              <Card className="space-y-2 p-5">
+                <p className="text-sm text-muted-foreground">
+                  Buổi đã tham dự và đã kết thúc
+                </p>
+                <p className="text-2xl font-semibold">
+                  {resource.data.completed}/
+                  {resource.data.member.requiredLessons}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Lịch sử của bạn trong đúng lớp này; số buổi bắt buộc do lớp
+                  quy định.
+                </p>
+              </Card>
+            </div>
             {!resource.data.lessons.length ? (
               <EmptyState
                 title="Chưa có buổi học để hiển thị"

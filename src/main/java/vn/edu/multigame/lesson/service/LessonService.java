@@ -26,7 +26,9 @@ public class LessonService {
     private final AccountAccessPolicy accounts;
     private final ClassRoomStore rooms;
     private final ClassMembershipService memberships;
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.achievements.service.LearningAwardService awards;
     private final CommandFingerprint fingerprints;
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.questionbank.service.QuestionBankService banks;
     public LessonService(LessonStore store,AuthService auth,AccountAccessPolicy accounts,ClassRoomStore rooms,ClassMembershipService memberships,CommandFingerprint fingerprints,org.springframework.context.ApplicationEventPublisher events,vn.edu.multigame.lesson.repository.LessonRealtimeStore realtime) {
         this.realtime=realtime;this.events=events;this.store=store;this.auth=auth;this.accounts=accounts;this.rooms=rooms;this.memberships=memberships;this.fingerprints=fingerprints;
     }
@@ -53,7 +55,7 @@ public class LessonService {
         if(total.compareTo(new BigDecimal("100"))>0) throw LessonFailure.conflict("LESSON_BUDGET_EXCEEDED");
     }
     private LessonView view(LessonState lesson,long student) {
-        return new LessonView(lesson.id(),lesson.courseClassId(),lesson.number(),lesson.title(),lesson.visible(),lesson.status(),lesson.revision(),store.games(lesson.id(),student),
+        return new LessonView(lesson.id(),lesson.courseClassId(),lesson.number(),lesson.title(),lesson.visible(),lesson.status(),lesson.revision(),store.games(lesson.id(),student).stream().filter(g->student==0 || g.visible()).toList(),
                 store.attending(lesson.id(),student),store.scoreTotal(lesson.id(),student));
     }
     public List<LessonView> list(Authentication caller,long classId,boolean teacher) {
@@ -81,9 +83,54 @@ public class LessonService {
         lockCaller(caller);teacher(caller,classId);validatePlan(input);int quota=store.lockClass(classId);
         String hash=fingerprints.of("CREATE_LESSON","CLASS",classId,null,input);
         var prior=store.prior(classId,input.requestId());
-        if(prior.isPresent()) {if(!prior.get().createFingerprint().equals(hash)) throw LessonFailure.conflict("REQUEST_ID_REUSED");return changed(view(prior.get(),0));}
+        if(prior.isPresent()) {if(store.deleted(prior.get().id()))throw LessonFailure.conflict("LESSON_DELETED");if(!prior.get().createFingerprint().equals(hash)) throw LessonFailure.conflict("REQUEST_ID_REUSED");return changed(view(prior.get(),0));}
         int created=store.progress(classId).created();if(created>=quota) throw LessonFailure.conflict("LESSON_LIMIT");
-        long id=store.create(classId,created+1,input,hash);return changed(view(store.lesson(id,false),0));
+        if(input.sourceLessonId()!=null) template(caller,classId,input.sourceLessonId());
+        long id=store.create(classId,created+1,input,hash);
+        if(input.sourceLessonId()!=null) {
+            var source=store.games(input.sourceLessonId(),0);var target=store.games(id,0);
+            for(int i=0;i<3;i++) {
+                var from=source.get(i);var to=target.get(i);
+                if(from.mode()!=to.mode())continue;
+                store.configure(to.id(),to.budget(),from.durationMs(),from.questionCount(),from.wheelCells(),from.selectedCount());
+                store.gameVisibility(to.id(),from.visible());
+                content.get(from.id()).ifPresent(c->content.select(to.id(),c.sourceQuizId(),c.sourceRevision(),c.mode(),c.title(),c.questions()));
+            }
+        }
+        if(input.gameSettings()!=null)for(var configuration:input.gameSettings()) {
+            var configured=game(id,configuration.position());
+            settings.configure(caller,id,configured.position(),new GameSettingsService.Settings(store.lesson(id,false).revision(),configured.budget(),configuration.durationMs(),configuration.questionCount(),configuration.wheelCells(),configuration.selectedCount()));
+            if(configuration.assignmentDeadlineAtMs()!=null && configured.mode()==LessonMode.ASSIGNMENT) {
+                if(configuration.assignmentDeadlineAtMs()<=clock.sample().epochMs())throw LessonFailure.conflict("INVALID_DEADLINE");
+                assignments.deadline(configured.id(),configuration.assignmentDeadlineAtMs());
+            }
+        }
+        return changed(view(store.lesson(id,false),0));
+    }
+    public record Template(LessonView lesson,Map<Integer,GameContentView> contents) {}
+    public List<LessonView> templates(Authentication caller,long classId) {
+        teacher(caller,classId);
+        return store.templates(classId,user(caller)).stream()
+            .filter(l->store.games(l.id(),0).stream().allMatch(g->content.get(g.id()).map(c->banks.canReuse(caller,c.sourceQuizId())).orElse(true)))
+            .map(l->view(l,0)).toList();
+    }
+    @Transactional
+    public Template template(Authentication caller,long classId,long source) {
+        teacher(caller,classId);var original=store.lesson(source,false);teacher(caller,original.courseClassId());
+        if(!original.status().equals("COMPLETED"))throw LessonFailure.conflict("TEMPLATE_NOT_COMPLETED");
+        if(rooms.forClass(classId).orElseThrow().subjectId()!=rooms.forClass(original.courseClassId()).orElseThrow().subjectId())throw LessonFailure.conflict("TEMPLATE_SUBJECT_MISMATCH");
+        var contents=new LinkedHashMap<Integer,GameContentView>();
+        for(var game:store.games(source,0))content.get(game.id()).ifPresent(c->{banks.previewLocked(caller,c.sourceQuizId());contents.put(game.position(),c);});
+        return new Template(view(original,0),contents);
+    }
+    @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
+    public void delete(Authentication caller,long id,long expected) {
+        lockCaller(caller);var initial=store.lesson(id,false);teacher(caller,initial.courseClassId());
+        store.lockClass(initial.courseClassId());var lesson=store.lesson(id,true);revision(lesson,expected);
+        if(lesson.status().equals("COMPLETED"))throw LessonFailure.conflict("COMPLETED_LESSON_CANNOT_DELETE");
+        store.delete(id,lesson.courseClassId());
+        events.publishEvent(new LessonDeleted(id,lesson.courseClassId()));
+        events.publishEvent(new vn.edu.multigame.leaderboard.service.LearningScoreChanged(lesson.courseClassId()));
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
     public LessonView edit(Authentication caller,long id,LessonRequests.Edit input) {
@@ -92,7 +139,7 @@ public class LessonService {
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
     public LessonView visible(Authentication caller,long id,LessonRequests.Visibility input) {
-        lockCaller(caller);var lesson=store.lesson(id,true);teacher(caller,lesson.courseClassId());draft(lesson);revision(lesson,input.revision());
+        lockCaller(caller);var lesson=store.lesson(id,true);teacher(caller,lesson.courseClassId());revision(lesson,input.revision());
         if(lesson.visible()!=input.visible()) store.visibility(id,input.visible());return changed(view(store.lesson(id,false),0));
     }
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
@@ -105,6 +152,7 @@ public class LessonService {
     @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.lesson.repository.GameContentStore content;
     @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.lesson.repository.AssignmentStore assignments;
     @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.realtime.timer.ServerClock clock;
+    @org.springframework.beans.factory.annotation.Autowired private GameSettingsService settings;
     private boolean contentMissing(long game){return content.get(game).map(c->c.questions().isEmpty()).orElse(true);}
     private LessonView.Game game(long lesson,int position) {return store.games(lesson,0).stream().filter(g->g.position()==position).findFirst().orElseThrow(()->new LessonFailure(HttpStatus.NOT_FOUND,"GAME_NOT_FOUND"));}
     @Transactional(timeout=5,isolation=Isolation.READ_COMMITTED)
@@ -114,6 +162,8 @@ public class LessonService {
         revision(lesson,expected);if(!lesson.status().equals("RUNNING")) throw LessonFailure.conflict("LESSON_NOT_RUNNING");
         if(store.games(id,0).stream().anyMatch(g->g.position()<position && !g.status().equals("COMPLETED"))) throw LessonFailure.conflict("PREVIOUS_GAME_INCOMPLETE");
         if(game.mode()!=LessonMode.LUCKY_WHEEL && contentMissing(game.id()))throw LessonFailure.conflict("GAME_CONTENT_REQUIRED");
+        settings.initializeWheel(lesson.courseClassId(),game);
+        content.get(game.id()).ifPresent(c->settings.contentChanged(id,game,c.questions().size()));
         store.gameStatus(game.id(),"RUNNING");
         if(game.mode()==LessonMode.ASSIGNMENT)assignments.deadline(game.id()).ifPresent(deadline->{long now=clock.sample().epochMs();long token=realtime.window(id).map(w->w.token()+1).orElse(1L);realtime.open(id,game.id(),position,token,1,Math.min(now,deadline-1),deadline);if(deadline<=now)realtime.close(id,token,"CLOSED");});
         store.bump(id);return changed(view(store.lesson(id,false),0));
@@ -127,9 +177,11 @@ public class LessonService {
         if(position==null) store.attend(id,student,System.currentTimeMillis());
         else {
             var game=game(id,position);
+            if(!game.visible())throw new LessonFailure(HttpStatus.NOT_FOUND,"GAME_NOT_FOUND");
             if(!store.attending(id,student)) throw LessonFailure.conflict("LESSON_ATTENDANCE_REQUIRED");
             if(!game.status().equals("RUNNING")) throw LessonFailure.conflict("GAME_NOT_RUNNING");
             store.participate(game.id(),student,System.currentTimeMillis());
+            if(game.mode()==LessonMode.QUIZ)realtime.window(id).filter(w->w.gameId()==game.id() && w.questionIndex()==1 && w.status().equals("OPEN") && clock.sample().epochMs()<w.deadline()).ifPresent(w->awards.joinedFirstQuestion(game.id(),student));
         }
         return changed(view(store.lesson(id,false),student));
     }

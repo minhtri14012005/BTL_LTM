@@ -1,45 +1,40 @@
-import { useState } from "react";
-import { api } from "@/lib/api";
-import { useResource } from "@/hooks/use-resource";
+import { FormDialog } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Confirm } from "@/components/ui/confirm";
+import { Input } from "@/components/ui/input";
 import { Table } from "@/components/ui/table";
-import { type Content, type Game, type Snapshot, cents } from "./teaching-api";
-import { ServerCountdown, ScoreInput, Notice } from "./teaching-shared";
+import { useState } from "react";
+import { type Game, type Snapshot, cents } from "./teaching-api";
+import {
+  FormError,
+  Notice,
+  ScoreInput,
+  ServerCountdown,
+} from "./teaching-shared";
 type Props = {
+  actionError?: string;
   snapshot: Snapshot;
   game: Game;
   disabled: boolean;
   command: (type: string, payload: object) => Promise<void>;
   run: (work: () => Promise<unknown>, success?: string) => Promise<boolean>;
 };
-export function ObjectiveControls({
+export function QuizProgress({
   snapshot,
   game,
-  disabled,
-  command,
-  run,
-}: Props) {
-  const [seconds, setSeconds] = useState(""),
-    [error, setError] = useState("");
-  const content = useResource(
-    (signal) =>
-      api<Content>(
-        `/api/teaching/lessons/${snapshot.lesson.id}/games/${game.position}/content`,
-        { signal },
-      ),
-    [game.id],
-  );
+}: {
+  snapshot: Snapshot;
+  game: Game;
+}) {
+  const count = snapshot.questionCounts[String(game.id)] || 0;
   const window = snapshot.window?.gameId === game.id ? snapshot.window : null;
   const open = window?.status === "OPEN";
-  const next = window ? window.questionIndex + 1 : 1;
   return (
     <div className="space-y-4">
       <h3 className="font-semibold">
-        Điều khiển câu hỏi · {window?.questionIndex || 0}/
-        {content.data?.questions.length ?? "…"}
+        Tiến trình {game.mode === "QUIZ" ? "Quiz" : "Điền từ"} · Câu{" "}
+        {window?.questionIndex || 0}/{count}
       </h3>
       {open && (
         <>
@@ -47,66 +42,24 @@ export function ObjectiveControls({
             serverTimeMs={snapshot.serverTimeMs}
             deadlineAtMs={window.deadlineAtMs}
           />
-          <p className="whitespace-pre-wrap rounded-xl bg-accent p-4">
+          <p className="whitespace-pre-wrap rounded-xl bg-accent p-4 text-sm">
             {window.question?.content}
           </p>
-          <Button
-            disabled={disabled}
-            onClick={() => {
-              void run(() =>
-                command("CLOSE_LESSON_WINDOW", { token: window.token }),
-              );
-            }}
-          >
-            Đóng câu hiện tại
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Server tự động chuyển câu khi hết thời gian.
+          </p>
         </>
       )}
-      <label className="block space-y-2 text-sm">
-        Thời lượng câu (giây)
-        <Input
-          aria-label={`Thời lượng câu trò ${game.position}`}
-          type="number"
-          min={1}
-          step={1}
-          max={2147483}
-          value={seconds}
-          disabled={disabled || open}
-          onChange={(e) => setSeconds(e.target.value)}
-        />
-      </label>
-      <Button
-        disabled={
-          disabled ||
-          open ||
-          !content.data ||
-          next > content.data.questions.length
-        }
-        onClick={() => {
-          const ms = Number(seconds) * 1000;
-          if (!Number.isSafeInteger(ms) || ms < 1 || ms > 2147483647) {
-            setError("Nhập thời lượng hợp lệ.");
-            return;
-          }
-          setError("");
-          void run(() =>
-            command("OPEN_LESSON_WINDOW", {
-              position: game.position,
-              questionIndex: next,
-              durationMs: ms,
-            }),
-          );
-        }}
-      >
-        Mở câu {next}
-      </Button>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
+      {!open && game.status === "RUNNING" && (
+        <p className="text-sm text-muted-foreground">
+          {window ? "Đang chờ câu tiếp theo từ Server…" : "Đang khởi động trò…"}
         </p>
       )}
-      {content.error && <p role="alert">{content.error}</p>}
-      <TeacherResults snapshot={snapshot} game={game} />
+      {game.status === "COMPLETED" && (
+        <p className="font-medium text-green-600 dark:text-green-400">
+          ✓ Trò đã hoàn thành. Xem kết quả trong tab Kết quả.
+        </p>
+      )}
     </div>
   );
 }
@@ -148,7 +101,7 @@ export function TeacherResults({
     </Card>
   );
 }
-export function AssignmentControls({
+export function AssignmentDeadline({
   snapshot,
   game,
   disabled,
@@ -157,19 +110,12 @@ export function AssignmentControls({
 }: Props) {
   const assignment = snapshot.assignment[String(game.id)];
   const window = snapshot.window?.gameId === game.id ? snapshot.window : null;
-  const [deadline, setDeadline] = useState(""),
-    [grades, setGrades] = useState<Record<number, string>>({}),
-    [confirm, setConfirm] = useState(false),
-    [error, setError] = useState("");
-  const running = game.status === "RUNNING";
-  const canDeadline =
-    running || (snapshot.lesson.status === "DRAFT" && game.status === "READY");
+  const [deadline, setDeadline] = useState("");
+  const [error, setError] = useState("");
+  const canDeadline = game.status !== "COMPLETED";
   return (
     <div className="space-y-4">
-      <Notice>
-        Chấm bản nộp hợp lệ cuối cùng, không cộng các lần nộp. Khi có bản mới,
-        điểm chấm bản cũ chưa được dùng để chốt.
-      </Notice>
+      <h4 className="font-medium">Thời hạn nộp chung cho tất cả sinh viên</h4>
       <p className="text-sm">
         Hạn Server:{" "}
         {assignment?.deadlineAtMs
@@ -225,6 +171,36 @@ export function AssignmentControls({
           Bắt đầu trò để đặt hạn nộp nếu buổi đã chạy.
         </p>
       )}
+
+      {error && (
+        <p role="alert" className="text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+export function AssignmentControls({
+  actionError,
+  snapshot,
+  game,
+  disabled,
+  command,
+  run,
+}: Props) {
+  const assignment = snapshot.assignment[String(game.id)];
+  const window = snapshot.window?.gameId === game.id ? snapshot.window : null;
+  const [grades, setGrades] = useState<Record<number, string>>({}),
+    [confirm, setConfirm] = useState(false),
+    [error, setError] = useState("");
+  const [selectedSubmission, setSelectedSubmission] = useState<number>();
+  const running = game.status === "RUNNING";
+  return (
+    <div className="space-y-4">
+      <Notice>
+        Chấm bản nộp hợp lệ cuối cùng, không cộng các lần nộp. Khi có bản mới,
+        điểm chấm bản cũ chưa được dùng để chốt.
+      </Notice>
       {running && window?.status === "OPEN" && (
         <Button
           variant="outline"
@@ -259,61 +235,94 @@ export function AssignmentControls({
               g.submissionId === submission.id,
           );
           return (
-            <Card className="space-y-3 p-4" key={submission.id}>
-              <h4 className="font-semibold">
-                {person?.hoTen} · {person?.maSinhVien}
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                Bản #{submission.id} · Server nhận{" "}
-                {new Date(submission.receivedAtMs).toLocaleString("vi-VN")}
-              </p>
-              <p className="max-h-64 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-muted p-3">
-                {submission.text}
-              </p>
-              <p className="text-sm">
-                {grade
-                  ? `Điểm đã xác nhận cho bản này: ${grade.score}`
-                  : "Bản này chưa được chấm"}
-              </p>
-              <ScoreInput
-                label={`Chấm ${person?.maSinhVien || submission.studentId}`}
-                value={grades[submission.id] ?? String(grade?.score ?? "")}
-                max={game.budget}
-                disabled={disabled || !running}
-                onChange={(value) =>
-                  setGrades((old) => ({ ...old, [submission.id]: value }))
-                }
-              />
+            <div
+              key={submission.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4"
+            >
+              <div>
+                <p className="font-semibold">
+                  {person?.hoTen} · {person?.maSinhVien}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Bản #{submission.id} ·{" "}
+                  {grade ? `${grade.score}/${game.budget} điểm` : "Chưa chấm"}
+                </p>
+              </div>
               <Button
-                disabled={disabled || !running}
+                variant="outline"
                 onClick={() => {
-                  const value =
-                    grades[submission.id] ?? String(grade?.score ?? "");
-                  if (
-                    !Number.isFinite(cents(value)) ||
-                    Number(value) > game.budget
-                  ) {
-                    setError(
-                      "Điểm phải trong ngân sách, tối đa hai chữ số thập phân.",
-                    );
-                    return;
-                  }
                   setError("");
-                  void run(
-                    () =>
-                      command("GRADE_ASSIGNMENT", {
-                        position: game.position,
-                        studentId: submission.studentId,
-                        submissionId: submission.id,
-                        score: Number(value),
-                      }),
-                    "Đã chấm bản nộp cuối.",
-                  );
+                  setSelectedSubmission(submission.id);
                 }}
               >
-                Xác nhận chấm bản #{submission.id}
+                Xem bài {person?.maSinhVien || submission.studentId}
               </Button>
-            </Card>
+              <FormDialog
+                open={selectedSubmission === submission.id}
+                onOpenChange={(open) => {
+                  if (!open) setSelectedSubmission(undefined);
+                }}
+                title={`Bài làm · ${person?.maSinhVien || submission.studentId}`}
+                wide
+              >
+                <Card className="space-y-3 p-4">
+                  <h4 className="font-semibold">
+                    {person?.hoTen} · {person?.maSinhVien}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Bản #{submission.id} · Server nhận{" "}
+                    {new Date(submission.receivedAtMs).toLocaleString("vi-VN")}
+                  </p>
+                  <p className="max-h-64 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-muted p-3">
+                    {submission.text}
+                  </p>
+                  <p className="text-sm">
+                    {grade
+                      ? `Điểm đã xác nhận cho bản này: ${grade.score}`
+                      : "Bản này chưa được chấm"}
+                  </p>
+                  <FormError message={error || actionError || ""} />
+                  <ScoreInput
+                    label={`Chấm ${person?.maSinhVien || submission.studentId}`}
+                    value={grades[submission.id] ?? String(grade?.score ?? "")}
+                    max={game.budget}
+                    disabled={disabled || !running}
+                    onChange={(value) =>
+                      setGrades((old) => ({ ...old, [submission.id]: value }))
+                    }
+                  />
+                  <Button
+                    disabled={disabled || !running}
+                    onClick={() => {
+                      const value =
+                        grades[submission.id] ?? String(grade?.score ?? "");
+                      if (
+                        !Number.isFinite(cents(value)) ||
+                        Number(value) > game.budget
+                      ) {
+                        setError(
+                          "Điểm phải trong ngân sách, tối đa hai chữ số thập phân.",
+                        );
+                        return;
+                      }
+                      setError("");
+                      void run(
+                        () =>
+                          command("GRADE_ASSIGNMENT", {
+                            position: game.position,
+                            studentId: submission.studentId,
+                            submissionId: submission.id,
+                            score: Number(value),
+                          }),
+                        "Đã chấm bản nộp cuối.",
+                      );
+                    }}
+                  >
+                    Xác nhận chấm bản #{submission.id}
+                  </Button>
+                </Card>
+              </FormDialog>
+            </div>
           );
         })
       )}
@@ -326,6 +335,7 @@ export function AssignmentControls({
       <Confirm
         open={confirm}
         onOpenChange={setConfirm}
+        error={actionError}
         title="Kết thúc chấm bài tập?"
         description="Server kiểm tra mọi bản nộp cuối đã có điểm; sau khi chốt không thể mở lại hay nhận thêm bài."
         pending={disabled}

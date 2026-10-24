@@ -1,30 +1,40 @@
-import { useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
+import { EmptyState, ErrorState, Loading } from "@/components/feedback";
+import { FormDialog } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Confirm } from "@/components/ui/confirm";
+import { FormField } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Table } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useResource } from "@/hooks/use-resource";
 import { api, post } from "@/lib/api";
 import { requestId } from "@/lib/request-id";
-import { useResource } from "@/hooks/use-resource";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table } from "@/components/ui/table";
-import { Confirm } from "@/components/ui/confirm";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EmptyState, ErrorState, Loading } from "@/components/feedback";
+import type { Role } from "@/lib/types";
+import { roleNames, statusNames } from "@/lib/types";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { adminError, usersUrl, type AdminUser, type Page } from "./admin-api";
 import {
   AdminFrame,
-  NativeSelect,
   FormError,
+  NativeSelect,
   Pagination,
 } from "./admin-shared";
-import type { User, Role } from "@/lib/types";
+import { CreateTeacher } from "./create-teacher";
 
 export function AdminUsersPage() {
   const [params, setParams] = useSearchParams();
-  const role: Role =
-    params.get("role") === "GIANG_VIEN" ? "GIANG_VIEN" : "SINH_VIEN";
+  const [creating, setCreating] = useState(false);
+  const role: Role | "" =
+    params.get("role") === "all"
+      ? ""
+      : params.get("role") === "GIANG_VIEN"
+        ? "GIANG_VIEN"
+        : params.get("role") === "ADMIN"
+          ? "ADMIN"
+          : "SINH_VIEN";
   const [page, setPage] = useState(0),
     [query, setQuery] = useState(""),
     [search, setSearch] = useState(""),
@@ -75,7 +85,7 @@ export function AdminUsersPage() {
       reload={resource.reload}
     >
       <Tabs
-        value={role}
+        value={role || "all"}
         onValueChange={(value) => {
           setParams({ role: value });
           setPage(0);
@@ -87,11 +97,29 @@ export function AdminUsersPage() {
         <TabsList aria-label="Loại tài khoản">
           <TabsTrigger value="SINH_VIEN">Sinh viên</TabsTrigger>
           <TabsTrigger value="GIANG_VIEN">Giảng viên</TabsTrigger>
+          <TabsTrigger value="all">Toàn bộ</TabsTrigger>
+          <TabsTrigger value="ADMIN">Quản trị viên</TabsTrigger>
         </TabsList>
       </Tabs>
+      {!role && (
+        <p className="text-sm text-muted-foreground">
+          Bao gồm tài khoản đã xóa. Trạng thái truy cập được hiển thị theo dữ
+          liệu hiện tại của hệ thống.
+        </p>
+      )}
       {role === "GIANG_VIEN" && (
+        <Button onClick={() => setCreating(true)}>
+          Cấp tài khoản giảng viên
+        </Button>
+      )}
+      <FormDialog
+        open={creating}
+        onOpenChange={setCreating}
+        title="Cấp tài khoản giảng viên"
+      >
         <CreateTeacher
           saved={(user) => {
+            setCreating(false);
             setPage(0);
             setQuery(user.username);
             setSearch(user.username);
@@ -99,7 +127,7 @@ export function AdminUsersPage() {
             resource.reload();
           }}
         />
-      )}
+      </FormDialog>
       <section className="space-y-4">
         <form
           className="flex flex-col gap-3 sm:flex-row"
@@ -153,6 +181,7 @@ export function AdminUsersPage() {
                         <th>Họ và tên</th>
                         {role === "SINH_VIEN" && <th>Mã sinh viên</th>}
                         <th>Tài khoản</th>
+                        {!role && <th>Vai trò</th>}
                         <th>Trạng thái</th>
                         {role === "SINH_VIEN" && <th>Thao tác</th>}
                       </tr>
@@ -165,11 +194,18 @@ export function AdminUsersPage() {
                             <td>{user.maSinhVien || "Chưa bổ sung"}</td>
                           )}
                           <td>{user.username}</td>
+                          {!role && <td>{roleNames[user.role]}</td>}
                           <td>
                             <span
-                              className={`status-badge ${user.status === "ACTIVE" ? "status-positive" : ""}`}
+                              className={`status-badge ${user.status === "ACTIVE" && !user.banned && !user.deletedAtMs ? "status-positive" : ""}`}
                             >
-                              {user.status}
+                              {user.deletedAtMs
+                                ? "Đã xóa"
+                                : user.status === "EXPELLED"
+                                  ? "Đã đuổi học"
+                                  : user.banned
+                                    ? "Bị cấm truy cập"
+                                    : statusNames[user.status] || user.status}
                             </span>
                           </td>
                           {role === "SINH_VIEN" && (
@@ -239,105 +275,5 @@ export function AdminUsersPage() {
         </div>
       </Confirm>
     </AdminFrame>
-  );
-}
-function CreateTeacher({ saved }: { saved: (user: User) => void }) {
-  const [username, setUsername] = useState(""),
-    [name, setName] = useState(""),
-    [password, setPassword] = useState("");
-  const [pending, setPending] = useState(false),
-    [error, setError] = useState("");
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!name.trim()) {
-      setError("Họ tên không được chỉ gồm khoảng trắng.");
-      return;
-    }
-    if (new TextEncoder().encode(password).length > 72) {
-      setError("Mật khẩu không được vượt quá 72 byte UTF-8.");
-      return;
-    }
-    setPending(true);
-    setError("");
-    try {
-      const user = await post<User>("/api/admin/teachers", {
-        username,
-        hoTen: name.trim(),
-        password,
-      });
-      setPassword("");
-      setName("");
-      setUsername("");
-      toast.success(`Đã cấp tài khoản ${user.username}.`);
-      saved(user);
-    } catch (error) {
-      setError(adminError(error));
-    } finally {
-      setPending(false);
-    }
-  }
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Cấp tài khoản giảng viên</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Nhập mật khẩu ban đầu và bàn giao trực tiếp cho giảng viên.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={submit}>
-          <fieldset disabled={pending} className="min-w-0 space-y-4">
-            <div className="grid gap-4 lg:grid-cols-3">
-              <FormField
-                label="Tên đăng nhập giảng viên"
-                hint="3–32 ký tự chữ, số hoặc gạch dưới."
-              >
-                {(props) => (
-                  <Input
-                    {...props}
-                    required
-                    minLength={3}
-                    maxLength={32}
-                    pattern="[A-Za-z0-9_]{3,32}"
-                    autoComplete="off"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                )}
-              </FormField>
-              <FormField label="Họ tên giảng viên">
-                {(props) => (
-                  <Input
-                    {...props}
-                    required
-                    maxLength={100}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                )}
-              </FormField>
-              <FormField label="Mật khẩu ban đầu">
-                {(props) => (
-                  <Input
-                    {...props}
-                    required
-                    type="password"
-                    minLength={8}
-                    maxLength={72}
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                )}
-              </FormField>
-            </div>
-            <FormError message={error} />
-            <Button type="submit" disabled={pending}>
-              {pending ? "Đang cấp tài khoản…" : "Cấp tài khoản giảng viên"}
-            </Button>
-          </fieldset>
-        </form>
-      </CardContent>
-    </Card>
   );
 }

@@ -41,6 +41,7 @@ public class LessonRealtimeChecks {
     private static class Wire implements WebSocket.Listener,AutoCloseable {
         final BlockingQueue<JsonNode> messages=new LinkedBlockingQueue<>();
         final CompletableFuture<Integer> closed=new CompletableFuture<>();final StringBuilder partial=new StringBuilder();
+        final java.util.concurrent.atomic.AtomicInteger classEvents=new java.util.concurrent.atomic.AtomicInteger();
         final java.util.concurrent.atomic.AtomicInteger scoreEvents=new java.util.concurrent.atomic.AtomicInteger();
         final WebSocket socket;
         Wire(Client client) throws Exception {
@@ -49,7 +50,7 @@ public class LessonRealtimeChecks {
         }
         public void onOpen(WebSocket socket){socket.request(1);}
         public CompletionStage<?> onText(WebSocket socket,CharSequence data,boolean last) {
-            partial.append(data);if(last)try {var frame=JSON.readTree(partial.toString());if(frame.path("type").asText().equals("SCORES_UPDATED"))scoreEvents.incrementAndGet();messages.add(frame);partial.setLength(0);}catch(Exception invalid){closed.completeExceptionally(invalid);}
+            partial.append(data);if(last)try {var frame=JSON.readTree(partial.toString());if(frame.path("type").asText().equals("CLASS_LESSONS_UPDATED"))classEvents.incrementAndGet();if(frame.path("type").asText().equals("SCORES_UPDATED"))scoreEvents.incrementAndGet();messages.add(frame);partial.setLength(0);}catch(Exception invalid){closed.completeExceptionally(invalid);}
             socket.request(1);return null;
         }
         public CompletionStage<?> onClose(WebSocket socket,int code,String reason){closed.complete(code);return null;}
@@ -76,6 +77,25 @@ public class LessonRealtimeChecks {
         long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
         while(System.nanoTime()<until){if(expected.equals(jdbc.queryForObject("SELECT status FROM lesson_action_window WHERE lesson_id=?",String.class,lesson)))return;Thread.sleep(10);}
         assertThat(jdbc.queryForObject("SELECT status FROM lesson_action_window WHERE lesson_id=?",String.class,lesson)).isEqualTo(expected);
+    }
+    private static JsonNode awaitQuestion(Wire host,long lesson,int position,int question) throws Exception {
+        long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(40);
+        JsonNode frame=null;
+        while(System.nanoTime()<until){
+            frame=host.command(lesson,"RECONNECT_LESSON",Map.of());var window=frame.path("payload").path("window");
+            if(window.path("position").asInt()==position && window.path("questionIndex").asInt()==question && window.path("status").asText().equals("OPEN"))return frame;
+            Thread.sleep(25);
+        }
+        throw new AssertionError("Automatic question "+question+" did not open: "+frame);
+    }
+    private static JsonNode awaitAdvance(Wire host,long lesson,long token) throws Exception {
+        long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(40);
+        while(System.nanoTime()<until){
+            var frame=host.command(lesson,"RECONNECT_LESSON",Map.of());var window=frame.path("payload").path("window");
+            if(window.path("token").asLong()!=token || !window.path("status").asText().equals("OPEN"))return frame;
+            Thread.sleep(25);
+        }
+        throw new AssertionError("Automatic deadline did not advance");
     }
     private static String fillAnswer(int question,boolean correct) {
         return switch(question) {
@@ -105,6 +125,7 @@ public class LessonRealtimeChecks {
                 Map.of("content","Java: {{blank}} loads classes","acceptedAnswers",List.of("ClassLoader","java.lang.ClassLoader"),"matchingPolicy","EXACT"),
                 Map.of("content","L\u1ecbch s\u1eed: {{blank}}","acceptedAnswers",List.of("H\u1ed3 Ch\u00ed Minh"),"matchingPolicy","EXACT"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
 
         var wires=new ArrayList<Wire>();
@@ -121,7 +142,7 @@ public class LessonRealtimeChecks {
             for(int i=0;i<3;i++)wires.get(i).command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
             long game=jdbc.queryForObject("SELECT id FROM lesson_game WHERE lesson_id=? AND position=2",Long.class,lesson);
             for(int question=1;question<=3;question++) {
-                var open=host.command(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",question==1?3000:10000));
+                var open=awaitQuestion(host,lesson,2,question);
                 long token=open.path("payload").path("window").path("token").asLong();
                 assertThat(open.toString()).doesNotContain("correctAnswer","acceptedAnswers","matchingPolicy","ClassLoader");
                 var answer=commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value",fillAnswer(question,true)));
@@ -147,10 +168,10 @@ public class LessonRealtimeChecks {
                         try{Thread.sleep(Math.max(1,deadline-System.currentTimeMillis()+100));}finally{release.countDown();}
                         block.get(5,TimeUnit.SECONDS);assertThat(queued.get(5,TimeUnit.SECONDS).receivedAtMs()).isLessThan(deadline);
                     }finally{release.countDown();}
-                    awaitStatus(jdbc,lesson,"CLOSED");
+                    awaitAdvance(host,lesson,token);
                     wires.get(1).send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value",fillAnswer(question,true))),"ERROR");
                 } else {
-                    host.command(lesson,"CLOSE_LESSON_WINDOW",Map.of("token",token));
+                    awaitAdvance(host,lesson,token);
                 }
                 if(question<3)host.send(commandOf(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",1000)),"ERROR");
                 var reconnect=wires.getFirst().command(lesson,"RECONNECT_LESSON",Map.of());
@@ -259,6 +280,7 @@ public class LessonRealtimeChecks {
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
         long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain network sessions"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
 
 
@@ -341,6 +363,7 @@ public class LessonRealtimeChecks {
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
         long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,10).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
 
         var wires=new ArrayList<Wire>();
@@ -357,7 +380,7 @@ public class LessonRealtimeChecks {
             for(int i=0;i<3;i++)wires.get(i).command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
             long game=jdbc.queryForObject("SELECT id FROM lesson_game WHERE lesson_id=? AND position=2",Long.class,lesson);
             for(int question=1;question<=10;question++) {
-                var open=host.command(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",question==1?3000:10000));
+                var open=awaitQuestion(host,lesson,2,question);
                 long token=open.path("payload").path("window").path("token").asLong();
                 assertThat(open.toString()).doesNotContain("correctAnswer","acceptedAnswers");
                 if(question==1)wires.getFirst().send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value","SPIN")),"ERROR");
@@ -384,10 +407,10 @@ public class LessonRealtimeChecks {
                         try{Thread.sleep(Math.max(1,deadline-System.currentTimeMillis()+100));}finally{release.countDown();}
                         block.get(5,TimeUnit.SECONDS);assertThat(queued.get(5,TimeUnit.SECONDS).receivedAtMs()).isLessThan(deadline);
                     }finally{release.countDown();}
-                    awaitStatus(jdbc,lesson,"CLOSED");
+                    awaitAdvance(host,lesson,token);
                     wires.get(1).send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value","B")),"ERROR");
                 } else {
-                    host.command(lesson,"CLOSE_LESSON_WINDOW",Map.of("token",token));
+                    awaitAdvance(host,lesson,token);
                 }
                 if(question<10)host.send(commandOf(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",1000)),"ERROR");
                 var reconnect=wires.getFirst().command(lesson,"RECONNECT_LESSON",Map.of());
@@ -413,21 +436,24 @@ public class LessonRealtimeChecks {
             long single=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",secondPlan,201).path("id").asLong();
             long oneBank=teacher.call("POST","/api/quizzes",Map.of("title","One question","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","One question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
             teacher.call("POST","/api/teaching/lessons/"+single+"/games/2/content",Map.of("quizId",oneBank,"lessonRevision",0),200);
+            jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",single);
             teacher.call("PUT","/api/teaching/lessons/"+single+"/visibility",Map.of("revision",1,"visible",true),200);
             var singleStarted=host.command(single,"START_LESSON",Map.of("revision",2));host.command(single,"START_LESSON_GAME",Map.of("position",1,"revision",singleStarted.path("payload").path("lesson").path("revision").asLong()));
             for(var wire:wires)wire.command(single,"ATTEND_LESSON",Map.of());
             runtime.serial(teacherAuth,single,()->service.completeGame(teacherAuth,single,1,Map.of()));
             host.command(single,"START_LESSON_GAME",Map.of("position",2,"revision",teacher.call("GET","/api/teaching/lessons/"+single,null,200).path("revision").asLong()));
             for(int i=0;i<3;i++)wires.get(i).command(single,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
-            long singleToken=host.command(single,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",1,"durationMs",10000)).path("payload").path("window").path("token").asLong();
+            long singleToken=awaitQuestion(host,single,2,1).path("payload").path("window").path("token").asLong();
             wires.getFirst().command(single,"SUBMIT_LESSON_ACTION",Map.of("token",singleToken,"value","B"));
-            var close=commandOf(single,"CLOSE_LESSON_WINDOW",Map.of("token",singleToken));host.send(close,"ACK");host.send(close,"ACK");
+            awaitAdvance(host,single,singleToken);
+            host.send(commandOf(single,"CLOSE_LESSON_WINDOW",Map.of("token",singleToken)),"ERROR");
             assertThat(students.getFirst().call("GET","/api/learning/profile",null,200).path("achievements")).hasSize(1);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM achievement_award WHERE user_id=? AND lesson_game_id IS NOT NULL",Integer.class,ids.getFirst())).isEqualTo(1);
             // Joining a third player after the first question opens cannot satisfy the initial-player threshold.
             var latePlan=new HashMap<String,Object>(plan);latePlan.put("requestId",UUID.randomUUID().toString());
             long late=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",latePlan,201).path("id").asLong();
             teacher.call("POST","/api/teaching/lessons/"+late+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+            jdbc.update("UPDATE lesson_game SET duration_ms=1000 WHERE lesson_id=? AND position=2",late);
             teacher.call("PUT","/api/teaching/lessons/"+late+"/visibility",Map.of("revision",1,"visible",true),200);
             var lateStarted=host.command(late,"START_LESSON",Map.of("revision",2));host.command(late,"START_LESSON_GAME",Map.of("position",1,"revision",lateStarted.path("payload").path("lesson").path("revision").asLong()));
             for(var wire:wires)wire.command(late,"ATTEND_LESSON",Map.of());
@@ -435,10 +461,10 @@ public class LessonRealtimeChecks {
             host.command(late,"START_LESSON_GAME",Map.of("position",2,"revision",teacher.call("GET","/api/teaching/lessons/"+late,null,200).path("revision").asLong()));
             for(int i=0;i<2;i++)wires.get(i).command(late,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
             for(int i=1;i<=10;i++){
-                long lateToken=host.command(late,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",i,"durationMs",10000)).path("payload").path("window").path("token").asLong();
-                if(i==1)wires.get(2).command(late,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
+                long lateToken=awaitQuestion(host,late,2,i).path("payload").path("window").path("token").asLong();
+                if(i==2)wires.get(2).command(late,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
                 wires.getFirst().command(late,"SUBMIT_LESSON_ACTION",Map.of("token",lateToken,"value","B"));
-                host.command(late,"CLOSE_LESSON_WINDOW",Map.of("token",lateToken));
+                awaitAdvance(host,late,lateToken);
             }
             assertThat(students.getFirst().call("GET","/api/learning/profile",null,200).path("achievements")).hasSize(1);
             var room=teacher.call("GET","/api/teaching/classes/"+course+"/room",null,200);
@@ -471,6 +497,7 @@ public class LessonRealtimeChecks {
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
         long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",java.util.stream.IntStream.rangeClosed(1,7).mapToObj(i->Map.of("content","Question "+i,"options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B")).toList()),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
 
         var wires=new ArrayList<Wire>();
@@ -487,7 +514,7 @@ public class LessonRealtimeChecks {
             for(int i=0;i<3;i++)wires.get(i).command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",2));
             long game=jdbc.queryForObject("SELECT id FROM lesson_game WHERE lesson_id=? AND position=2",Long.class,lesson);
             for(int question=1;question<=7;question++) {
-                var open=host.command(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",question==1?3000:10000));
+                var open=awaitQuestion(host,lesson,2,question);
                 long token=open.path("payload").path("window").path("token").asLong();
                 assertThat(open.toString()).doesNotContain("correctAnswer","acceptedAnswers");
                 if(question==1)wires.getFirst().send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value","SPIN")),"ERROR");
@@ -514,10 +541,10 @@ public class LessonRealtimeChecks {
                         try{Thread.sleep(Math.max(1,deadline-System.currentTimeMillis()+100));}finally{release.countDown();}
                         block.get(5,TimeUnit.SECONDS);assertThat(queued.get(5,TimeUnit.SECONDS).receivedAtMs()).isLessThan(deadline);
                     }finally{release.countDown();}
-                    awaitStatus(jdbc,lesson,"CLOSED");
+                    awaitAdvance(host,lesson,token);
                     wires.get(1).send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value","B")),"ERROR");
                 } else {
-                    host.command(lesson,"CLOSE_LESSON_WINDOW",Map.of("token",token));
+                    awaitAdvance(host,lesson,token);
                 }
                 if(question<7)host.send(commandOf(lesson,"OPEN_LESSON_WINDOW",Map.of("position",2,"questionIndex",question,"durationMs",1000)),"ERROR");
                 var reconnect=wires.getFirst().command(lesson,"RECONNECT_LESSON",Map.of());
@@ -551,7 +578,9 @@ public class LessonRealtimeChecks {
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
         long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Public question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
 
+        jdbc.update("UPDATE lesson_game SET selected_count=2 WHERE lesson_id=? AND position=1",lesson);
         var wires=new ArrayList<Wire>();
         try(var host=teacher.connect();var other=outsider.connect()) {
             for(var student:students)wires.add(student.connect());
@@ -566,6 +595,7 @@ public class LessonRealtimeChecks {
             outsider.call("POST",wheelPath+"select",choose,403);
             students.getFirst().call("POST",wheelPath+"select",choose,403);
             teacher.call("POST",wheelPath+"select",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"pool",ids,"k",5),409);
+            teacher.call("POST",wheelPath+"select",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"pool",ids.subList(0,3),"k",1),409);
             var chosen=teacher.call("POST",wheelPath+"select",choose,200);
             assertThat(chosen.path("selected")).hasSize(2);
             assertThat(chosen.path("selected").get(0)).isNotEqualTo(chosen.path("selected").get(1));
@@ -621,6 +651,7 @@ public class LessonRealtimeChecks {
         long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",plan,201).path("id").asLong();String path="/api/teaching/lessons/"+lesson;
         long bank=teacher.call("POST","/api/quizzes",Map.of("title","Runtime bank","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Public question"))),201).path("id").asLong();
         teacher.call("POST",path+"/games/2/content",Map.of("quizId",bank,"lessonRevision",0),200);
+        jdbc.update("UPDATE lesson_game SET duration_ms=3000 WHERE lesson_id=? AND position=2",lesson);
         var wires=new ArrayList<Wire>();
         try(var host=teacher.connect();var other=outsider.connect()) {
             for(var student:students)wires.add(student.connect());
@@ -733,4 +764,240 @@ public class LessonRealtimeChecks {
             }
         } finally {wires.forEach(Wire::close);}
     }
+    public static void verifyManagement(ConfigurableApplicationContext context,JdbcTemplate jdbc,int port) throws Exception {
+        var admin=new Client(port,"admin_test");var teacher=new Client(port,"teacher_test");var outsider=new Client(port,"teacher_second");
+        long teacherId=teacher.call("GET","/api/auth/me",null,200).path("id").asLong();
+        long offering=jdbc.queryForObject("SELECT id FROM subject_offering ORDER BY id LIMIT 1",Long.class);
+        long course=admin.call("POST","/api/admin/academic/classes",Map.of("offeringId",offering,"code","MANAGE","name","Management","requiredLessons",5),201).path("id").asLong();
+        admin.call("PUT","/api/admin/academic/classes/"+course+"/teachers/"+teacherId,null,200);
+        var plan=Map.of("requestId",UUID.randomUUID().toString(),"title","Managed lesson","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","FILL_BLANK","title","Fill","budget",40)));
+        String collection="/api/teaching/classes/"+course+"/lessons";
+        var lessons=new ArrayList<Long>();
+        for(int i=0;i<5;i++){var input=new HashMap<String,Object>(plan);input.put("requestId",UUID.randomUUID().toString());lessons.add(teacher.call("POST",collection,input,201).path("id").asLong());}
+        String deletedPath="/api/teaching/lessons/"+lessons.get(1);
+        outsider.call("DELETE",deletedPath,Map.of("revision",0),403);
+        teacher.call("DELETE",deletedPath,Map.of("revision",1),409);
+        teacher.call("DELETE",deletedPath,Map.of("revision",0),204);
+        var list=teacher.call("GET",collection,null,200);assertThat(list).hasSize(4);
+        for(int i=0;i<4;i++)assertThat(list.get(i).path("number").asInt()).isEqualTo(i+1);
+        assertThat(list.get(1).path("id").asLong()).isEqualTo(lessons.get(2));
+        var newPlan=new HashMap<String,Object>(plan);newPlan.put("requestId",UUID.randomUUID().toString());
+        long fifth=teacher.call("POST",collection,newPlan,201).path("id").asLong();assertThat(teacher.call("GET",collection,null,200).get(4).path("number").asInt()).isEqualTo(5);
+        String thirdPath="/api/teaching/lessons/"+lessons.get(3);long revision=teacher.call("GET",thirdPath,null,200).path("revision").asLong();
+        var editPlan=new HashMap<String,Object>(plan);editPlan.put("title","Edited third");
+        teacher.call("PUT",thirdPath,Map.of("revision",revision,"plan",editPlan),200);
+        assertThat(teacher.call("GET",thirdPath,null,200).path("number").asInt()).isEqualTo(3);
+        long bank=teacher.call("POST","/api/quizzes",Map.of("title","Managed Quiz","mode","QUIZ","visibility","PRIVATE","questions",List.of(Map.of("content","Managed question","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"))),201).path("id").asLong();
+        long fill=teacher.call("POST","/api/quizzes",Map.of("title","Managed Fill","mode","FILL_BLANK","visibility","PRIVATE","questions",List.of(Map.of("content","Managed {{blank}}","acceptedAnswers",List.of("answer","alias"),"matchingPolicy","EXACT"))),201).path("id").asLong();
+        var runtime=context.getBean(LessonRuntime.class);var service=context.getBean(LessonService.class);var hostAuth=auth(context,"teacher_test");
+        // Complete one source with automatic deadlines and no student answers at all.
+        long source=lessons.getFirst();String sourcePath="/api/teaching/lessons/"+source;
+        prepareManaged(teacher,sourcePath,bank,fill,1000);
+        try(var host=teacher.connect()) {
+            long rev=teacher.call("GET",sourcePath,null,200).path("revision").asLong();host.command(source,"START_LESSON",Map.of("revision",rev));
+            rev=teacher.call("GET",sourcePath,null,200).path("revision").asLong();host.command(source,"START_LESSON_GAME",Map.of("revision",rev,"position",1));
+            runtime.serial(hostAuth,source,()->service.completeGame(hostAuth,source,1,Map.of()));
+            for(int position:List.of(2,3)) {
+                rev=teacher.call("GET",sourcePath,null,200).path("revision").asLong();int beforeClassEvents=host.classEvents.get();
+                host.command(source,"START_LESSON_GAME",Map.of("revision",rev,"position",position));
+                var window=awaitQuestion(host,source,position,1).path("payload").path("window");
+                host.send(commandOf(source,"CLOSE_LESSON_WINDOW",Map.of("token",window.path("token").asLong())),"ERROR");
+                awaitAdvance(host,source,window.path("token").asLong());
+                assertThat(host.classEvents.get()).isGreaterThanOrEqualTo(beforeClassEvents+2);
+            }
+            assertThat(teacher.call("GET",sourcePath,null,200).path("status").asText()).isEqualTo("COMPLETED");
+            rev=teacher.call("GET",sourcePath,null,200).path("revision").asLong();
+            teacher.call("DELETE",sourcePath,Map.of("revision",rev),409);
+            teacher.call("PUT",sourcePath,Map.of("revision",rev,"plan",editPlan),409);
+        }
+        new Client(port,null).call("POST","/api/auth/register",Map.of("username","manage_student","hoTen","Managed student","maSinhVien","MANAGE_S","password","StudentPass123!"),201);
+        var student=new Client(port,"manage_student");long studentId=student.call("GET","/api/auth/me",null,200).path("id").asLong();
+        String join=teacher.call("GET","/api/teaching/classes/"+course+"/room",null,200).path("joinCode").asText();
+        student.call("POST","/api/student/classes/join",Map.of("requestId",UUID.randomUUID().toString(),"code",join),200);
+        teacher.call("POST","/api/teaching/classes/"+course+"/members/"+studentId+"/approve",Map.of("requestId",UUID.randomUUID().toString(),"revision",0),200);
+        // Both kinds can be deleted while their timer is armed; their callbacks cannot restore data.
+        for(int modePosition:List.of(2,3)) {
+            long lesson=modePosition==2?lessons.get(2):lessons.get(3);String path="/api/teaching/lessons/"+lesson;
+            prepareManaged(teacher,path,bank,fill,2000);
+            try(var host=teacher.connect();var pupil=student.connect()) {
+                long rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON",Map.of("revision",rev));
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON_GAME",Map.of("revision",rev,"position",1));
+                runtime.serial(hostAuth,lesson,()->service.completeGame(hostAuth,lesson,1,Map.of()));
+                if(modePosition==3){rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON_GAME",Map.of("revision",rev,"position",2));var first=awaitQuestion(host,lesson,2,1);awaitAdvance(host,lesson,first.path("payload").path("window").path("token").asLong());}
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON_GAME",Map.of("revision",rev,"position",modePosition));
+                var active=awaitQuestion(host,lesson,modePosition,1).path("payload").path("window");long oldToken=active.path("token").asLong();
+                long game=active.path("gameId").asLong();
+                pupil.command(lesson,"ATTEND_LESSON",Map.of());pupil.command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",modePosition));
+                pupil.command(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",oldToken,"value",modePosition==2?"B":"alias"));
+                assertThat(student.call("GET","/api/learning/profile",null,200).path("stats").path("totalPoints").decimalValue()).isEqualByComparingTo("40");
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("DELETE",path,Map.of("revision",rev),204);
+                host.await(n->n.path("type").asText().equals("LESSON_DELETED"));
+                teacher.call("GET",path,null,404);
+                pupil.await(n->n.path("type").asText().equals("LESSON_DELETED"));
+                assertThat(student.call("GET","/api/learning/profile",null,200).path("stats").path("totalPoints").decimalValue()).isEqualByComparingTo("0");
+                assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_score WHERE lesson_id=?",Integer.class,lesson)).isZero();
+                host.send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",oldToken,"value","B")),"ERROR");
+                Thread.sleep(2200);
+                assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_action_window WHERE lesson_id=?",Integer.class,lesson)).isZero();
+                assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_game WHERE lesson_id=?",Integer.class,lesson)).isZero();
+                assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_answer WHERE game_id=?",Integer.class,game)).isZero();
+            }
+        }
+        // Copy by actual subject identity and verify independent snapshots/config, no runtime or results.
+        var template=teacher.call("GET","/api/teaching/classes/"+course+"/lesson-templates/"+source,null,200);
+        assertThat(template.path("contents")).hasSize(2);
+        var copy=new HashMap<String,Object>(plan);copy.put("requestId",UUID.randomUUID().toString());copy.put("sourceLessonId",source);
+        long target=teacher.call("POST",collection,copy,201).path("id").asLong();String targetPath="/api/teaching/lessons/"+target;
+        var targetView=teacher.call("GET",targetPath,null,200);assertThat(targetView.path("number").asInt()).isEqualTo(4);assertThat(targetView.path("status").asText()).isEqualTo("DRAFT");
+        long targetGame=targetView.path("games").get(1).path("id").asLong();
+        var originalContent=teacher.call("GET",sourcePath+"/games/2/content",null,200);var targetContent=teacher.call("GET",targetPath+"/games/2/content",null,200);
+        assertThat(targetContent.path("questions")).isEqualTo(originalContent.path("questions"));assertThat(targetContent.path("gameId")).isNotEqualTo(originalContent.path("gameId"));
+        for(String table:List.of("lesson_action_window","lesson_attendance","lesson_score","lesson_command_receipt"))assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "+table+" WHERE lesson_id=?",Integer.class,target)).isZero();
+        for(String table:List.of("lesson_quiz_answer","lesson_game_participant","lesson_game_score","lesson_quiz_question"))assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "+table+" WHERE game_id=?",Integer.class,targetGame)).isZero();
+        teacher.call("PUT",targetPath+"/games/2/configuration",Map.of("revision",targetView.path("revision").asLong(),"questionCount",1,"durationMs",15000,"budget",40),200);
+        assertThat(teacher.call("GET",sourcePath,null,200).path("games").get(1).path("durationMs").asInt()).isEqualTo(1000);
+        // Assignment copies retain their prompt/budget, but never reuse an old runtime deadline.
+        long assignmentBank=teacher.call("POST","/api/quizzes",Map.of("title","Copy assignment","mode","ASSIGNMENT","visibility","PRIVATE","questions",List.of(Map.of("content","Explain the lesson."))),201).path("id").asLong();
+        var assignmentPlan=new HashMap<String,Object>(plan);assignmentPlan.put("requestId",UUID.randomUUID().toString());
+        assignmentPlan.put("slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","ASSIGNMENT","title","Assignment","budget",40)));
+        long assignmentSource=teacher.call("POST",collection,assignmentPlan,201).path("id").asLong();String assignmentPath="/api/teaching/lessons/"+assignmentSource;
+        for(int position:List.of(2,3)){
+            long rev=teacher.call("GET",assignmentPath,null,200).path("revision").asLong();
+            teacher.call("POST",assignmentPath+"/games/"+position+"/content",Map.of("quizId",position==2?bank:assignmentBank,"lessonRevision",rev),200);
+        }
+        long assignmentDeadline=System.currentTimeMillis()+300000;
+        long assignmentGame=teacher.call("GET",assignmentPath,null,200).path("games").get(2).path("id").asLong();
+        jdbc.update("INSERT INTO lesson_assignment_deadline(game_id,deadline_at_ms) VALUES(?,?)",assignmentGame,assignmentDeadline);
+        jdbc.update("UPDATE lesson_game SET duration_ms=1000 WHERE lesson_id=? AND position=2",assignmentSource);
+        long sourceRevision=teacher.call("GET",assignmentPath,null,200).path("revision").asLong();teacher.call("PUT",assignmentPath+"/visibility",Map.of("revision",sourceRevision,"visible",true),200);
+        try(var host=teacher.connect()){
+            sourceRevision=teacher.call("GET",assignmentPath,null,200).path("revision").asLong();host.command(assignmentSource,"START_LESSON",Map.of("revision",sourceRevision));
+            for(int position:List.of(1,2,3)){
+                sourceRevision=teacher.call("GET",assignmentPath,null,200).path("revision").asLong();host.command(assignmentSource,"START_LESSON_GAME",Map.of("revision",sourceRevision,"position",position));
+                if(position==2){var window=awaitQuestion(host,assignmentSource,2,1).path("payload").path("window");awaitAdvance(host,assignmentSource,window.path("token").asLong());}
+                else {int slot=position;runtime.serial(hostAuth,assignmentSource,()->service.completeGame(hostAuth,assignmentSource,slot,Map.of()));}
+            }
+        }
+        long sameSubject=admin.call("POST","/api/admin/academic/classes",Map.of("offeringId",offering,"code","COPY_SAME","name","Same subject copy","requiredLessons",2),201).path("id").asLong();admin.call("PUT","/api/admin/academic/classes/"+sameSubject+"/teachers/"+teacherId,null,200);
+        var assignmentCopy=new HashMap<String,Object>(assignmentPlan);assignmentCopy.put("requestId",UUID.randomUUID().toString());assignmentCopy.put("sourceLessonId",assignmentSource);
+        long assignmentTarget=teacher.call("POST","/api/teaching/classes/"+sameSubject+"/lessons",assignmentCopy,201).path("id").asLong();
+        long copiedGame=teacher.call("GET","/api/teaching/lessons/"+assignmentTarget,null,200).path("games").get(2).path("id").asLong();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_assignment_deadline WHERE game_id=?",Integer.class,copiedGame)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_action_window WHERE lesson_id=?",Integer.class,assignmentTarget)).isZero();
+        assertThat(teacher.call("GET","/api/teaching/lessons/"+assignmentTarget+"/games/3/content",null,200).path("questions")).isEqualTo(teacher.call("GET",assignmentPath+"/games/3/content",null,200).path("questions"));
+        assertThat(jdbc.queryForObject("SELECT deadline_at_ms FROM lesson_assignment_deadline WHERE game_id=?",Long.class,assignmentGame)).isEqualTo(assignmentDeadline);
+        long differentSubject=admin.call("POST","/api/admin/academic/subjects",Map.of("code","COPY_OTHER","name","Other copy subject"),201).path("id").asLong();
+        long semester=jdbc.queryForObject("SELECT semester_id FROM subject_offering WHERE id=?",Long.class,offering);
+        long otherOffering=admin.call("POST","/api/admin/academic/offerings",Map.of("semesterId",semester,"subjectId",differentSubject),201).path("id").asLong();
+        long otherCourse=admin.call("POST","/api/admin/academic/classes",Map.of("offeringId",otherOffering,"code","COPY_OTHER","name","Other subject class","requiredLessons",1),201).path("id").asLong();
+        admin.call("PUT","/api/admin/academic/classes/"+otherCourse+"/teachers/"+teacherId,null,200);
+        teacher.call("GET","/api/teaching/classes/"+otherCourse+"/lesson-templates/"+source,null,409);
+        teacher.call("POST","/api/teaching/classes/"+otherCourse+"/lessons",copy,409);
+        outsider.call("GET","/api/teaching/classes/"+course+"/lesson-templates/"+source,null,403);
+        long outsiderId=outsider.call("GET","/api/auth/me",null,200).path("id").asLong();
+        admin.call("PUT","/api/admin/academic/classes/"+course+"/teachers/"+outsiderId,null,200);
+        assertThat(outsider.call("GET","/api/teaching/classes/"+course+"/lesson-templates",null,200)).isEmpty();
+        outsider.call("GET","/api/teaching/classes/"+course+"/lesson-templates/"+source,null,404);
+        admin.call("PUT","/api/admin/academic/classes/"+sameSubject+"/teachers/"+outsiderId,null,200);
+        var deniedCopy=new HashMap<String,Object>(copy);deniedCopy.put("requestId",UUID.randomUUID().toString());outsider.call("POST","/api/teaching/classes/"+sameSubject+"/lessons",deniedCopy,404);
+    }
+    private static void prepareManaged(Client teacher,String path,long quiz,long fill,int duration) throws Exception {
+        for(int position:List.of(2,3)) {
+            long rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("POST",path+"/games/"+position+"/content",Map.of("quizId",position==2?quiz:fill,"lessonRevision",rev),200);
+            rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"questionCount",1,"durationMs",duration,"budget",40),200);
+        }
+        long rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/1/configuration",Map.of("revision",rev,"budget",20,"wheelCells",List.of("Shared challenge"),"selectedCount",1),200);
+        rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/visibility",Map.of("revision",rev,"visible",true),200);
+    }
+
+    public static void verifySettingsVisibility(ConfigurableApplicationContext context,JdbcTemplate jdbc,int port) throws Exception {
+        var admin=new Client(port,"admin_test");var teacher=new Client(port,"teacher_test");var outsider=new Client(port,"teacher_second");
+        long offering=jdbc.queryForObject("SELECT id FROM subject_offering ORDER BY id LIMIT 1",Long.class);
+        long course=admin.call("POST","/api/admin/academic/classes",Map.of("offeringId",offering,"code","SETTINGS","name","Settings visibility","requiredLessons",1),201).path("id").asLong();
+        long tid=teacher.call("GET","/api/auth/me",null,200).path("id").asLong();
+        admin.call("PUT","/api/admin/academic/classes/"+course+"/teachers/"+tid,null,200);
+        String code=teacher.call("GET","/api/teaching/classes/"+course+"/room",null,200).path("joinCode").asText();
+        var student=new Client(port,"fill_a");long uid=student.call("GET","/api/auth/me",null,200).path("id").asLong();
+        student.call("POST","/api/student/classes/join",Map.of("requestId",UUID.randomUUID().toString(),"code",code),200);
+        teacher.call("POST","/api/teaching/classes/"+course+"/members/"+uid+"/approve",Map.of("requestId",UUID.randomUUID().toString(),"revision",0),200);
+        long lesson=teacher.call("POST","/api/teaching/classes/"+course+"/lessons",Map.of("requestId",UUID.randomUUID().toString(),"title","Settings lesson","slots",List.of(Map.of("mode","LUCKY_WHEEL","title","Wheel","budget",20),Map.of("mode","QUIZ","title","Quiz","budget",40),Map.of("mode","FILL_BLANK","title","Fill","budget",40))),201).path("id").asLong();
+        String path="/api/teaching/lessons/"+lesson,publicPath="/api/student/lessons/"+lesson;
+        for(int position:List.of(2,3)){
+            String mode=position==2?"QUIZ":"FILL_BLANK";
+            Object question=position==2?Map.of("content","Private quiz prompt","options",Map.of("A","One","B","Two","C","Three","D","Four"),"correctAnswer","B"):Map.of("content","Private {{blank}} prompt","acceptedAnswers",List.of("Exact","Alias"),"matchingPolicy","EXACT");
+            long bank=teacher.call("POST","/api/quizzes",Map.of("title",mode+" settings","mode",mode,"visibility","PRIVATE","questions",java.util.Collections.nCopies(20,question)),201).path("id").asLong();
+            long rev=teacher.call("GET",path,null,200).path("revision").asLong();
+            teacher.call("POST",path+"/games/"+position+"/content",Map.of("quizId",bank,"lessonRevision",rev),200);
+            rev=teacher.call("GET",path,null,200).path("revision").asLong();
+            var config=Map.of("revision",rev,"durationMs",3000,"questionCount",10,"budget",position==2?23.45:17.13);
+            student.call("PUT",path+"/games/"+position+"/configuration",config,403);
+            outsider.call("PUT",path+"/games/"+position+"/configuration",config,403);
+            teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"durationMs",0,"questionCount",10,"budget",40),409);
+            teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"durationMs",3000,"questionCount",10,"budget",100),409);
+            for(int invalid:List.of(0,21))teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"durationMs",3000,"questionCount",invalid,"budget",40),409);
+            teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"durationMs",3000,"questionCount",1.5,"budget",40),400);
+            teacher.call("PUT",path+"/games/"+position+"/configuration",config,200);
+            assertThat(teacher.call("GET","/api/quizzes/"+bank+"/preview",null,200).path("questions").size()).isEqualTo(20);
+            var configured=teacher.call("GET",path+"/snapshot",null,200);long gid=configured.path("lesson").path("games").get(position-1).path("id").asLong();
+            assertThat(configured.path("questionCounts").path(Long.toString(gid)).asInt()).isEqualTo(10);
+            assertThat(jdbc.queryForObject("SELECT question_count FROM lesson_game WHERE id=?",Integer.class,gid)).isEqualTo(10);
+
+            teacher.call("PUT",path+"/games/"+position+"/configuration",config,409);
+        }
+        long rev=teacher.call("GET",path,null,200).path("revision").asLong();
+        teacher.call("PUT",path+"/games/1/configuration",Map.of("revision",rev,"budget",90,"wheelCells",List.of("Shared challenge"),"selectedCount",1),409);
+        teacher.call("PUT",path+"/games/1/configuration",Map.of("revision",rev,"budget",20,"wheelCells",List.of("Shared challenge"),"selectedCount",1),200);
+        rev=teacher.call("GET",path,null,200).path("revision").asLong();
+        teacher.call("PUT",path+"/visibility",Map.of("revision",rev,"visible",true),200);
+        try(var host=teacher.connect();var pupil=student.connect()){
+            rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON",Map.of("revision",rev));
+            pupil.command(lesson,"ATTEND_LESSON",Map.of());
+            rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON_GAME",Map.of("revision",rev,"position",1));
+            pupil.command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",1));
+            teacher.call("POST",path+"/wheel/select",Map.of("requestId",UUID.randomUUID().toString(),"revision",0,"pool",List.of(uid)),200);
+            teacher.call("POST",path+"/wheel/spin",Map.of("requestId",UUID.randomUUID().toString(),"revision",1),200);
+            rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/1/visibility",Map.of("revision",rev,"visible",false),200);
+            assertThat(student.call("GET",publicPath+"/snapshot",null,200).path("wheel").isNull()).isTrue();
+            teacher.call("POST",path+"/wheel/grade",Map.of("requestId",UUID.randomUUID().toString(),"revision",2,"grades",Map.of(uid,10)),200);
+            teacher.call("POST",path+"/wheel/finalize",Map.of("requestId",UUID.randomUUID().toString(),"revision",3),200);
+            for(int position:List.of(2,3)){
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();host.command(lesson,"START_LESSON_GAME",Map.of("revision",rev,"position",position));
+                pupil.command(lesson,"PARTICIPATE_LESSON_GAME",Map.of("position",position));
+                var game=teacher.call("GET",path,null,200).path("games").get(position-1);long gameId=game.path("id").asLong();
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/"+position+"/configuration",Map.of("revision",rev,"durationMs",1000,"questionCount",1,"budget",40),409);
+                host.send(commandOf(lesson,"OPEN_LESSON_WINDOW",Map.of("position",position,"questionIndex",11)),"ERROR");
+                var opened=awaitQuestion(host,lesson,position,1).path("payload").path("window");
+                assertThat(opened.path("deadlineAtMs").asLong()-opened.path("openedAtMs").asLong()).isNotZero();
+                long token=opened.path("token").asLong();
+                assertThat(jdbc.queryForObject("SELECT deadline_at_ms-opened_at_ms FROM lesson_action_window WHERE lesson_id=?",Long.class,lesson)).isEqualTo(3000);
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/"+position+"/visibility",Map.of("revision",rev,"visible",false),200);
+                var hidden=student.call("GET",publicPath+"/snapshot",null,200);assertThat(hidden.path("window").isNull()).isTrue();assertThat(hidden.path("questionCounts").has(Long.toString(gameId))).isFalse();
+                student.call("GET",publicPath+"/games/"+position+"/snapshot",null,404);
+                student.call("POST",publicPath+"/games/"+position+"/participate",null,404);
+                pupil.send(commandOf(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value","B")),"ERROR");
+                assertThat(pupil.command(lesson,"RECONNECT_LESSON",Map.of()).toString()).doesNotContain("Private quiz prompt","Private {{blank}} prompt");
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/visibility",Map.of("revision",rev,"visible",false),200);
+                student.call("GET",publicPath+"/snapshot",null,404);pupil.send(commandOf(lesson,"RECONNECT_LESSON",Map.of()),"ERROR");
+                assertThat(teacher.call("GET",path+"/snapshot",null,200).path("window").path("token").asLong()).isEqualTo(token);
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/visibility",Map.of("revision",rev,"visible",true),200);
+                rev=teacher.call("GET",path,null,200).path("revision").asLong();teacher.call("PUT",path+"/games/"+position+"/visibility",Map.of("revision",rev,"visible",true),200);
+                pupil.command(lesson,"RECONNECT_LESSON",Map.of());
+                pupil.command(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",token,"value",position==2?"B":"Alias"));
+                awaitAdvance(host,lesson,token);
+                for(int q=2;q<=10;q++){
+                    var next=awaitQuestion(host,lesson,position,q).path("payload").path("window");
+                    assertThat(next.path("questionCount").asInt()).isEqualTo(10);
+                    // Quiz: seven right, two wrong, one unanswered. Fill: three right, six wrong, one unanswered.
+                    if(q<10)pupil.command(lesson,"SUBMIT_LESSON_ACTION",Map.of("token",next.path("token").asLong(),"value",position==2?(q<=7?"B":"A"):(q<=3?"Alias":"wrong")));
+                    awaitAdvance(host,lesson,next.path("token").asLong());
+                }
+                assertThat(student.call("GET",publicPath+"/snapshot",null,200).path("lesson").path("games").findValues("score").get(position-2).decimalValue()).isEqualByComparingTo(position==2?"16.42":"5.14");
+                assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_question WHERE game_id=?",Integer.class,gameId)).isEqualTo(10);
+
+            }
+            assertThat(teacher.call("GET",path,null,200).path("status").asText()).isEqualTo("COMPLETED");
+            assertThat(student.call("GET",publicPath,null,200).path("score").decimalValue()).isEqualByComparingTo("31.56");
+        }
+    }
+
 }

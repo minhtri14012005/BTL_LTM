@@ -47,9 +47,7 @@ it("requires an explicit reason and sends the displayed account version only aft
     </MemoryRouter>,
   );
   await screen.findByText("SV0045");
-  fireEvent.click(
-    screen.getByRole("button", { name: "Đuổi học" }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: "Đuổi học" }));
   const dialog = screen.getByRole("alertdialog");
   expect(dialog.textContent).toContain("Nguyễn An");
   expect(dialog.textContent).toContain("SV0045");
@@ -74,8 +72,8 @@ it("requires an explicit reason and sends the displayed account version only aft
       requestId: expect.stringMatching(/^[a-f0-9-]{36}$/),
     }),
   );
-  fireEvent.click(within(dialog).getByRole('button', {name:'Ở lại'}));
-  expect(screen.getByRole("cell", { name: "ACTIVE" })).toBeDefined();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Ở lại" }));
+  expect(screen.getByRole("cell", { name: "Đang hoạt động" })).toBeDefined();
 });
 it("validates a teacher name and reports duplicate identities without pretending the account was created", async () => {
   transport.post.mockRejectedValue(
@@ -89,6 +87,9 @@ it("validates a teacher name and reports duplicate identities without pretending
     <MemoryRouter initialEntries={["/?role=GIANG_VIEN"]}>
       <AdminUsersPage />
     </MemoryRouter>,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Cấp tài khoản giảng viên" }),
   );
   fireEvent.change(screen.getByLabelText("Tên đăng nhập giảng viên"), {
     target: { value: "teacher_new" },
@@ -120,4 +121,45 @@ it("validates a teacher name and reports duplicate identities without pretending
   expect(
     (screen.getByLabelText("Mật khẩu ban đầu") as HTMLInputElement).value,
   ).toBe("TeacherPass123!");
+});
+
+it("shows deleted and banned accounts accurately in the read-only all-account view", async () => {
+  transport.api.mockResolvedValue({
+    items: [
+      {
+        id: 1,
+        username: "old_teacher",
+        displayName: "Giảng viên cũ",
+        role: "GIANG_VIEN",
+        status: "ACTIVE",
+        deletedAtMs: 12,
+        banned: false,
+      },
+      {
+        id: 2,
+        username: "blocked_admin",
+        displayName: "Quản trị bị cấm",
+        role: "ADMIN",
+        status: "ACTIVE",
+        deletedAtMs: null,
+        banned: true,
+      },
+    ],
+    page: 0,
+    size: 20,
+    totalElements: 2,
+  });
+  render(
+    <MemoryRouter initialEntries={["/?role=all"]}>
+      <AdminUsersPage />
+    </MemoryRouter>,
+  );
+  await screen.findByRole("cell", { name: "Đã xóa" });
+  expect(screen.getByRole("cell", { name: "Bị cấm truy cập" })).toBeDefined();
+  expect(screen.queryByRole("button", { name: "Đuổi học" })).toBeNull();
+  expect(
+    transport.api.mock.calls.every(
+      ([url]) => !new URL(url, "http://localhost").searchParams.has("role"),
+    ),
+  ).toBe(true);
 });

@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import { realtime, useSession } from "@/lib/session";
-import { type Membership } from "@/lib/types";
-import { type Board } from "@/features/teaching/teaching-api";
-import { useResource } from "@/hooks/use-resource";
+import { EmptyState, ErrorState, Loading } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table } from "@/components/ui/table";
-import { Loading, ErrorState, EmptyState } from "@/components/feedback";
+import { type Board } from "@/features/teaching/teaching-api";
+import { useResource } from "@/hooks/use-resource";
+import { api } from "@/lib/api";
+import { realtime, useSession } from "@/lib/session";
+import { type Membership } from "@/lib/types";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
-  StudentFrame,
   NativeSelect,
   Notice,
+  StudentFrame,
   useStudentUpdates,
 } from "./student-shared";
 export function StudentBoardsPage() {
@@ -44,19 +44,49 @@ export function StudentBoardsPage() {
   );
 }
 function BoardSelector({ members }: { members: Membership[] }) {
-  const [params] = useSearchParams();
-  const [scope, setScope] = useState("class"),
-    [selectedClass, setClass] = useState(
-      params.get("classId") ||
-        String(
-          members.find((m) => m.status === "APPROVED")?.courseClassId || "",
-        ),
-    ),
-    [selectedScope, setSelectedScope] = useState(
-      members.length
-        ? `${members[0].subjectId}:${members[0].academicYearId}`
-        : "",
-    );
+  const [params, setParams] = useSearchParams();
+  const scope = params.get("scope") || "class";
+  const selectedClass =
+    params.get("classId") ??
+    String(members.find((m) => m.status === "APPROVED")?.courseClassId || "");
+  const selectedMember = members.find(
+    (m) => String(m.courseClassId) === selectedClass,
+  );
+  const selectedScope =
+    params.has("subjectId") && params.has("academicYearId")
+      ? params.get("subjectId") && params.get("academicYearId")
+        ? `${params.get("subjectId")}:${params.get("academicYearId")}`
+        : ""
+      : selectedMember
+        ? `${selectedMember.subjectId}:${selectedMember.academicYearId}`
+        : "";
+  const setScope = (scope: string) =>
+    setParams((old) => {
+      const next = new URLSearchParams(old);
+      next.set("scope", scope);
+      return next;
+    });
+  const setClass = (id: string) =>
+    setParams((old) => {
+      const next = new URLSearchParams(old);
+      next.set("classId", id);
+      next.delete("subjectId");
+      next.delete("academicYearId");
+      return next;
+    });
+  const setSelectedScope = (value: string) =>
+    setParams((old) => {
+      const [subject, year] = value.split(":");
+      const next = new URLSearchParams(old);
+      if (subject && year) {
+        next.set("subjectId", subject);
+        next.set("academicYearId", year);
+      } else {
+        next.set("subjectId", "");
+        next.set("academicYearId", "");
+      }
+      return next;
+    });
   const { user } = useSession();
   const course = members.find(
     (m) => String(m.courseClassId) === selectedClass && m.status === "APPROVED",
@@ -100,7 +130,7 @@ function BoardSelector({ members }: { members: Membership[] }) {
           onChange={setScope}
           options={[
             { value: "class", label: "Trong lớp" },
-            { value: "global", label: "Toàn Server theo môn / năm" },
+            { value: "global", label: "Theo môn và năm học" },
           ]}
         />
         {scope === "class" ? (
@@ -130,6 +160,11 @@ function BoardSelector({ members }: { members: Membership[] }) {
           Làm mới bảng xếp hạng
         </Button>
       </div>
+      <h2 className="text-xl font-semibold">
+        {scope === "class"
+          ? `Bảng điểm lớp: ${course?.className || "Chưa chọn lớp"}`
+          : `Bảng xếp hạng: ${scopes.find((s) => s.value === selectedScope)?.label || "Chưa chọn môn / năm học"}`}
+      </h2>
       <Notice>
         {scope === "class"
           ? "Điểm trong lớp và Rank do giảng viên cấu hình. Đồng điểm tại ranh giới cùng nhận mức Rank cao hơn."

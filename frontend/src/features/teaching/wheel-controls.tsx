@@ -1,21 +1,21 @@
 import { ServerWheel } from "@/components/server-wheel";
-import { useEffect, useState } from "react";
-import { post } from "@/lib/api";
-import { requestId } from "@/lib/request-id";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Confirm } from "@/components/ui/confirm";
 import { Table } from "@/components/ui/table";
-import { type Snapshot, type Game, cents } from "./teaching-api";
-import { ScoreInput, Notice } from "./teaching-shared";
+import { post } from "@/lib/api";
+import { requestId } from "@/lib/request-id";
+import { useEffect, useState } from "react";
+import { type Game, type Snapshot, cents } from "./teaching-api";
+import { Notice, ScoreInput } from "./teaching-shared";
 export function WheelControls({
+  actionError,
   snapshot,
   game,
   disabled,
   run,
   refresh,
 }: {
+  actionError?: string;
   snapshot: Snapshot;
   game: Game;
   disabled: boolean;
@@ -27,7 +27,6 @@ export function WheelControls({
     (p) => p.eligible && p.games.includes(1),
   );
   const [pool, setPool] = useState<number[]>([]),
-    [k, setK] = useState("1"),
     [grades, setGrades] = useState<Record<string, string>>({}),
     [batch, setBatch] = useState(""),
     [confirm, setConfirm] = useState(false),
@@ -143,31 +142,22 @@ export function WheelControls({
                   sinh viên tham gia.
                 </p>
               )}
-              <label className="block space-y-2 text-sm">
-                Số người k
-                <Input
-                  aria-label="Số người k"
-                  type="number"
-                  min={1}
-                  max={pool.length || 1}
-                  step={1}
-                  value={k}
-                  disabled={disabled}
-                  onChange={(e) => setK(e.target.value)}
-                />
-              </label>
+              <p>
+                Số sinh viên được chọn theo cấu hình chung:{" "}
+                {game.selectedCount || 1}
+              </p>
               <Button
                 disabled={disabled || !pool.length}
                 onClick={() => {
                   if (
-                    !Number.isInteger(Number(k)) ||
-                    Number(k) < 1 ||
-                    Number(k) > pool.length
+                    !Number.isInteger(game.selectedCount || 1) ||
+                    (game.selectedCount || 1) < 1 ||
+                    (game.selectedCount || 1) > pool.length
                   ) {
                     setValidation("k phải từ 1 đến số người trong tập quay.");
                     return;
                   }
-                  void run(() => act("select", { pool, k: Number(k) }));
+                  void run(() => act("select", { pool }));
                 }}
               >
                 Server chọn k sinh viên
@@ -273,6 +263,7 @@ export function WheelControls({
       <Confirm
         open={confirm}
         onOpenChange={setConfirm}
+        error={actionError}
         title="Xác nhận chốt điểm vòng quay?"
         description="Điểm hiển thị dưới đây là bản xem trước theo ngân sách và điểm nháp đã lưu. Server kiểm tra lại quyền tham gia trước khi chốt; người không hợp lệ nhận 0."
         pending={disabled}

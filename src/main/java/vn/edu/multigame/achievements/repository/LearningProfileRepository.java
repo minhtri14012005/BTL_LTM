@@ -17,7 +17,7 @@ public class LearningProfileRepository {
   long completed=jdbc.queryForObject("SELECT COUNT(*) FROM lesson_attendance a JOIN lesson l ON l.id=a.lesson_id WHERE a.student_id=? AND l.status='COMPLETED'",Long.class,student);
   long games=jdbc.queryForObject("SELECT COUNT(*) FROM lesson_game_participant p JOIN lesson_game g ON g.id=p.game_id WHERE p.student_id=? AND g.status='COMPLETED'",Long.class,student);
   var points=jdbc.queryForObject("SELECT COALESCE(SUM(score),0) FROM lesson_score WHERE student_id=?",java.math.BigDecimal.class,student);
-  long questions=jdbc.queryForObject("SELECT COALESCE(SUM(JSON_LENGTH(c.questions)),0) FROM lesson_game_participant p JOIN lesson_game g ON g.id=p.game_id JOIN lesson_game_content c ON c.game_id=g.id WHERE p.student_id=? AND g.mode='QUIZ' AND g.status='COMPLETED'",Long.class,student);
+  long questions=jdbc.queryForObject("SELECT COALESCE(SUM(COALESCE(g.question_count,JSON_LENGTH(c.questions))),0) FROM lesson_game_participant p JOIN lesson_game g ON g.id=p.game_id JOIN lesson_game_content c ON c.game_id=g.id WHERE p.student_id=? AND g.mode='QUIZ' AND g.status='COMPLETED'",Long.class,student);
   long correct=jdbc.queryForObject("SELECT COUNT(*) FROM lesson_quiz_answer a JOIN lesson_game g ON g.id=a.game_id WHERE a.student_id=? AND a.is_correct=TRUE AND g.mode='QUIZ' AND g.status='COMPLETED'",Long.class,student);
   return new Stats(attended,completed,games,points,questions,correct);
  }

@@ -127,7 +127,7 @@ describe("one app socket", () => {
     vi.advanceTimersByTime(30_000);
     expect(Socket.instances).toHaveLength(3);
   });
-  it("notifies a lesson view before discarding its revoked subscription", () => {
+  it("masks stale updates after revocation and restores the watched lesson when it is shown again", () => {
     const client = new RealtimeClient();
     client.start(1);
     const listener = vi.fn();
@@ -146,6 +146,24 @@ describe("one app socket", () => {
       payload: {},
     });
     expect(listener).toHaveBeenCalledOnce();
+    socket.receive({ kind: "EVENT", type: "AUTH_READY" });
+    socket.receive({
+      kind: "EVENT",
+      type: "CLASS_LESSONS_UPDATED",
+      target: { kind: "CLASS", id: 3 },
+    });
+    expect(
+      socket.sent.filter((e) => e.type === "RECONNECT_LESSON"),
+    ).toHaveLength(2);
+    const reconnect = socket.sent.at(-1)!;
+    socket.receive({
+      kind: "ACK",
+      type: "RECONNECT_LESSON",
+      requestId: reconnect.requestId,
+      target: { kind: "LESSON", id: 7 },
+      payload: { lesson: { id: 7 } },
+    });
+    expect(listener).toHaveBeenCalledTimes(2);
     client.stop();
   });
   it("releases subscriptions when navigating through many lessons while preserving one socket", () => {

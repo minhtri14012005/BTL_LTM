@@ -19,7 +19,8 @@ public class LearningBoardRealtime {
   var invalidation=Map.of("v",1,"kind","EVENT","type","SCORES_INVALIDATED","classId",event.classId(),"subjectId",source.subjectId(),"academicYearId",source.academicYearId());
   for(long user:sockets.onlineUsers())sockets.sendToUser(user,invalidation,()->true);
   for(var subscription:sockets.lessonSubscriptions().entrySet()) {
-   long course=lessons.lesson(subscription.getKey(),false).courseClassId();var room=rooms.forClass(course).orElseThrow();
+   long course;
+   try{course=lessons.lesson(subscription.getKey(),false).courseClassId();}catch(vn.edu.multigame.lesson.service.LessonFailure deleted){continue;}var room=rooms.forClass(course).orElseThrow();
    if(room.subjectId()!=source.subjectId() || room.academicYearId()!=source.academicYearId())continue;
    for(var socket:subscription.getValue()){
     if(!delivered.add(socket.getId()+":"+course))continue;

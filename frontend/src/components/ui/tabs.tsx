@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { ComponentProps } from "react";
-import { cn } from "@/lib/utils";
 export const Tabs = TabsPrimitive.Root;
 export function TabsList({
   className,
@@ -9,7 +9,7 @@ export function TabsList({
   return (
     <TabsPrimitive.List
       className={cn(
-        "inline-flex max-w-full gap-1 rounded-xl bg-muted p-1",
+        "inline-flex max-w-full flex-wrap gap-1 rounded-xl bg-muted p-1",
         className,
       )}
       {...props}

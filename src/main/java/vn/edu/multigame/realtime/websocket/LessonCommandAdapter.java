@@ -33,7 +33,7 @@ public class LessonCommandAdapter {
                 try {
                     session.run();if(command.type().equals("UNSUBSCRIBE_LESSON"))sockets.unsubscribeLesson(socket,command.target().id());else sockets.subscribeLesson(socket,command.target().id());
                     sockets.send(socket,Map.of("v",1,"kind","ACK","requestId",command.requestId(),"type",command.type(),"target",command.target(),"sequence",result.sequence(),"receivedAtMs",result.receivedAtMs(),"replay",result.replay(),"payload",result.snapshot()),()->{
-                        try {session.run();transactions.snapshot(auth,command.target().id());return true;}catch(RuntimeException denied){return false;}
+                        try {session.run();return transactions.canDeliver(auth,command.target().id(),result.snapshot());}catch(RuntimeException denied){return false;}
                     });
                 } catch(RuntimeException denied){error(socket,command,denied);}
             });

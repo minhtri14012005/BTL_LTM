@@ -15,6 +15,8 @@ public class LearningAwardService {
  public LearningAwardService(JdbcTemplate jdbc,AwardRepository ledger,AccountAccessPolicy accounts,ClassRoomStore rooms,QuizPlayStore quiz){this.jdbc=jdbc;this.ledger=ledger;this.accounts=accounts;this.rooms=rooms;this.quiz=quiz;}
  @Transactional(propagation=Propagation.MANDATORY)
  public void captureInitialPlayers(long game){jdbc.update("INSERT INTO lesson_quiz_award_roster(game_id,student_id) SELECT game_id,student_id FROM lesson_game_participant WHERE game_id=?",game);}
+ @Transactional(propagation=Propagation.MANDATORY)
+ public void joinedFirstQuestion(long game,long student){jdbc.update("INSERT IGNORE INTO lesson_quiz_award_roster(game_id,student_id) VALUES(?,?)",game,student);}
  /** Called within the game completion transaction after account and parent locks. */
  @Transactional(propagation=Propagation.MANDATORY)
  public void quizCompleted(long game,long course,int total,List<Long> participants,long now){

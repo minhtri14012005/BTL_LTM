@@ -7,7 +7,7 @@ import vn.edu.multigame.lesson.domain.LessonMode;
 public record LessonView(long id,long courseClassId,int number,String title,boolean visible,String status,long revision,
         List<Game> games,boolean attending,BigDecimal score) {
     public record Game(long id,int position,LessonMode mode,String title,BigDecimal budget,String status,
-            boolean participating,BigDecimal score) {
+            boolean participating,BigDecimal score,boolean visible,int durationMs,Integer questionCount,List<String> wheelCells,int selectedCount) {
         @com.fasterxml.jackson.annotation.JsonProperty("modeLabel")
         public String modeLabel() {
             return switch(mode) {

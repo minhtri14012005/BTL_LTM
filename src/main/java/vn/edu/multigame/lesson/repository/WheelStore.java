@@ -13,6 +13,6 @@ public class WheelStore {
  public JsonNode round(long lesson){return jdbc.query("SELECT state FROM lesson_wheel_round WHERE lesson_id=?",(r,n)->read(r.getString(1)),lesson).stream().findFirst().orElse(null);}
  public void save(long lesson,long game,JsonNode state){jdbc.update("INSERT INTO lesson_wheel_round(lesson_id,game_id,state) VALUES(?,?,?) ON DUPLICATE KEY UPDATE state=VALUES(state)",lesson,game,state.toString());}
  public String receipt(long actor,String request){return jdbc.query("SELECT fingerprint FROM lesson_wheel_receipt WHERE actor_id=? AND request_id=?",(r,n)->r.getString(1),actor,request).stream().findFirst().orElse(null);}
- public void receipt(long actor,String request,String hash){jdbc.update("INSERT INTO lesson_wheel_receipt VALUES(?,?,?)",actor,request,hash);}
+ public void receipt(long actor,String request,String hash,long lesson){jdbc.update("INSERT INTO lesson_wheel_receipt(actor_id,request_id,fingerprint,lesson_id) VALUES(?,?,?,?)",actor,request,hash,lesson);}
  public void score(long lesson,long game,long student,java.math.BigDecimal score){jdbc.update("INSERT INTO lesson_game_score(game_id,student_id,score) VALUES(?,?,?) ON DUPLICATE KEY UPDATE score=VALUES(score)",game,student,score);}
 }

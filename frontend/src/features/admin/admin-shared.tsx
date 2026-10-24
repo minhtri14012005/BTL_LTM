@@ -1,9 +1,10 @@
-import { NavLink, Link } from "react-router-dom";
-import { BookOpen, Users, School, ArrowRight, RefreshCw } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { ArrowRight, BookOpen, RefreshCw, School, Users } from "lucide-react";
+import type { ComponentProps, ReactNode } from "react";
+import { Link } from "react-router-dom";
 export const adminModules = [
   {
     path: "academic",
@@ -65,35 +66,19 @@ export function AdminFrame({
 }) {
   return (
     <div className="space-y-6">
-      <nav aria-label="Quản lý đào tạo" className="flex flex-wrap gap-2">
-        <NavLink to="/app/admin" end className="admin-nav-link">
-          Tổng quan
-        </NavLink>
-        {adminModules.map((m) => (
-          <NavLink
-            key={m.path}
-            to={`/app/admin/${m.path}`}
-            className="admin-nav-link"
-          >
-            {m.title}
-          </NavLink>
-        ))}
-      </nav>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <span className="eyebrow">QUẢN TRỊ ĐÀO TẠO</span>
-          <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{title}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {description}
-          </p>
-        </div>
-        {reload && (
-          <Button variant="outline" onClick={reload}>
-            <RefreshCw />
-            Làm mới
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title={title}
+        description={description}
+        eyebrow="QUẢN TRỊ ĐÀO TẠO"
+        actions={
+          reload && (
+            <Button variant="outline" onClick={reload}>
+              <RefreshCw />
+              Làm mới
+            </Button>
+          )
+        }
+      />
       {children}
     </div>
   );

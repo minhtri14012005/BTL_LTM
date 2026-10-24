@@ -12,6 +12,11 @@ export type Game = BaseLesson["games"][number] & {
   mode: Mode;
   title: string;
   participating: boolean;
+  visible?: boolean;
+  durationMs?: number;
+  questionCount?: number | null;
+  wheelCells?: string[] | null;
+  selectedCount?: number;
 };
 export interface Lesson extends Omit<BaseLesson, "games"> {
   attending: boolean;
@@ -80,6 +85,7 @@ export interface Submission {
   studentId: number;
   text: string;
   receivedAtMs: number;
+  answerValue?: string;
 }
 export interface Assignment {
   latest: Submission[];
@@ -90,11 +96,21 @@ export interface Snapshot {
   questionCounts: Record<string, number>;
   quiz: Record<
     string,
-    { questionIndex: number; correct: boolean | number; receivedAtMs: number }[]
+    {
+      questionIndex: number;
+      correct: boolean | number;
+      answerValue?: string;
+      receivedAtMs: number;
+    }[]
   >;
   fillBlank: Record<
     string,
-    { questionIndex: number; correct: boolean | number; receivedAtMs: number }[]
+    {
+      questionIndex: number;
+      correct: boolean | number;
+      answerValue?: string;
+      receivedAtMs: number;
+    }[]
   >;
   lesson: Lesson;
   serverTimeMs: number;
@@ -138,6 +154,11 @@ const errors: Record<string, string> = {
     "Khoảng Rank hoặc tên mức chưa hợp lệ. Kiểm tra thứ tự và khoảng chồng lấn.",
   INVALID_SHARE_CODE: "Mã setting phải gồm 32 ký tự lấy từ chức năng chia sẻ.",
   RANK_SHARE_NOT_FOUND: "Không tìm thấy mã setting này.",
+  GAME_NOT_FOUND: "Trò không tồn tại hoặc đang được ẩn.",
+  GAME_CONFIG_FROZEN: "Trò đã bắt đầu, cấu hình chung được giữ nguyên.",
+  INVALID_QUESTION_COUNT:
+    "Số câu sử dụng phải lớn hơn 0 và không vượt số câu hợp lệ của bộ.",
+  INVALID_GAME_DURATION: "Thời gian mỗi câu phải từ 1 giây trở lên.",
   INVALID_GAME_SCORE:
     "Điểm phải từ 0 đến ngân sách và tối đa hai chữ số thập phân.",
   INVALID_WHEEL_CELLS:
@@ -150,6 +171,13 @@ const errors: Record<string, string> = {
   STALE_SUBMISSION: "Sinh viên đã có bản nộp mới. Hãy chấm bản mới nhất.",
   STALE_SUBMISSION_GRADE: "Có bản nộp mới chưa được chấm.",
   CLASS_NOT_ASSIGNED: "Bạn không được phân công lớp này.",
+  COMPLETED_LESSON_CANNOT_DELETE:
+    "Buổi đã hoàn thành được giữ lại để bảo toàn lịch sử, không thể xóa.",
+  CONTENT_MODE_FROZEN:
+    "Trò đã có nội dung; giữ loại trò để bảo toàn snapshot. Có thể sửa nội dung tại trang trò chơi.",
+  TEMPLATE_NOT_COMPLETED: "Chỉ sao chép cấu hình từ buổi đã hoàn thành.",
+  TEMPLATE_SUBJECT_MISMATCH: "Buổi nguồn phải thuộc cùng môn học.",
+  AUTOMATIC_GAME_CONTROL: "Trò tự chuyển câu theo deadline chung của Server.",
   LESSON_LIMIT: "Lớp đã tạo đủ số buổi quy định.",
   LESSON_CONFIG_FROZEN: "Buổi đã bắt đầu, không thể sửa kế hoạch.",
   CONTENT_FROZEN: "Trò đã bắt đầu, không thể sửa nội dung.",

@@ -1,0 +1,997 @@
+{
+  "description": "ClassQuest: 5 bộ Quiz, 5 bộ Điền từ (mỗi bộ 10 câu), 5 bộ Bài tập (mỗi bộ 1 đề). Các bộ là nội dung Public; gửi từng phần tử packs tới POST /api/quizzes bằng tài khoản giảng viên.",
+  "packs": [
+    {
+      "title": "Quiz — Bộ 1: Lập trình cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "QUIZ",
+      "questions": [
+        {
+          "content": "Cấu trúc nào dùng để lặp lại một nhóm lệnh khi điều kiện còn đúng?",
+          "options": {
+            "A": "Vòng lặp",
+            "B": "Biến hằng",
+            "C": "Chú thích",
+            "D": "Tên tệp"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Kiểu dữ liệu Boolean thường biểu diễn hai giá trị nào?",
+          "options": {
+            "A": "Âm và dương",
+            "B": "Đúng và sai",
+            "C": "Chẵn và lẻ",
+            "D": "Nhỏ và lớn"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Một hàm nhận dữ liệu đầu vào qua thành phần nào?",
+          "options": {
+            "A": "Tên thư mục",
+            "B": "Số dòng mã",
+            "C": "Tham số",
+            "D": "Chú thích cuối tệp"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Trong mảng có chỉ số bắt đầu từ 0, phần tử thứ ba có chỉ số nào?",
+          "options": {
+            "A": "0",
+            "B": "1",
+            "C": "3",
+            "D": "2"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Cấu trúc if/else chủ yếu phục vụ việc gì?",
+          "options": {
+            "A": "Chọn nhánh xử lý theo điều kiện",
+            "B": "Lặp vô hạn mọi lệnh",
+            "C": "Lưu toàn bộ chương trình vào cơ sở dữ liệu",
+            "D": "Tự động sửa lỗi cú pháp"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Thuật toán tìm kiếm tuyến tính kiểm tra phần tử như thế nào?",
+          "options": {
+            "A": "Luôn bỏ qua một nửa dữ liệu ngay từ đầu",
+            "B": "Lần lượt từng phần tử cho đến khi tìm thấy hoặc hết dữ liệu",
+            "C": "Chỉ kiểm tra phần tử cuối",
+            "D": "Chỉ hoạt động với số âm"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Một hàm gọi lại chính nó được gọi là gì?",
+          "options": {
+            "A": "Hàm không tham số",
+            "B": "Hàm nhập dữ liệu",
+            "C": "Hàm đệ quy",
+            "D": "Hàm chỉ đọc tệp"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Điều kiện dừng trong hàm đệ quy giúp ích gì?",
+          "options": {
+            "A": "Tăng số lần gọi vô hạn",
+            "B": "Xóa mọi tham số",
+            "C": "Thay thế tất cả biến bằng hằng",
+            "D": "Ngăn việc gọi đệ quy tiếp tục vô hạn"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Hai vòng lặp lồng nhau, mỗi vòng chạy n lần, thực hiện phần thân trong cùng bao nhiêu lần?",
+          "options": {
+            "A": "n × n",
+            "B": "n",
+            "C": "2 × n",
+            "D": "n + 1"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Khi hoán đổi hai biến a và b bằng biến tạm t, thứ tự nào đúng?",
+          "options": {
+            "A": "a = b; b = a; t = b",
+            "B": "t = a; a = b; b = t",
+            "C": "t = b; b = t; a = b",
+            "D": "a = a; b = b; t = a"
+          },
+          "correctAnswer": "B"
+        }
+      ]
+    },
+    {
+      "title": "Quiz — Bộ 2: Java cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "QUIZ",
+      "questions": [
+        {
+          "content": "Từ khóa nào dùng để tạo một đối tượng Java thông thường?",
+          "options": {
+            "A": "new",
+            "B": "extends",
+            "C": "package",
+            "D": "return"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Đối với hai đối tượng String, phương thức nào thường dùng để so sánh nội dung?",
+          "options": {
+            "A": "wait",
+            "B": "equals",
+            "C": "notify",
+            "D": "getClass"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Điểm đặc trưng nào đúng với constructor trong Java?",
+          "options": {
+            "A": "Luôn có kiểu trả về void",
+            "B": "Bắt buộc tên là main",
+            "C": "Có cùng tên với lớp và không khai báo kiểu trả về",
+            "D": "Chỉ được khai báo trong interface"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Từ khóa nào khai báo quan hệ kế thừa giữa hai lớp Java?",
+          "options": {
+            "A": "implements",
+            "B": "import",
+            "C": "throws",
+            "D": "extends"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Từ khóa nào dùng khi một lớp thực thi interface?",
+          "options": {
+            "A": "implements",
+            "B": "extends",
+            "C": "instanceof",
+            "D": "synchronized"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Đặc điểm nào đúng với một trường static?",
+          "options": {
+            "A": "Mỗi lần đọc trường đều tạo một lớp mới",
+            "B": "Trường thuộc lớp và được chia sẻ giữa các đối tượng của lớp",
+            "C": "Chỉ được dùng bên trong constructor",
+            "D": "Không thể truy cập từ phương thức static"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Cấu trúc nào thích hợp để lưu ánh xạ từ khóa đến giá trị trong Java?",
+          "options": {
+            "A": "StringBuilder",
+            "B": "Thread",
+            "C": "HashMap",
+            "D": "Scanner"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Khối nào xử lý một ngoại lệ phù hợp phát sinh trong khối try?",
+          "options": {
+            "A": "package",
+            "B": "import",
+            "C": "switch",
+            "D": "catch"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Trong Java, chỉ số đầu tiên của một mảng là bao nhiêu?",
+          "options": {
+            "A": "0",
+            "B": "1",
+            "C": "-1",
+            "D": "Phụ thuộc vào giá trị phần tử đầu"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Từ khóa nào chỉ tham chiếu đến đối tượng hiện tại trong một phương thức instance?",
+          "options": {
+            "A": "superclass",
+            "B": "this",
+            "C": "self",
+            "D": "current"
+          },
+          "correctAnswer": "B"
+        }
+      ]
+    },
+    {
+      "title": "Quiz — Bộ 3: Cơ sở dữ liệu và SQL",
+      "visibility": "PUBLIC",
+      "mode": "QUIZ",
+      "questions": [
+        {
+          "content": "Trong mô hình quan hệ, một hàng của bảng thường biểu diễn điều gì?",
+          "options": {
+            "A": "Một bản ghi",
+            "B": "Một hệ quản trị hoàn chỉnh",
+            "C": "Toàn bộ cơ sở dữ liệu",
+            "D": "Một câu lệnh SQL"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Mục đích chính của khóa chính là gì?",
+          "options": {
+            "A": "Mã hóa mật khẩu tự động",
+            "B": "Định danh duy nhất một bản ghi trong bảng",
+            "C": "Sắp xếp mọi truy vấn theo tên",
+            "D": "Tự động sao lưu toàn bộ máy chủ"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Khóa ngoại giúp biểu diễn điều gì?",
+          "options": {
+            "A": "Địa chỉ IP của máy khách",
+            "B": "Tên người đăng nhập hệ điều hành",
+            "C": "Liên kết tham chiếu giữa các bảng",
+            "D": "Mọi dữ liệu đều có thể để trống"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Từ khóa SQL nào dùng để truy vấn dữ liệu?",
+          "options": {
+            "A": "INSERT",
+            "B": "DELETE",
+            "C": "DROP",
+            "D": "SELECT"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Mệnh đề nào lọc các hàng theo điều kiện trước khi tổng hợp trong truy vấn SQL?",
+          "options": {
+            "A": "WHERE",
+            "B": "ORDER BY",
+            "C": "FROM",
+            "D": "SELECT"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Câu lệnh SELECT COUNT(*) FROM sinh_vien trả về điều gì?",
+          "options": {
+            "A": "Tổng độ dài các tên sinh viên",
+            "B": "Số hàng trong bảng sinh_vien",
+            "C": "Tên sinh viên đầu tiên",
+            "D": "Số cột của bảng sinh_vien"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Mệnh đề ORDER BY diem DESC sắp xếp điểm theo hướng nào?",
+          "options": {
+            "A": "Tăng dần",
+            "B": "Ngẫu nhiên",
+            "C": "Giảm dần",
+            "D": "Không sắp xếp"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "INNER JOIN trả về những hàng nào theo điều kiện nối?",
+          "options": {
+            "A": "Tất cả hàng trái bất kể có khớp hay không",
+            "B": "Chỉ những hàng không khớp ở cả hai phía",
+            "C": "Tự động xóa các hàng bị trùng khóa",
+            "D": "Những tổ hợp hàng thỏa điều kiện nối ở cả hai phía"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Trong SQL, điều kiện nào kiểm tra một giá trị là NULL?",
+          "options": {
+            "A": "IS NULL",
+            "B": "= NULL",
+            "C": "== NULL",
+            "D": "LIKE NULL"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Trong giao dịch cơ sở dữ liệu, ROLLBACK dùng để làm gì?",
+          "options": {
+            "A": "Xác nhận vĩnh viễn các thay đổi",
+            "B": "Hủy các thay đổi chưa được xác nhận của giao dịch",
+            "C": "Xóa định nghĩa mọi bảng",
+            "D": "Đổi tên cơ sở dữ liệu"
+          },
+          "correctAnswer": "B"
+        }
+      ]
+    },
+    {
+      "title": "Quiz — Bộ 4: Mạng máy tính cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "QUIZ",
+      "questions": [
+        {
+          "content": "Giao thức nào cung cấp luồng byte tin cậy và có thứ tự?",
+          "options": {
+            "A": "TCP",
+            "B": "UDP",
+            "C": "IP",
+            "D": "ARP"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "UDP thường truyền dữ liệu theo đơn vị nào?",
+          "options": {
+            "A": "Bản ghi SQL",
+            "B": "Datagram",
+            "C": "Đối tượng Java",
+            "D": "Commit Git"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Vai trò phổ biến của DNS là gì?",
+          "options": {
+            "A": "Biên dịch mã Java",
+            "B": "Chấm điểm bài tập",
+            "C": "Phân giải tên miền thành địa chỉ IP",
+            "D": "Nén toàn bộ hệ điều hành"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Địa chỉ IPv4 có độ dài bao nhiêu bit?",
+          "options": {
+            "A": "16",
+            "B": "64",
+            "C": "128",
+            "D": "32"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Địa chỉ IPv6 có độ dài bao nhiêu bit?",
+          "options": {
+            "A": "128",
+            "B": "32",
+            "C": "48",
+            "D": "256"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Địa chỉ 127.0.0.1 thường dùng để chỉ điều gì?",
+          "options": {
+            "A": "Mọi máy chủ trên Internet",
+            "B": "Giao diện loopback của chính máy đang dùng",
+            "C": "Máy chủ DNS duy nhất trên thế giới",
+            "D": "Địa chỉ quảng bá của mọi mạng"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Trong mô hình client-server thông thường, bên nào khởi tạo yêu cầu kết nối TCP?",
+          "options": {
+            "A": "Server luôn luôn",
+            "B": "Bộ nhớ RAM",
+            "C": "Client",
+            "D": "Tệp cấu hình cơ sở dữ liệu"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Trong một máy chủ TCP, thao tác accept có tác dụng gì?",
+          "options": {
+            "A": "Biên dịch gói tin thành mã nguồn",
+            "B": "Xóa cổng mạng khỏi hệ điều hành",
+            "C": "Chuyển mọi yêu cầu thành UDP",
+            "D": "Chấp nhận một kết nối đang chờ"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Một lần đọc dữ liệu từ luồng TCP có bảo đảm trả về trọn một thông điệp của ứng dụng không?",
+          "options": {
+            "A": "Không, ứng dụng cần cơ chế xác định ranh giới thông điệp",
+            "B": "Có, mọi lần đọc luôn trùng đúng một lần gửi",
+            "C": "Có, miễn thông điệp chứa tiếng Việt",
+            "D": "Có, nếu dùng cổng có số chẵn"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "HTTPS sử dụng cơ chế nào để bảo vệ kênh truyền thông thường?",
+          "options": {
+            "A": "SQL",
+            "B": "TLS",
+            "C": "CSV",
+            "D": "JVM"
+          },
+          "correctAnswer": "B"
+        }
+      ]
+    },
+    {
+      "title": "Quiz — Bộ 5: Git và kiểm thử phần mềm",
+      "visibility": "PUBLIC",
+      "mode": "QUIZ",
+      "questions": [
+        {
+          "content": "Lệnh git clone dùng để làm gì?",
+          "options": {
+            "A": "Tạo bản sao repository về máy",
+            "B": "Đẩy commit cục bộ lên remote",
+            "C": "Xóa lịch sử repository",
+            "D": "Tự động gộp mọi nhánh"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Lệnh git status chủ yếu cho biết điều gì?",
+          "options": {
+            "A": "Dung lượng của mọi ổ đĩa",
+            "B": "Trạng thái working tree và vùng staging",
+            "C": "Danh sách tiến trình mạng",
+            "D": "Mật khẩu tài khoản remote"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Lệnh git add đưa thay đổi vào đâu?",
+          "options": {
+            "A": "Database chính",
+            "B": "Thư mục hệ điều hành",
+            "C": "Vùng staging",
+            "D": "Hàng đợi WebSocket"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Lệnh git commit tạo ra điều gì?",
+          "options": {
+            "A": "Một tài khoản Git mới",
+            "B": "Một database kiểm thử",
+            "C": "Một request HTTP",
+            "D": "Một commit trong repository cục bộ"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Lệnh git push thường dùng để làm gì?",
+          "options": {
+            "A": "Gửi các cập nhật tham chiếu và đối tượng cần thiết lên remote",
+            "B": "Tải một repository mới bằng cách xóa bản cũ",
+            "C": "Tự động sửa mọi xung đột",
+            "D": "Bảo đảm tất cả kiểm thử đều đạt"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Lệnh git diff thường được dùng để xem gì?",
+          "options": {
+            "A": "Mật khẩu của người tạo commit",
+            "B": "Sự khác biệt giữa các phiên bản hoặc trạng thái được so sánh",
+            "C": "Nội dung toàn bộ RAM",
+            "D": "Danh sách cổng mạng đang mở"
+          },
+          "correctAnswer": "B"
+        },
+        {
+          "content": "Khi merge có xung đột nội dung, thao tác nào phù hợp?",
+          "options": {
+            "A": "Xóa repository chính ngay lập tức",
+            "B": "Tự động coi mọi dòng của mình là đúng",
+            "C": "Đọc hai phía, chỉnh nội dung thống nhất rồi xác nhận kết quả",
+            "D": "Bỏ qua việc kiểm tra nội dung sau gộp"
+          },
+          "correctAnswer": "C"
+        },
+        {
+          "content": "Mục tiêu thường gặp của kiểm thử đơn vị là gì?",
+          "options": {
+            "A": "Thay thế mọi kiểm thử tích hợp",
+            "B": "Chứng minh chương trình không bao giờ có lỗi",
+            "C": "Thay thế phân quyền của server",
+            "D": "Kiểm tra hành vi của một đơn vị nhỏ với đầu vào xác định"
+          },
+          "correctAnswer": "D"
+        },
+        {
+          "content": "Vì sao nên dùng database riêng khi kiểm thử thao tác ghi hoặc xóa?",
+          "options": {
+            "A": "Để cô lập dữ liệu kiểm thử khỏi dữ liệu thật",
+            "B": "Để tăng điểm của sinh viên",
+            "C": "Để bỏ qua mọi ràng buộc dữ liệu",
+            "D": "Để không cần kiểm tra kết quả"
+          },
+          "correctAnswer": "A"
+        },
+        {
+          "content": "Một kiểm thử hồi quy giúp kiểm tra điều gì?",
+          "options": {
+            "A": "Mã nguồn tự có thêm tài liệu",
+            "B": "Chức năng đã có vẫn hoạt động sau khi thay đổi mã",
+            "C": "Mọi thao tác mạng đều nhanh hơn",
+            "D": "Không còn cần review mã"
+          },
+          "correctAnswer": "B"
+        }
+      ]
+    },
+    {
+      "title": "Điền từ — Bộ 1: Lập trình cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "FILL_BLANK",
+      "questions": [
+        {
+          "content": "Một nhóm lệnh được thực hiện lặp lại thường được tổ chức bằng {{blank}}.",
+          "acceptedAnswers": [
+            "vòng lặp",
+            "loop"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Kiểu dữ liệu biểu diễn đúng hoặc sai thường được gọi là {{blank}}.",
+          "acceptedAnswers": [
+            "boolean",
+            "bool"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Giá trị được truyền vào hàm qua các {{blank}} của hàm.",
+          "acceptedAnswers": [
+            "tham số",
+            "parameters",
+            "parameter"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Với mảng đánh chỉ số từ 0, phần tử đầu tiên có chỉ số {{blank}}.",
+          "acceptedAnswers": [
+            "0"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong cấu trúc if/else, nhánh if được thực hiện khi điều kiện nhận giá trị {{blank}}.",
+          "acceptedAnswers": [
+            "đúng",
+            "true"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Hàm gọi lại chính nó là hàm {{blank}}.",
+          "acceptedAnswers": [
+            "đệ quy",
+            "recursive"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong đệ quy, cần có điều kiện {{blank}} để tránh gọi tiếp vô hạn.",
+          "acceptedAnswers": [
+            "dừng",
+            "kết thúc"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Tìm kiếm lần lượt từng phần tử được gọi là tìm kiếm {{blank}}.",
+          "acceptedAnswers": [
+            "tuyến tính",
+            "linear"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Biến đếm khởi tạo bằng 0 và tăng 1 đúng n lần; giá trị cuối bằng {{blank}}.",
+          "acceptedAnswers": [
+            "n"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Dữ liệu tạm dùng khi đổi chỗ giá trị hai biến có thể được lưu trong một biến {{blank}}.",
+          "acceptedAnswers": [
+            "tạm",
+            "trung gian"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "Điền từ — Bộ 2: Java cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "FILL_BLANK",
+      "questions": [
+        {
+          "content": "Trong Java, từ khóa dùng để tạo đối tượng từ một lớp là {{blank}}.",
+          "acceptedAnswers": [
+            "new"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Phương thức thường dùng để so sánh nội dung của hai String là {{blank}}.",
+          "acceptedAnswers": [
+            "equals",
+            "equals()"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Từ khóa khai báo kế thừa một lớp Java là {{blank}}.",
+          "acceptedAnswers": [
+            "extends"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Một lớp khai báo thực thi interface bằng từ khóa {{blank}}.",
+          "acceptedAnswers": [
+            "implements"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Từ khóa tham chiếu đến đối tượng hiện tại trong phương thức instance là {{blank}}.",
+          "acceptedAnswers": [
+            "this"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Khối xử lý ngoại lệ phù hợp sau try được bắt đầu bằng từ khóa {{blank}}.",
+          "acceptedAnswers": [
+            "catch"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Một trường thuộc về lớp thay vì từng đối tượng được khai báo bằng từ khóa {{blank}}.",
+          "acceptedAnswers": [
+            "static"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong Java, từ khóa kết thúc phương thức và có thể trả lại giá trị là {{blank}}.",
+          "acceptedAnswers": [
+            "return"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Cấu trúc HashMap lưu các cặp khóa và {{blank}}.",
+          "acceptedAnswers": [
+            "giá trị",
+            "value"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Máy ảo thực thi Java bytecode thường được viết tắt là {{blank}}.",
+          "acceptedAnswers": [
+            "JVM"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "Điền từ — Bộ 3: Cơ sở dữ liệu và SQL",
+      "visibility": "PUBLIC",
+      "mode": "FILL_BLANK",
+      "questions": [
+        {
+          "content": "Câu lệnh truy vấn dữ liệu trong SQL bắt đầu bằng từ khóa {{blank}}.",
+          "acceptedAnswers": [
+            "SELECT"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Mệnh đề lọc các hàng theo điều kiện trước tổng hợp trong SQL là {{blank}}.",
+          "acceptedAnswers": [
+            "WHERE"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Để sắp xếp kết quả SQL, ta dùng mệnh đề {{blank}}.",
+          "acceptedAnswers": [
+            "ORDER BY"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong ORDER BY, từ khóa chỉ thứ tự giảm dần là {{blank}}.",
+          "acceptedAnswers": [
+            "DESC"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Hàm đếm số hàng khi dùng dấu * trong SQL là {{blank}}.",
+          "acceptedAnswers": [
+            "COUNT",
+            "COUNT(*)"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Điều kiện kiểm tra giá trị chưa xác định trong SQL được viết là IS {{blank}}.",
+          "acceptedAnswers": [
+            "NULL"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Khóa định danh duy nhất một hàng trong bảng được gọi là khóa {{blank}}.",
+          "acceptedAnswers": [
+            "chính",
+            "primary"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Khóa tham chiếu đến khóa của bảng liên quan được gọi là khóa {{blank}}.",
+          "acceptedAnswers": [
+            "ngoại",
+            "foreign"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh xác nhận các thay đổi của một giao dịch SQL là {{blank}}.",
+          "acceptedAnswers": [
+            "COMMIT"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh hủy các thay đổi chưa xác nhận của giao dịch SQL là {{blank}}.",
+          "acceptedAnswers": [
+            "ROLLBACK"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "Điền từ — Bộ 4: Mạng máy tính cơ bản",
+      "visibility": "PUBLIC",
+      "mode": "FILL_BLANK",
+      "questions": [
+        {
+          "content": "Giao thức vận chuyển cung cấp luồng byte tin cậy, có thứ tự là {{blank}}.",
+          "acceptedAnswers": [
+            "TCP"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Giao thức vận chuyển sử dụng datagram và không tự bảo đảm giao hàng là {{blank}}.",
+          "acceptedAnswers": [
+            "UDP"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Hệ thống phân giải tên miền thường được viết tắt là {{blank}}.",
+          "acceptedAnswers": [
+            "DNS"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Địa chỉ IPv4 có độ dài {{blank}} bit.",
+          "acceptedAnswers": [
+            "32"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Địa chỉ IPv6 có độ dài {{blank}} bit.",
+          "acceptedAnswers": [
+            "128"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Địa chỉ IPv4 loopback thường dùng khi kết nối tới chính máy là {{blank}}.",
+          "acceptedAnswers": [
+            "127.0.0.1"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Trong mô hình client-server thông thường, phía gửi yêu cầu kết nối TCP ban đầu là {{blank}}.",
+          "acceptedAnswers": [
+            "client",
+            "máy khách"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Thao tác chấp nhận một kết nối TCP đang chờ thường được gọi là {{blank}}.",
+          "acceptedAnswers": [
+            "accept",
+            "accept()"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "HTTPS thường sử dụng giao thức {{blank}} để bảo vệ kênh truyền.",
+          "acceptedAnswers": [
+            "TLS"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Ngoài địa chỉ IP, ứng dụng TCP thường cần số {{blank}} để xác định dịch vụ đích.",
+          "acceptedAnswers": [
+            "cổng",
+            "port"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "Điền từ — Bộ 5: Git và kiểm thử phần mềm",
+      "visibility": "PUBLIC",
+      "mode": "FILL_BLANK",
+      "questions": [
+        {
+          "content": "Lệnh tạo bản sao repository về máy là git {{blank}}.",
+          "acceptedAnswers": [
+            "clone"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh xem trạng thái working tree và staging là git {{blank}}.",
+          "acceptedAnswers": [
+            "status"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh đưa thay đổi của tệp vào staging là git {{blank}}.",
+          "acceptedAnswers": [
+            "add"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh tạo commit cục bộ là git {{blank}}.",
+          "acceptedAnswers": [
+            "commit"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh gửi cập nhật cục bộ lên remote là git {{blank}}.",
+          "acceptedAnswers": [
+            "push"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh xem khác biệt giữa các trạng thái mã nguồn được so sánh là git {{blank}}.",
+          "acceptedAnswers": [
+            "diff"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Lệnh thường dùng để gộp một nhánh vào nhánh hiện tại là git {{blank}}.",
+          "acceptedAnswers": [
+            "merge"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Kiểm thử giúp phát hiện chức năng cũ bị hỏng sau thay đổi được gọi là kiểm thử {{blank}}.",
+          "acceptedAnswers": [
+            "hồi quy",
+            "regression"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Database dùng để chạy kiểm thử thao tác dữ liệu phải được {{blank}} với database chính.",
+          "acceptedAnswers": [
+            "tách riêng",
+            "tách biệt",
+            "cô lập"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        },
+        {
+          "content": "Một kiểm thử đơn vị cần so sánh kết quả thực tế với kết quả {{blank}}.",
+          "acceptedAnswers": [
+            "mong đợi",
+            "kỳ vọng",
+            "dự kiến"
+          ],
+          "matchingPolicy": "CASE_INSENSITIVE"
+        }
+      ]
+    },
+    {
+      "title": "Bài tập — Bộ 1: Java — Quản lý danh sách sinh viên",
+      "visibility": "PUBLIC",
+      "mode": "ASSIGNMENT",
+      "questions": [
+        {
+          "content": "Thiết kế chương trình Java quản lý sinh viên trong một lớp. Mỗi sinh viên có mã, họ tên và điểm từ 0 đến 100.\nYêu cầu:\n1. Mô tả lớp SinhVien và cấu trúc lưu danh sách. Giải thích cách kiểm tra mã trùng, tên trống và điểm ngoài khoảng.\n2. Viết mã Java hoặc mã giả cho ba thao tác: thêm sinh viên, tìm theo mã, liệt kê theo điểm giảm dần. Với đồng điểm, sắp theo mã tăng dần.\n3. Trình bày ít nhất năm ca kiểm thử, gồm dữ liệu hợp lệ, trùng mã, tên trống, điểm âm và điểm vượt 100. Ghi rõ đầu vào và kết quả mong đợi.\nNộp trực tiếp nội dung giải thích, mã và bảng kiểm thử trong ô bài làm. Không cần tải tệp hoặc liên kết ngoài.\nTiêu chí chấm: mô hình dữ liệu 20%; xử lý và kiểm tra đầu vào 40%; kiểm thử 30%; trình bày 10%. Giảng viên quy đổi theo ngân sách điểm của trò."
+        }
+      ]
+    },
+    {
+      "title": "Bài tập — Bộ 2: Cơ sở dữ liệu — Thiết kế lớp học và truy vấn SQL",
+      "visibility": "PUBLIC",
+      "mode": "ASSIGNMENT",
+      "questions": [
+        {
+          "content": "Thiết kế cơ sở dữ liệu quan hệ cho ba đối tượng: SinhVien, LopHoc và DangKy. Một sinh viên có thể đăng ký nhiều lớp; mỗi cặp sinh viên–lớp chỉ xuất hiện một lần trong DangKy.\nYêu cầu:\n1. Nêu các cột, khóa chính, khóa ngoại và ràng buộc chống đăng ký trùng.\n2. Viết SQL CREATE TABLE phù hợp. Dữ liệu minh họa phải là dữ liệu giả và chỉ mô tả trong bài nộp, không yêu cầu thao tác trên database thật.\n3. Viết truy vấn lấy sinh viên của một lớp theo mã lớp, đếm số sinh viên từng lớp kể cả lớp chưa có người đăng ký, và tìm sinh viên chưa đăng ký lớp nào.\n4. Giải thích khác biệt giữa INNER JOIN và LEFT JOIN trong truy vấn đếm số sinh viên.\nNộp toàn bộ thiết kế, SQL và giải thích trực tiếp trên web.\nTiêu chí chấm: thiết kế và ràng buộc 35%; truy vấn 40%; giải thích 15%; trình bày 10%."
+        }
+      ]
+    },
+    {
+      "title": "Bài tập — Bộ 3: Mạng máy tính — Thiết kế giao thức TCP đơn giản",
+      "visibility": "PUBLIC",
+      "mode": "ASSIGNMENT",
+      "questions": [
+        {
+          "content": "Thiết kế một ứng dụng client-server TCP gửi một dòng văn bản và nhận lại dòng văn bản đã chuyển thành chữ hoa.\nQuy ước: mỗi thông điệp kết thúc bằng ký tự xuống dòng; dữ liệu văn bản dùng UTF-8. Chỉ thiết kế cho giao tiếp tin cậy trong mạng thực hành, không yêu cầu triển khai dịch vụ công khai.\nYêu cầu:\n1. Mô tả trình tự server tạo socket lắng nghe, chấp nhận kết nối, đọc thông điệp, trả lời và đóng tài nguyên.\n2. Mô tả trình tự client kết nối, gửi thông điệp và đọc phản hồi.\n3. Viết mã giả cho việc nhận dữ liệu khi một thông điệp bị chia qua nhiều lần đọc. Nêu cách xử lý khi kết nối đóng trước ký tự kết thúc.\n4. Đưa ra bốn ca kiểm thử: chuỗi thường, tiếng Việt, thông điệp rỗng và ngắt kết nối giữa chừng.\nNộp mô tả, mã giả và kết quả mong đợi trực tiếp trong ô bài làm.\nTiêu chí chấm: luồng giao tiếp 30%; xử lý ranh giới thông điệp 35%; kiểm thử và lỗi 25%; trình bày 10%."
+        }
+      ]
+    },
+    {
+      "title": "Bài tập — Bộ 4: Thuật toán — Tìm kiếm và sắp xếp điểm",
+      "visibility": "PUBLIC",
+      "mode": "ASSIGNMENT",
+      "questions": [
+        {
+          "content": "Cho danh sách điểm nguyên [7, 4, 9, 7, 2, 10, 4].\nYêu cầu:\n1. Viết mã giả tìm kiếm tuyến tính giá trị 7 và trả về tất cả chỉ số tìm được, đánh chỉ số từ 0.\n2. Trình bày từng bước của một thuật toán sắp xếp bạn chọn để đưa danh sách về thứ tự tăng dần. Giải thích cách xử lý các điểm trùng.\n3. Nêu điều kiện cần để dùng tìm kiếm nhị phân và giải thích vì sao không thể áp dụng trực tiếp cho danh sách ban đầu.\n4. Đưa ra ít nhất bốn ca kiểm thử, gồm danh sách rỗng, một phần tử, nhiều điểm trùng và giá trị tìm không tồn tại.\nNộp mã giả, các bước xử lý và kết quả mong đợi trực tiếp trên web. Không cần chạy mã trên hệ thống bên ngoài.\nTiêu chí chấm: tìm kiếm 25%; sắp xếp 35%; giải thích điều kiện 20%; kiểm thử 20%."
+        }
+      ]
+    },
+    {
+      "title": "Bài tập — Bộ 5: Git — Xử lý xung đột và kiểm thử hồi quy",
+      "visibility": "PUBLIC",
+      "mode": "ASSIGNMENT",
+      "questions": [
+        {
+          "content": "Hai thành viên cùng sửa hàm tinhDiem trên hai nhánh của một repository giả lập. Một người sửa công thức, người còn lại thêm kiểm tra dữ liệu không hợp lệ. Khi gộp nhánh, phần thân hàm xảy ra xung đột.\nYêu cầu:\n1. Mô tả cách xem trạng thái và phần khác biệt trước khi xử lý xung đột.\n2. Nêu trình tự hợp nhất cả công thức mới và kiểm tra đầu vào. Giải thích vì sao không nên tự động bỏ toàn bộ thay đổi của một phía.\n3. Viết mã giả tính điểm = (số câu đúng / số câu sử dụng) × ngân sách. Nêu cách kiểm tra tổng số câu dương, số câu đúng nằm trong khoảng hợp lệ và ngân sách không âm.\n4. Đưa ra kết quả mong đợi cho 7/10 câu đúng với ngân sách 40; 0/10 với ngân sách 40; 10/10 với ngân sách 40; và trường hợp tổng số câu bằng 0.\n5. Liệt kê các kiểm thử hồi quy cần chạy trước khi xác nhận kết quả gộp.\nChỉ nộp phân tích, lệnh minh họa và mã giả trên web; không thực hiện commit/push lên repository thật để làm bài.\nTiêu chí chấm: xử lý xung đột 30%; công thức và kiểm tra đầu vào 35%; kiểm thử 25%; trình bày 10%."
+        }
+      ]
+    }
+  ]
+}

@@ -26,18 +26,31 @@ public class LessonController {
     public LessonView.Progress progress(Authentication caller,@PathVariable long classId) {return service.progress(caller,classId);}
     @PostMapping("/api/teaching/classes/{classId}/lessons") @ResponseStatus(HttpStatus.CREATED)
     public LessonView create(Authentication caller,@PathVariable long classId,@Valid @RequestBody LessonRequests.Plan input) {return service.create(caller,classId,input);}
+    @GetMapping("/api/teaching/classes/{classId}/lesson-templates")
+    public List<LessonView> templates(Authentication caller,@PathVariable long classId){return service.templates(caller,classId);}
+    @GetMapping("/api/teaching/classes/{classId}/lesson-templates/{source}")
+    public LessonService.Template template(Authentication caller,@PathVariable long classId,@PathVariable long source){return service.template(caller,classId,source);}
+    @DeleteMapping("/api/teaching/lessons/{id}") @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Transition input,jakarta.servlet.http.HttpServletRequest request){runtime.serial(caller,id,session(caller,request),()->{service.delete(caller,id,input.revision());return true;});}
     @GetMapping("/api/teaching/lessons/{id}")
     public LessonView teacherGet(Authentication caller,@PathVariable long id) {return service.get(caller,id,true);}
     @GetMapping("/api/student/lessons/{id}")
     public LessonView studentGet(Authentication caller,@PathVariable long id) {return service.get(caller,id,false);}
     @PutMapping("/api/teaching/lessons/{id}")
-    public LessonView edit(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Edit input) {return service.edit(caller,id,input);}
+    public LessonView edit(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Edit input) {return runtime.serial(caller,id,()->service.edit(caller,id,input));}
     @PutMapping("/api/teaching/lessons/{id}/visibility")
-    public LessonView visible(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Visibility input) {return service.visible(caller,id,input);}
+    public LessonView visible(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Visibility input) {return runtime.serial(caller,id,()->service.visible(caller,id,input));}
+    @org.springframework.beans.factory.annotation.Autowired private vn.edu.multigame.lesson.service.GameSettingsService settings;
+    @PutMapping("/api/teaching/lessons/{id}/games/{position}/configuration")
+    public void configure(Authentication caller,@PathVariable long id,@PathVariable int position,@RequestBody vn.edu.multigame.lesson.service.GameSettingsService.Settings input,jakarta.servlet.http.HttpServletRequest request){runtime.serial(caller,id,session(caller,request),()->{settings.configure(caller,id,position,input);return true;});}
+    @PutMapping("/api/teaching/lessons/{id}/games/{position}/visibility")
+    public void gameVisibility(Authentication caller,@PathVariable long id,@PathVariable int position,@Valid @RequestBody LessonRequests.Visibility input,jakarta.servlet.http.HttpServletRequest request){runtime.serial(caller,id,session(caller,request),()->{settings.visibility(caller,id,position,input);return true;});}
     @PostMapping("/api/teaching/lessons/{id}/start")
     public LessonView start(Authentication caller,@PathVariable long id,@Valid @RequestBody LessonRequests.Transition input,jakarta.servlet.http.HttpServletRequest request) {return runtime.serial(caller,id,session(caller,request),()->service.start(caller,id,input.revision()));}
     @PostMapping("/api/teaching/lessons/{id}/games/{position}/start")
-    public LessonView startGame(Authentication caller,@PathVariable long id,@PathVariable int position,@Valid @RequestBody LessonRequests.Transition input,jakarta.servlet.http.HttpServletRequest request) {return runtime.serial(caller,id,session(caller,request),()->service.startGame(caller,id,position,input.revision()));}
+    public LessonView startGame(Authentication caller,@PathVariable long id,@PathVariable int position,@Valid @RequestBody LessonRequests.Transition input,jakarta.servlet.http.HttpServletRequest request) {
+        return runtime.serial(caller,id,session(caller,request),()->service.startGame(caller,id,position,input.revision()));
+    }
     @PostMapping("/api/student/lessons/{id}/attend")
     public LessonView attend(Authentication caller,@PathVariable long id,jakarta.servlet.http.HttpServletRequest request) {return runtime.serial(caller,id,session(caller,request),()->service.attend(caller,id,null));}
     @PostMapping("/api/student/lessons/{id}/games/{position}/participate")

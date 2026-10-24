@@ -23,6 +23,7 @@ public class LessonExceptionHandler {
     @ExceptionHandler(DataAccessException.class) ResponseEntity<AuthError> database(DataAccessException e) {
         for(Throwable cause=e;cause!=null;cause=cause.getCause()) if(cause instanceof java.sql.SQLException sql &&
                 (sql.getErrorCode()==1062 || sql.getErrorCode()==1644 || sql.getErrorCode()==3819)) return error(HttpStatus.CONFLICT,"LESSON_CONSTRAINT");
+        org.slf4j.LoggerFactory.getLogger(LessonExceptionHandler.class).warn("Lesson database operation failed",e);
         return error(HttpStatus.SERVICE_UNAVAILABLE,"LESSON_UNAVAILABLE");
     }
     @ExceptionHandler(java.util.concurrent.RejectedExecutionException.class)
