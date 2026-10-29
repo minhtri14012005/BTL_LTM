@@ -81,6 +81,24 @@ Database đã có không bị xóa. Nếu username ADMIN đã tồn tại hợp 
 
 **Setup không khởi động web server.**
 
+### Dữ liệu mẫu môn Lập trình mạng
+
+Sau `setup.cmd`, có thể nạp [data/ltm-seed.sql](data/ltm-seed.sql) vào **database mới** để có ngay môn Lập trình mạng (`LTM`), học kỳ, lớp `LTM01`, tài khoản giảng viên `gv1`, một sinh viên mẫu, phân công giảng dạy, thành viên lớp, 15 bộ câu hỏi công khai và 105 câu hỏi. File SQL chỉ chứa dữ liệu; cấu trúc bảng đã được Flyway tạo trong bước setup. Chạy trong PowerShell tại thư mục project, sau khi sửa cấu hình MySQL:
+
+Tài khoản `gv1` là **tài khoản giảng viên do ADMIN tạo**. Sau khi import, đăng nhập ADMIN để xem thông tin tài khoản hoặc đặt lại mật khẩu cho giảng viên.
+
+```powershell
+$db = Get-Content config/application-local.properties | ConvertFrom-StringData
+$env:MYSQL_PWD = $db.DB_PASSWORD
+try {
+    & 'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe' --no-defaults --default-character-set=utf8mb4 -h $db.DB_HOST -P $db.DB_PORT -u $db.DB_USER -D $db.DB_NAME -e 'source data/ltm-seed.sql'
+} finally {
+    Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
+}
+```
+
+Nếu MySQL cài ở vị trí khác, thay đường dẫn `mysql.exe` cho phù hợp. File từ chối nạp khi database đã có dữ liệu môn/lớp/bộ câu hỏi liên quan; không import đè database đang sử dụng. Tài khoản được chuyển cùng **hash mật khẩu hiện có**; SQL không chứa mật khẩu gốc. Mật khẩu giảng viên và sinh viên cần được người tạo tài khoản cung cấp riêng hoặc ADMIN đặt lại mật khẩu giảng viên trong ứng dụng. Sau khi import, chạy `run.cmd`: đăng nhập ADMIN để kiểm tra môn, lớp và tài khoản; đăng nhập `gv1` để xem 15 bộ câu hỏi trong mục của giảng viên.
+
 ### 5. Chạy ClassQuest
 
 ```powershell
