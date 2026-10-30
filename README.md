@@ -97,9 +97,13 @@ try {
 }
 ```
 
-Nếu MySQL cài ở vị trí khác, thay đường dẫn `mysql.exe` cho phù hợp. File từ chối nạp khi database đã có dữ liệu môn/lớp/bộ câu hỏi liên quan; không import đè database đang sử dụng. Tài khoản được chuyển cùng **hash mật khẩu hiện có**; SQL không chứa mật khẩu gốc. Mật khẩu giảng viên và sinh viên cần được người tạo tài khoản cung cấp riêng hoặc ADMIN đặt lại mật khẩu giảng viên trong ứng dụng. Sau khi import, chạy `run.cmd`: đăng nhập ADMIN để kiểm tra môn, lớp và tài khoản; đăng nhập `gv1` để xem 15 bộ câu hỏi trong mục của giảng viên.
+Nếu MySQL cài ở vị trí khác, thay đường dẫn `mysql.exe` cho phù hợp. File từ chối nạp khi database đã có dữ liệu môn/lớp/bộ câu hỏi liên quan; không import đè database đang sử dụng. Tài khoản được chuyển cùng **hash mật khẩu hiện có**; SQL không chứa mật khẩu gốc. Mật khẩu giảng viên và sinh viên cần được người tạo tài khoản cung cấp riêng hoặc ADMIN đặt lại mật khẩu giảng viên trong ứng dụng. Sau khi import, nhấn **Run** trong Spring Boot Dashboard hoặc chạy `run.cmd`: đăng nhập ADMIN để kiểm tra môn, lớp và tài khoản; đăng nhập `gv1` để xem 15 bộ câu hỏi trong mục của giảng viên.
 
 ### 5. Chạy ClassQuest
+
+Trong VS Code, mở **Spring Boot Dashboard**, chọn `MultigameApplication` rồi nhấn **Run**. Ứng dụng tự nhận diện IP LAN và cấu hình WebSocket khi khởi động; không cần chạy `run.cmd` trước. Dừng và chạy lại ứng dụng nếu đổi mạng/IP.
+
+Hoặc chạy bằng PowerShell:
 
 ```powershell
 .\run.cmd
@@ -107,7 +111,7 @@ Nếu MySQL cài ở vị trí khác, thay đường dẫn `mysql.exe` cho phù 
 
 Mở **http://localhost:8080**, đăng nhập bằng ADMIN đã cấu hình. Với database mới và cấu hình mặc định: username **admin**, mật khẩu **Abc!1234567890Xyz**.
 
-Dừng ứng dụng bằng **Ctrl+C** trong cửa sổ đang chạy.
+Dừng ứng dụng bằng nút **Stop** trong Spring Boot Dashboard, hoặc **Ctrl+C** nếu chạy bằng PowerShell.
 
 ## Tạo ADMIN riêng hoặc chạy lại setup
 
@@ -125,7 +129,9 @@ Nếu đã build và chỉ muốn chuẩn bị database/ADMIN:
 .\setup.cmd -SkipBuild
 ```
 
-Sau khi sửa source, dừng ứng dụng rồi build và chạy lại:
+Sau khi sửa Java/config, dừng ứng dụng rồi nhấn **Run** lại trong Spring Boot Dashboard để IDE biên dịch và nạp thay đổi. Nếu sửa frontend, chạy `build.cmd` để cập nhật giao diện được đóng gói rồi khởi động lại ứng dụng.
+
+Nếu chạy bằng file JAR qua `run.cmd`, cần build lại sau khi sửa source:
 
 ```powershell
 .\build.cmd
@@ -146,7 +152,7 @@ Có sẵn dữ liệu mẫu môn Lập trình mạng tại `data/learning-banks/
 
 Chỉ máy chủ cần chạy Java và MySQL. Các thiết bị khác mở trình duyệt và dùng IP máy chủ, ví dụ `http://192.168.1.10:8080`, thay vì `localhost`.
 
-`run.cmd` tự nhận diện IP LAN của máy hiện tại và cấu hình origin cho REST/WebSocket; không cần giữ IP của người viết project trong file cấu hình. Cho phép Java/cổng 8080 qua Windows Firewall trên mạng Private nếu các thiết bị khác chưa truy cập được.
+Spring Boot tự nhận diện IP LAN của máy hiện tại và cấu hình origin cho REST/WebSocket, kể cả khi chạy từ Spring Boot Dashboard; không cần giữ IP của người viết project trong file cấu hình. Nếu đặt `ALLOWED_ORIGINS` riêng, ứng dụng ưu tiên danh sách đó. Cho phép Java/cổng 8080 qua Windows Firewall trên mạng Private nếu các thiết bị khác chưa truy cập được.
 
 ## Phát triển và kiểm thử
 
